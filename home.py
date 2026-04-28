@@ -558,7 +558,7 @@ def main_app(user: dict):
 
     # Store last clicked location as map_center (for default marker position)
     if map_state and map_state.get("last_object_clicked"):
-        loc = map_state["last_object_clicked"]
+        loc = map_state["last_object_clicked","center"]
         st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
 
         st.markdown("---")
