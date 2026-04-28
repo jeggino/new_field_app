@@ -75,7 +75,7 @@ if not st.session_state.user:
     st.stop()
 
 # --- MAIN APP ---
-st.sidebar.write(f"👤 Logged in as: {st.session_state.user['username']}")
+# st.sidebar.write(f"👤 Logged in as: {st.session_state.user['username']}")
 if st.sidebar.button("Logout"):
     logout()
     st.experimental_rerun()
