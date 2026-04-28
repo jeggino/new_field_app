@@ -553,7 +553,7 @@ def main_app(user: dict):
         m,
         width="100%",
         height=600,
-        returned_objects=["last_object_clicked","center"],
+        returned_objects=["last_object_clicked","center","last_object_clicked_popup"],
     )
 
     loc = map_state["center"]
