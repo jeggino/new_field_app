@@ -16,10 +16,10 @@ import uuid
 
 # --- CONFIG ---
 st.set_page_config(page_title="Geo Observations", layout="wide")
-SUPABASE_URL = "https://anydhrpvfenefacuoarv.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFueWRocnB2ZmVuZWZhY3VvYXJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3NTUyMDQsImV4cCI6MjA1MjMzMTIwNH0.mvCK6ya82Nu8E3GLpqw-Cl-0te55nK2tpEioDMiSTkM"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 # --- SESSION LOGIN ---
 if "user" not in st.session_state:
