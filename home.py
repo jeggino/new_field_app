@@ -618,13 +618,11 @@ def new_observation_dialog(user):
 # ---------- MAIN APP VIEW ----------
 
 def main_app(user):
+    with st.sidebar:
 
-    top_col1, top_col2 = st.columns([1, 1])
-    with top_col1:
         if st.button("Add new observation", type="primary"):
             new_observation_dialog(user)
 
-    with top_col2:
         if st.button("Log out"):
             clear_user_cookie()
             st.session_state.pop("user", None)
