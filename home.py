@@ -430,10 +430,10 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
 
         # Default center: last map center or existing obs location or fallback
         default_center = st.session_state.get("map_center")
-        if obs:
-            default_center = [obs.get("lat", default_center[0]), obs.get("lon", default_center[1])]
 
-        m = folium.Map(location=default_center, zoom_start=16, control_scale=False)
+        default_center = [obs.get("lat", default_center[0]), obs.get("lon", default_center[1])]
+
+        m = folium.Map(location=default_center, zoom_start=14, control_scale=False)
 
         folium.Marker(
             location=default_center,
@@ -562,8 +562,7 @@ def main_app(user: dict):
     # st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     st.write(map_state)
     loc = map_state["center"]
-    st.write(loc)
-    # st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
+    st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     # st.write(observations)
     # df = pd.DataFrame(observations).set_index("id")
     
