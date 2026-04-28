@@ -460,6 +460,27 @@ from streamlit_cookies_manager import EncryptedCookieManager
 
 # ---------- CONFIG ----------
 
+st.markdown(
+    """
+    <style>
+    [data-testid="collapsedControl"] svg {
+        height: 0rem;
+        width: 0rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+reduce_header_height_style = """
+<style>
+    div.block-container {padding-top: 2rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; margin-top: 0rem; margin-bottom: 0rem;}
+</style>
+""" 
+
+st.markdown(reduce_header_height_style, unsafe_allow_html=True)
+
 st.set_page_config(page_title="Map Observations", layout="wide")
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
