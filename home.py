@@ -576,7 +576,7 @@ def main_app(user: dict):
         #     if st.button("Edit", key=f"edit_{obs['id']}"):
         #         open_observation_dialog(user, obs=obs)
         # with c2:
-        if st.button("Delete", key=f"del_{obs['id']}"):
+        if st.button("Delete"):
             if delete_observation(map_state.get("last_object_clicked_popup")):
                 st.success("Observation deleted.")
                 st.rerun()
