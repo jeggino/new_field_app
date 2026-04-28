@@ -358,7 +358,7 @@ def validate_credentials(username: str, password: str) -> Optional[dict]:
 # ----------------- SUPABASE CRUD -----------------
 def fetch_observations():
     try:
-        res = supabase.table(OBS_TABLE).select("*").order("created_at", desc=False).execute()
+        res = supabase.table(OBS_TABLE).select("*").execute()
         return res.data or []
     except Exception as e:
         st.error(f"Failed to load observations: {e}")
