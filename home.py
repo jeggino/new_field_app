@@ -555,26 +555,26 @@ def main_app(user: dict):
         loc = map_state["last_object_clicked"]
         st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
 
-    st.markdown("---")
-
-    st.markdown("### Observations list")
-    st.write(loc.get("lat"))
-    if not observations:
-        st.info("No observations yet.")
-    else:
-        for obs in observations:
-            with st.expander(f"{obs.get('title','(no title)')} — {obs.get('category','')}"):
-                st.write(obs.get("description", ""))
-                st.caption(f"Created: {obs.get('created_at','')}")
-                c1, c2 = st.columns(2)
-                with c1:
-                    if st.button("Edit", key=f"edit_{obs['id']}"):
-                        open_observation_dialog(user, obs=obs)
-                with c2:
-                    if st.button("Delete", key=f"del_{obs['id']}"):
-                        if delete_observation(obs["id"]):
-                            st.success("Observation deleted.")
-                            st.rerun()
+        st.markdown("---")
+    
+        st.markdown("### Observations list")
+        st.write(loc)
+        if not observations:
+            st.info("No observations yet.")
+        else:
+            for obs in observations:
+                with st.expander(f"{obs.get('title','(no title)')} — {obs.get('category','')}"):
+                    st.write(obs.get("description", ""))
+                    st.caption(f"Created: {obs.get('created_at','')}")
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        if st.button("Edit", key=f"edit_{obs['id']}"):
+                            open_observation_dialog(user, obs=obs)
+                    with c2:
+                        if st.button("Delete", key=f"del_{obs['id']}"):
+                            if delete_observation(obs["id"]):
+                                st.success("Observation deleted.")
+                                st.rerun()
 
 
 # ----------------- ENTRY POINT -----------------
