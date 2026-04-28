@@ -560,17 +560,17 @@ def main_app(user: dict):
 
     loc = map_state["center"]
     st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
-    st.write(map_state)
-    st.write(observations)
+    # st.write(map_state)
+    # st.write(observations)
     df = pd.DataFrame(observations).set_index("id")
     
 
     
     if map_state.get("last_object_clicked_popup"):
-        st.write(df.loc[map_state.get("last_object_clicked_popup")])
-        df = pd.DataFrame(observations)
-        # st.write(observations)
-        df
+        # st.write(df.loc[map_state.get("last_object_clicked_popup")])
+        # df = pd.DataFrame(observations)
+        # # st.write(observations)
+        # df
         c1, c2 = st.columns(2)
         with c1:
             if st.button("Edit", key=f"edit_{obs['id']}"):
