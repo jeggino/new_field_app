@@ -517,7 +517,7 @@ def main_app(user: dict):
         if st.button("Log out"):
             clear_user_cookie()
             st.session_state.pop("user", None)
-            st.experimental_rerun()
+            st.rerun()
 
     st.divider()
 
