@@ -1,0 +1,11 @@
+streamlit
+streamlit_option_menu
+folium
+altair
+streamlit-folium
+geopandas
+streamlit-option-menu
+natsort==8.4.0
+supabase 
+geocoder
+uuid
