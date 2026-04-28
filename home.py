@@ -626,7 +626,7 @@ def main_app(user):
             st.session_state.pop("user", None)
             st.rerun()
     # Load existing observations
-    if st.button("Add new observation", icon="spinner",type="primary"):
+    if st.button("Add new observation", icon=":material/add_location_alt:",type="primary"):
         new_observation_dialog(user)
     try:
         res = (
