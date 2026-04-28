@@ -541,7 +541,7 @@ def login_view():
 
 @st.dialog(" ",width="large")
 def new_observation_dialog(user):
-    st.write("Drag the marker to the correct location and fill in the details.")
+    st.write("Drag the marker to the correct location and click on it to capture the coordinates.")
 
     default_location = [52.37, 4.90]  # Amsterdam-ish default
     m = folium.Map(location=default_location, zoom_start=15, control_scale=True)
@@ -562,7 +562,6 @@ def new_observation_dialog(user):
         returned_objects=["last_object_clicked", "last_active_drawing", "all_drawings"],
     )
 
-    st.write("If the marker position is not captured, try clicking on the map after dragging.")
     
     obs_id = str(uuid.uuid4())
     title = st.text_input("Title")
@@ -590,7 +589,7 @@ def new_observation_dialog(user):
                     lon, lat = coords[0], coords[1]
 
         if lat is None or lon is None:
-            st.error("Could not determine marker position. Try clicking on the map after dragging the marker.")
+            st.error("Could not determine marker position. Try clicking on the marker after dragging it.")
             return
 
         if not title:
