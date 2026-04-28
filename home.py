@@ -544,13 +544,13 @@ def new_observation_dialog(user):
     st.write("Drag the marker to the correct location and click on it to capture the coordinates.")
 
     default_location = [52.37, 4.90]  # Amsterdam-ish default
-    m = folium.Map(location=default_location, zoom_start=15, control_scale=True)
+    m = folium.Map(location=default_location, zoom_start=18, control_scale=False)
 
     # Draggable marker
     draggable_marker = folium.Marker(
         location=default_location,
         draggable=True,
-        popup="Drag me to the observation location",
+        popup="locations recorded!",
         icon=folium.Icon(color="blue", icon="info-sign")
     )
     draggable_marker.add_to(m)
@@ -558,7 +558,7 @@ def new_observation_dialog(user):
     map_data = st_folium(
         m,
         width="100%",
-        height=600,
+        height=200,
         returned_objects=["last_object_clicked", "last_active_drawing", "all_drawings"],
     )
 
