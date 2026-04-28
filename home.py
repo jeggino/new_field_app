@@ -432,6 +432,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
         default_center = st.session_state.get("map_center")
 
         default_center = ["lat", "lon"]
+        st.write(default_center)
 
         m = folium.Map(location=default_center, zoom_start=14, control_scale=False)
 
