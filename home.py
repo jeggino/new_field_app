@@ -427,8 +427,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
         if obs:
             default_center = [obs.get("lat", default_center[0]), obs.get("lon", default_center[1])]
 
-        m = folium.Map(location=default_center, zoom_start=16, control_scale=True)
-        LocateControl(auto_start=False).add_to(m)
+        m = folium.Map(location=default_center, zoom_start=16, control_scale=False)
 
         folium.Marker(
             location=default_center,
@@ -559,7 +558,7 @@ def main_app(user: dict):
     st.markdown("---")
 
     st.markdown("### Observations list")
-
+    st.write(loc.get("id"))
     if not observations:
         st.info("No observations yet.")
     else:
