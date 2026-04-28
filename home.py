@@ -6,8 +6,8 @@ import geocoder
 import uuid
 
 # --- CONFIG ---
-SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_KEY"
+SUPABASE_URL = "https://anydhrpvfenefacuoarv.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFueWRocnB2ZmVuZWZhY3VvYXJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3NTUyMDQsImV4cCI6MjA1MjMzMTIwNH0.mvCK6ya82Nu8E3GLpqw-Cl-0te55nK2tpEioDMiSTkM"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.set_page_config(page_title="GPS Observation App", layout="wide")
