@@ -621,17 +621,13 @@ def new_observation_dialog(user):
 def main_app(user):
     with st.sidebar:
 
-        if st.button("Add new observation", type="primary"):
-            new_observation_dialog(user)
-
         if st.button("Log out"):
             clear_user_cookie()
             st.session_state.pop("user", None)
             st.rerun()
-
-    st.markdown("---")
-
     # Load existing observations
+    if st.button("Add new observation", icon="spinner",type="primary"):
+        new_observation_dialog(user)
     try:
         res = (
             supabase.table(OBS_TABLE)
