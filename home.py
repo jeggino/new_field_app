@@ -83,7 +83,116 @@
 # st.subheader("📂 Existing Observations")
 # data = supabase.table("observations").select("*").execute()
 
+# #--SECOND VERSION
+# import streamlit as st
+# import pandas as pd
+# import plotly.express as px
+# from datetime import datetime
+# from supabase import create_client, Client
+# import uuid
 
+# # ----------------------------
+# # CONFIGURATION
+# # ----------------------------
+# SUPABASE_URL = st.secrets["SUPABASE_URL"]
+# SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# st.set_page_config(page_title="Observation Map", layout="wide")
+
+# # ----------------------------
+# # SESSION MANAGEMENT
+# # ----------------------------
+# if "user" not in st.session_state:
+#     st.session_state.user = None
+
+# def login(email, password):
+#     try:
+#         auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+#         st.session_state.user = auth_response.user
+#         st.success("Logged in successfully!")
+#     except Exception as e:
+#         st.error(f"Login failed: {e}")
+
+# def logout():
+#     st.session_state.user = None
+#     st.experimental_rerun()
+
+# # ----------------------------
+# # LOGIN SCREEN
+# # ----------------------------
+# if not st.session_state.user:
+#     st.title("🔐 Login to Observation Map")
+#     with st.form("login_form"):
+#         email = st.text_input("Email")
+#         password = st.text_input("Password", type="password")
+#         submit = st.form_submit_button("Login")
+#         if submit:
+#             login(email, password)
+#     st.stop()
+
+# # ----------------------------
+# # MAIN APP
+# # ----------------------------
+# st.title("📍 Interactive Observation Map")
+# st.write(f"Welcome, **{st.session_state.user.email}**")
+# st.button("Logout", on_click=logout)
+
+# # Load existing observations
+# def load_observations():
+#     data = supabase.table("observations").select("*").execute()
+#     return pd.DataFrame(data.data)
+
+# df = load_observations()
+
+# # Display map
+# if not df.empty:
+#     fig = px.scatter_mapbox(
+#         df,
+#         lat="latitude",
+#         lon="longitude",
+#         hover_name="description",
+#         hover_data=["date"],
+#         zoom=2,
+#         height=600
+#     )
+#     fig.update_layout(mapbox_style="open-street-map")
+#     st.plotly_chart(fig, use_container_width=True)
+# else:
+#     st.info("No observations yet. Add one below!")
+
+# # ----------------------------
+# # ADD OBSERVATION POP-UP
+# # ----------------------------
+# with st.expander("➕ Add New Observation"):
+#     col1, col2 = st.columns(2)
+#     with col1:
+#         latitude = st.number_input("Latitude", format="%.6f")
+#         longitude = st.number_input("Longitude", format="%.6f")
+#     with col2:
+#         date = st.date_input("Observation Date", datetime.today())
+#         description = st.text_area("Description")
+
+#     if st.button("Save Observation"):
+#         if latitude and longitude and description:
+#             supabase.table("observations").insert({
+#                 "id": str(uuid.uuid4()),
+#                 "user_id": st.session_state.user.id,
+#                 "latitude": latitude,
+#                 "longitude": longitude,
+#                 "date": str(date),
+#                 "description": description
+#             }).execute()
+#             st.success("Observation saved!")
+#             st.experimental_rerun()
+#         else:
+#             st.error("Please fill in all required fields.")
+
+# # for obs in data.data:
+# #     st.write(f"**{obs['title']}** ({obs['lat']}, {obs['lon']}) - {obs['category']}")
+
+
+#----THIRD VERSION
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -187,6 +296,3 @@ with st.expander("➕ Add New Observation"):
             st.experimental_rerun()
         else:
             st.error("Please fill in all required fields.")
-
-# for obs in data.data:
-#     st.write(f"**{obs['title']}** ({obs['lat']}, {obs['lon']}) - {obs['category']}")
