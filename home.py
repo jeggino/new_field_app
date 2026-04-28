@@ -563,11 +563,11 @@ def main_app(user: dict):
     st.write(map_state)
     st.write(observations)
     df = pd.DataFrame(observations).set_index("id")
-    st.write(df.loc[map_state.get("last_object_clicked_popup")])
+    
 
     
     if map_state.get("last_object_clicked_popup"):
-        # df = observations[]
+        st.write(df.loc[map_state.get("last_object_clicked_popup")])
         df = pd.DataFrame(observations)
         # st.write(observations)
         df
@@ -577,34 +577,34 @@ def main_app(user: dict):
                 open_observation_dialog(user, obs=obs)
         with c2:
             if st.button("Delete", key=f"del_{obs['id']}"):
-                if delete_observation(obs["id"]):
+                if delete_observation(map_state.get("last_object_clicked_popup")):
                     st.success("Observation deleted.")
                     st.rerun()
-    # Store last clicked location as map_center (for default marker position)
-    if map_state or map_state.get("last_object_clicked"):
-        loc = map_state["center"]
-        st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
+    # # Store last clicked location as map_center (for default marker position)
+    # if map_state or map_state.get("last_object_clicked"):
+    #     loc = map_state["center"]
+    #     st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
 
-        st.markdown("---")
+    #     st.markdown("---")
     
-        st.markdown("### Observations list")
-        st.write(map_state)
-        if not observations:
-            st.info("No observations yet.")
-        else:
-            for obs in observations:
-                with st.expander(f"{obs.get('title','(no title)')} — {obs.get('category','')}"):
-                    st.write(obs.get("description", ""))
-                    st.caption(f"Created: {obs.get('created_at','')}")
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        if st.button("Edit", key=f"edit_{obs['id']}"):
-                            open_observation_dialog(user, obs=obs)
-                    with c2:
-                        if st.button("Delete", key=f"del_{obs['id']}"):
-                            if delete_observation(obs["id"]):
-                                st.success("Observation deleted.")
-                                st.rerun()
+    #     st.markdown("### Observations list")
+    #     st.write(map_state)
+    #     if not observations:
+    #         st.info("No observations yet.")
+    #     else:
+    #         for obs in observations:
+    #             with st.expander(f"{obs.get('title','(no title)')} — {obs.get('category','')}"):
+    #                 st.write(obs.get("description", ""))
+    #                 st.caption(f"Created: {obs.get('created_at','')}")
+    #                 c1, c2 = st.columns(2)
+    #                 with c1:
+    #                     if st.button("Edit", key=f"edit_{obs['id']}"):
+    #                         open_observation_dialog(user, obs=obs)
+    #                 with c2:
+    #                     if st.button("Delete", key=f"del_{obs['id']}"):
+    #                         if delete_observation(obs["id"]):
+    #                             st.success("Observation deleted.")
+    #                             st.rerun()
 
 
 # ----------------- ENTRY POINT -----------------
