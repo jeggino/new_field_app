@@ -427,7 +427,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
         st.write("Drag the marker to the correct location and click on the map to capture coordinates.")
 
         # Default center: last map center or existing obs location or fallback
-        default_center = st.session_state.get("map_center", [52.37, 4.90])
+        default_center = st.session_state.get("map_center")
         if obs:
             default_center = [obs.get("lat", default_center[0]), obs.get("lon", default_center[1])]
 
