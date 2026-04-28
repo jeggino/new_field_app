@@ -409,7 +409,7 @@ def login_view():
             st.session_state["user"] = user
             save_user_to_cookie(user)
             st.success("Logged in.")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials.")
 
@@ -434,6 +434,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
             location=default_center,
             draggable=True,
             popup="Drag me to the observation location",
+            icon=folium.Icon(color="blue", icon="info-sign"),
         ).add_to(m)
 
         map_data = st_folium(
@@ -495,7 +496,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
                 ok = update_observation(obs["id"], payload) if obs else insert_observation(payload)
                 if ok:
                     st.success("Observation saved.")
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("Failed to save observation.")
         with col2:
@@ -592,7 +593,7 @@ def main_app(user: dict):
                     if st.button("Delete", key=f"del_{obs['id']}"):
                         if delete_observation(obs["id"]):
                             st.success("Observation deleted.")
-                            st.experimental_rerun()
+                            st.rerun()
 
 
 # ----------------- ENTRY POINT -----------------
