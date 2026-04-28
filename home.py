@@ -353,6 +353,22 @@ def login(username, password):
     res = supabase.table("users").select("*").eq("username", username).eq("password", password).execute()
     return len(res.data) > 0
 
+@st.dialog("Add New Observation")
+def insert():
+    st.write(f"📍 Location: {lat:.5f}, {lon:.5f}")
+    desc = st.text_area("Description")
+    obs_date = st.date_input("Date", value=date.today())
+    if st.button("Save Observation"):
+        supabase.table("observations").insert({
+            "lat": lat,
+            "lon": lon,
+            "description": desc,
+            "user": st.session_state.username
+        }).execute()
+        st.success("Observation saved!")
+        st.rerun()
+
+
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -404,19 +420,6 @@ map_data = st_folium(m, height=500, width=800)
 if map_data and map_data.get("last_clicked"):
     lat = map_data["last_clicked"]["lat"]
     lon = map_data["last_clicked"]["lng"]
+    insert()
 
-    with st.dialog("Add New Observation"):
-        st.write(f"📍 Location: {lat:.5f}, {lon:.5f}")
-        desc = st.text_area("Description")
-        obs_date = st.date_input("Date", value=date.today())
-        if st.button("Save Observation"):
-            supabase.table("observations").insert({
-                "lat": lat,
-                "lon": lon,
-                "description": desc,
-                "date": str(obs_date),
-                "user": st.session_state.username
-            }).execute()
-            st.success("Observation saved!")
-            st.experimental_rerun()
 
