@@ -558,8 +558,8 @@ def main_app(user: dict):
         returned_objects=["center","last_object_clicked_popup"],
     )
 
-    loc = map_state["center"]
-    st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
+    # loc = map_state["center"]
+    # st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     # st.write(map_state)
     # st.write(observations)
     # df = pd.DataFrame(observations).set_index("id")
