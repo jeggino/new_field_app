@@ -618,11 +618,11 @@ def new_observation_dialog(user):
 # ---------- MAIN APP VIEW ----------
 
 def main_app(user):
-    st.title("Map Observations")
 
-    top_col1, top_col2 = st.columns([3, 1])
+    top_col1, top_col2 = st.columns([1, 1])
     with top_col1:
-        st.markdown(f"**Logged in as:** {user.get('username', 'Unknown')}")
+        if st.button("Add new observation", type="primary"):
+            new_observation_dialog(user)
 
     with top_col2:
         if st.button("Log out"):
@@ -675,10 +675,10 @@ def main_app(user):
 
     st.markdown("")
 
-    add_col1, _ = st.columns([1, 3])
-    with add_col1:
-        if st.button("Add new observation", type="primary"):
-            new_observation_dialog(user)
+    # add_col1, _ = st.columns([1, 3])
+    # with add_col1:
+    #     if st.button("Add new observation", type="primary"):
+    #         new_observation_dialog(user)
 
 
 # ---------- ENTRY POINT ----------
