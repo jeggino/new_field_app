@@ -290,11 +290,13 @@ import json
 from datetime import datetime
 from typing import Optional
 import uuid
+import pandas as pd
 
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
 from folium.plugins import LocateControl
+
 from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
 
