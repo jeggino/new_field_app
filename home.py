@@ -99,7 +99,7 @@ if map_data and map_data.get("last_clicked"):
             obs_id = str(uuid.uuid4())
             supabase.table("observations").insert({
                 "id": obs_id,
-                "username": st.session_state.user["username"],
+                "username": st.session_state.user,
                 "lat": lat,
                 "lon": lon,
                 "title": title,
