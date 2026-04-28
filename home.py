@@ -448,6 +448,7 @@
 import json
 import os
 from datetime import datetime
+import uuid
 
 import streamlit as st
 from streamlit_folium import st_folium
@@ -546,7 +547,7 @@ def login_view():
 
 # ---------- DIALOG FOR NEW OBSERVATION ----------
 
-@st.dialog("Add new observation")
+@st.dialog("Add new observation",width="large")
 def new_observation_dialog(user):
     st.write("Drag the marker to the correct location and fill in the details.")
 
