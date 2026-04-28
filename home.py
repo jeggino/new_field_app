@@ -206,7 +206,7 @@ def main_app(user):
             
         st.divider(width="stretch")
         
-        if st.button("Add new observation", icon=":material/add_location_alt:",type="primary"):
+        if st.button("Add new observation", icon=":material/add_location_alt:",type="primary",width="stretch" ):
             new_observation_dialog(user)
 
     # Load existing observations
@@ -251,7 +251,7 @@ def main_app(user):
         m,
         
         width="100%",
-        height=600,
+        height=550,
     )
 
     st.markdown("")
