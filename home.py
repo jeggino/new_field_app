@@ -289,6 +289,7 @@ import os
 import json
 from datetime import datetime
 from typing import Optional
+import uuid
 
 import streamlit as st
 from streamlit_folium import st_folium
