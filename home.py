@@ -453,6 +453,7 @@ import uuid
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
+from folium.plugins import Fullscreen, LocateControl
 
 from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
@@ -650,7 +651,10 @@ def main_app(user):
     else:
         center = [52.37, 4.90]
 
-    m = folium.Map(location=center, zoom_start=11, control_scale=True)
+    m = folium.Map(location=center, zoom_start=13, control_scale=True)
+
+    LocateControl(auto_start=true,position="topleft").add_to(m)
+    Fullscreen(position="topleft").add_to(m)
 
     for obs in observations:
         popup_html = f"""
@@ -667,6 +671,7 @@ def main_app(user):
 
     st_folium(
         m,
+        
         width="100%",
         height=500,
     )
