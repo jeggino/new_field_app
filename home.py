@@ -561,7 +561,9 @@ def main_app(user: dict):
     st.write(map_state)
     if map_state.get("last_object_clicked_popup"):
         # df = observations[]
-        st.write(observations)
+        df = pd.DataFrame(observations)
+        # st.write(observations)
+        df
     # # Store last clicked location as map_center (for default marker position)
     # if map_state or map_state.get("last_object_clicked"):
     #     loc = map_state["center"]
