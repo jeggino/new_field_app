@@ -443,6 +443,7 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
             returned_objects=["last_object_clicked", "last_active_drawing"],
         )
 
+        obs_id = str(uuid.uuid4())
         title_val = st.text_input("Title", value=obs.get("title", "") if obs else "")
         description_val = st.text_area("Description", value=obs.get("description", "") if obs else "")
         category_val = st.selectbox(
@@ -481,12 +482,13 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
                 return
 
             payload = {
-                "id": user["id"],
+                "id": obs_id,
                 "title": title_val,
                 "description": description_val,
                 "category": category_val,
                 "lat": lat,
                 "lon": lon,
+                "username": user["id"]
 
             }
 
