@@ -561,6 +561,9 @@ def main_app(user: dict):
     # loc = map_state["center"]
     # st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     st.write(map_state)
+    loc = map_state["center"]
+    st.write(loc)
+    # st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     # st.write(observations)
     # df = pd.DataFrame(observations).set_index("id")
     
