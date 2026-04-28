@@ -510,12 +510,15 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
 def main_app(user: dict):
 
     with st.sidebar:
-        if st.button("Log out"):
+        if st.button("Log out",width="stretch"):
             clear_user_cookie()
             st.session_state.pop("user", None)
             st.rerun()
 
-    st.divider()
+        st.divider()
+
+        if st.button("Add new observation", type="primary",width="stretch"):
+            open_observation_dialog(user, obs=None)
 
     observations = fetch_observations()
 
@@ -559,18 +562,6 @@ def main_app(user: dict):
         st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
 
     st.markdown("---")
-
-    # Controls: add, edit, delete
-    col_add, col_info = st.columns([1, 3])
-    with col_add:
-        if st.button("Add new observation", type="primary"):
-            open_observation_dialog(user, obs=None)
-
-    with col_info:
-        st.caption(
-            "Tip: use the Locate button on the map (target icon) to center on your device, "
-            "then click on the map before adding or editing."
-        )
 
     st.markdown("### Observations list")
 
