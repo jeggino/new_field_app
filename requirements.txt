@@ -10,3 +10,4 @@ supabase
 geocoder
 uuid
 plotly
+streamlit_cookies_manager 
