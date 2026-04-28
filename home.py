@@ -429,11 +429,11 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
         st.write("Drag the marker to the correct location and click on the map to capture coordinates.")
 
         # Default center: last map center or existing obs location or fallback
+        # default_center = st.session_state.get("map_center")
+
+        # default_center = ["lat", "lon"]
+        st.write(st.session_state.get("map_center"))
         default_center = st.session_state.get("map_center")
-
-        default_center = ["lat", "lon"]
-        st.write(default_center)
-
         m = folium.Map(location=default_center, zoom_start=14, control_scale=False)
 
         folium.Marker(
