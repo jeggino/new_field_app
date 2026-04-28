@@ -653,7 +653,7 @@ def main_app(user):
 
     m = folium.Map(location=center, zoom_start=13, control_scale=True)
 
-    LocateControl(auto_start=true,position="topleft").add_to(m)
+    LocateControl(auto_start=True,position="topleft").add_to(m)
     Fullscreen(position="topleft").add_to(m)
 
     for obs in observations:
