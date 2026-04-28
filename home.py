@@ -564,7 +564,7 @@ def main_app(user: dict):
         st.markdown("---")
     
         st.markdown("### Observations list")
-        st.write(loc)
+        st.write(map_state)
         if not observations:
             st.info("No observations yet.")
         else:
