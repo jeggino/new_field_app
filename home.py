@@ -333,6 +333,7 @@ import folium
 from datetime import date
 from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
+import uuid
 
 # ---------------------------
 # CONFIGURATION
@@ -356,10 +357,11 @@ def login(username, password):
 @st.dialog("Add New Observation")
 def insert():
     st.write(f"📍 Location: {lat:.5f}, {lon:.5f}")
+    obs_id = str(uuid.uuid4())
     desc = st.text_area("Description")
-    obs_date = st.date_input("Date", value=date.today())
     if st.button("Save Observation"):
         supabase.table("observations").insert({
+            "id": obs_id,
             "lat": lat,
             "lon": lon,
             "description": desc,
@@ -379,6 +381,7 @@ if not st.session_state.logged_in:
         st.session_state.username = saved_user
     else:
         st.title("🔐 Login")
+        
         user = st.text_input("Username")
         pwd = st.text_input("Password", type="password")
         if st.button("Login"):
