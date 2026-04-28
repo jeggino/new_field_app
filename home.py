@@ -668,7 +668,7 @@ def main_app(user):
         m,
         
         width="100%",
-        height=500,
+        height=600,
     )
 
     st.markdown("")
