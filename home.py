@@ -545,7 +545,7 @@ def main_app(user: dict):
         """
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
-            popup=popup_html,
+            popup=obs["id"],
             icon=folium.Icon(color="blue", icon="info-sign"),
         ).add_to(m)
 
