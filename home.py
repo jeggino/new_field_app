@@ -371,7 +371,7 @@ if not st.session_state.logged_in:
                 st.session_state.username = user
                 cookies["username"] = user
                 cookies.save()
-                st.experimental_rerun()
+                # st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
         st.stop()
