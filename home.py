@@ -363,7 +363,7 @@ def insert():
             "lat": lat,
             "lon": lon,
             "description": desc,
-            "user": st.session_state.username
+            "username": st.session_state.username
         }).execute()
         st.success("Observation saved!")
         st.rerun()
