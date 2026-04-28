@@ -561,6 +561,7 @@ def main_app(user: dict):
     loc = map_state["center"]
     st.session_state["map_center"] = [loc.get("lat"), loc.get("lng")]
     st.write(map_state)
+    st.write(observations)
     # if map_state.get("last_object_clicked_popup"):
     #     # df = observations[]
     #     df = pd.DataFrame(observations)
