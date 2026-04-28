@@ -392,7 +392,7 @@ m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 for obs in obs_data:
     folium.Marker(
         location=[obs["lat"], obs["lon"]],
-        popup=f"{obs['description']} ({obs['date']})"
+        popup=f"{obs['description']}"
     ).add_to(m)
 
 # Display map and capture click
