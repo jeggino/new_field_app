@@ -558,7 +558,7 @@ def new_observation_dialog(user):
     map_data = st_folium(
         m,
         width="100%",
-        height=400,
+        height=600,
         returned_objects=["last_object_clicked", "last_active_drawing", "all_drawings"],
     )
 
