@@ -539,7 +539,7 @@ def login_view():
 
 # ---------- DIALOG FOR NEW OBSERVATION ----------
 
-@st.dialog("",width="large")
+@st.dialog(" ",width="large")
 def new_observation_dialog(user):
     st.write("Drag the marker to the correct location and fill in the details.")
 
