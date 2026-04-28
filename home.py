@@ -302,6 +302,10 @@ from streamlit_cookies_manager import EncryptedCookieManager
 st.set_page_config(page_title="Geo Observations", layout="wide")
 
 
+
+
+
+
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 USERS_TABLE = "users"
@@ -311,12 +315,13 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookie_manager = EncryptedCookieManager(prefix="myapp_", password=st.secrets["COOKIE_PASSWORD"])
 
+
 if not cookie_manager.ready():
     st.stop()
 
+# ---------- AUTH HELPERS ----------
 
-# ----------------- COOKIE & AUTH HELPERS -----------------
-def load_user_from_cookie() -> Optional[dict]:
+def load_user_from_cookie():
     raw = cookie_manager.get("user")
     if not raw:
         return None
@@ -326,8 +331,8 @@ def load_user_from_cookie() -> Optional[dict]:
         return None
 
 
-def save_user_to_cookie(user: dict):
-    cookie_manager["user"] = json.dumps(user)
+def save_user_to_cookie(user_dict: dict):
+    cookie_manager["user"] = json.dumps(user_dict)
     cookie_manager.save()
 
 
@@ -336,21 +341,22 @@ def clear_user_cookie():
     cookie_manager.save()
 
 
-def validate_credentials(username: str, password: str) -> Optional[dict]:
-    # In production, use hashed passwords
-    try:
-        res = (
-            supabase.table(USERS_TABLE)
-            .select("*")
-            .eq("username", username)
-            .eq("password", password)
-            .maybe_single()
-            .execute()
-        )
-        return res.data
-    except Exception as e:
-        st.error(f"Authentication error: {e}")
-        return None
+def validate_credentials(username: str, password: str):
+    # Example: simple username/password stored in a Supabase table
+    # You should hash passwords in a real app
+    res = (
+        supabase.table(USERS_TABLE)
+        .select("*")
+        .eq("username", username)
+        .eq("password", password)
+        .maybe_single()
+        .execute()
+    )
+    return res.data
+
+
+
+
 
 
 # ----------------- SUPABASE CRUD -----------------
