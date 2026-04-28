@@ -309,10 +309,7 @@ OBS_TABLE = "observations"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-cookie_manager = EncryptedCookieManager(
-    prefix="geo_obs_",
-    password=os.getenv("COOKIE_PASSWORD", st.secrets["COOKIE_PASSWORD"]),
-)
+cookie_manager = EncryptedCookieManager(prefix="myapp_", password=st.secrets["COOKIE_PASSWORD"])
 
 if not cookie_manager.ready():
     st.stop()
