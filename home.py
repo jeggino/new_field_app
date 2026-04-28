@@ -473,35 +473,30 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
         if obs and (lat is None or lon is None):
             lat, lon = obs.get("lat"), obs.get("lon")
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Save", type="primary"):
-                if not title_val:
-                    st.error("Title is required.")
-                    return
-                if lat is None or lon is None:
-                    st.error("Could not determine coordinates. Drag the marker and click on the map.")
-                    return
-
-                payload = {
-                    "id": user["id"],
-                    "title": title_val,
-                    "description": description_val,
-                    "category": category_val,
-                    "lat": lat,
-                    "lon": lon,
-
-                }
-
-                ok = update_observation(obs["id"], payload) if obs else insert_observation(payload)
-                if ok:
-                    st.success("Observation saved.")
-                    st.rerun()
-                else:
-                    st.error("Failed to save observation.")
-        with col2:
-            if st.button("Cancel"):
+        if st.button("Save", type="primary",width="stretch"):
+            if not title_val:
+                st.error("Title is required.")
                 return
+            if lat is None or lon is None:
+                st.error("Could not determine coordinates. Drag the marker and click on the map.")
+                return
+
+            payload = {
+                "id": user["id"],
+                "title": title_val,
+                "description": description_val,
+                "category": category_val,
+                "lat": lat,
+                "lon": lon,
+
+            }
+
+            ok = update_observation(obs["id"], payload) if obs else insert_observation(payload)
+            if ok:
+                st.success("Observation saved.")
+                st.rerun()
+            else:
+                st.error("Failed to save observation.")
 
     _dialog()
 
