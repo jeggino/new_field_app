@@ -508,12 +508,8 @@ def open_observation_dialog(user: dict, obs: Optional[dict] = None):
 
 # ----------------- MAIN APP -----------------
 def main_app(user: dict):
-    st.title("Geo Observations")
 
-    top_left, top_right = st.columns([3, 1])
-    with top_left:
-        st.markdown(f"**Logged in as:** {user.get('username', 'Unknown')}")
-    with top_right:
+    with st.sidebar:
         if st.button("Log out"):
             clear_user_cookie()
             st.session_state.pop("user", None)
