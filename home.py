@@ -470,14 +470,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookie_manager = EncryptedCookieManager(prefix="myapp_", password=st.secrets["COOKIE_PASSWORD"])
 
-# SUPABASE_URL = st.secrets["SUPABASE_URL"]
-# SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# # Cookie manager for persistent login
-# cookies = EncryptedCookieManager(prefix="myapp_", password=st.secrets["COOKIE_PASSWORD"])
-# if not cookies.ready():
-#     st.stop()
 
 if not cookie_manager.ready():
     st.stop()
@@ -521,7 +513,6 @@ def validate_credentials(username: str, password: str):
 # ---------- LOGIN VIEW ----------
 
 def login_view():
-    st.title("Login")
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -552,13 +543,14 @@ def new_observation_dialog(user):
     st.write("Drag the marker to the correct location and fill in the details.")
 
     default_location = [52.37, 4.90]  # Amsterdam-ish default
-    m = folium.Map(location=default_location, zoom_start=12, control_scale=True)
+    m = folium.Map(location=default_location, zoom_start=15, control_scale=True)
 
     # Draggable marker
     draggable_marker = folium.Marker(
         location=default_location,
         draggable=True,
         popup="Drag me to the observation location",
+        icon=folium.Icon(color="blue", icon="info-sign")
     )
     draggable_marker.add_to(m)
 
