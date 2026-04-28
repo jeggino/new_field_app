@@ -26,14 +26,43 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if "user" not in st.session_state:
     st.session_state.user = None
 
-def login(username, password):
-    # Replace with Supabase Auth if needed
-    if username and password:
-        st.session_state.user = {"username": username}
-        st.success(f"Welcome {username}!")
+
+def login(email: str, password: str):
+    # Example: custom auth table "app_users" with columns: id, email, password
+    # In production, store hashed passwords and verify properly.
+    res = (
+        supabase.table("app_users")
+        .select("*")
+        .eq("email", email)
+        .eq("password", password)
+        .execute()
+    )
+    if res.data:
+        st.session_state.user = res.data[0]
+        st.session_state.logged_in = True
+        st.success("Logged in successfully")
+        st.rerun()
+    else:
+        st.error("Invalid credentials")
 
 def logout():
     st.session_state.user = None
+    st.session_state.logged_in = False
+    st.rerun()
+
+
+
+
+
+
+# def login(username, password):
+#     # Replace with Supabase Auth if needed
+#     if username and password:
+#         st.session_state.user = {"username": username}
+#         st.success(f"Welcome {username}!")
+
+# def logout():
+#     st.session_state.user = None
 
 if not st.session_state.user:
     st.title("🔐 Login")
