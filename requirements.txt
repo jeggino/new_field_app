@@ -9,3 +9,4 @@ natsort==8.4.0
 supabase 
 geocoder
 uuid
+plotly
