@@ -683,7 +683,7 @@ def load_user_from_cookies():
         res = (
             supabase.table("users")
             .select("*")
-            .eq("username", user_id)
+            .eq("id", user_id)
             .single()
             .execute()
         )
