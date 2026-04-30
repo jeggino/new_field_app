@@ -808,27 +808,13 @@ def project_dialog():
         )
         st.rerun()
 
-@st.dialog("New observation")
+@st.dialog("--")
 def new_observation_dialog(lat, lon):
     st.write("Drag the marker on the map to set the coordinates.")
-
-    # # Initial coords
-    # if st.session_state.new_obs_coords is None:
-    #     if st.session_state.observations:
-    #         avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
-    #             st.session_state.observations
-    #         )
-    #         avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
-    #             st.session_state.observations
-    #         )
-    #     else:
-    #         avg_lat, avg_lon = 52.37, 4.90
-    #     st.session_state.new_obs_coords = (avg_lat, avg_lon)
-
     lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
-    m = folium.Map(location=st.session_state.new_obs_coords, zoom_start=20)
+    m = folium.Map(location=st.session_state.new_obs_coords, zoom_start=18)
     folium.Marker(
         [lat, lon],
         draggable=True,
@@ -842,8 +828,6 @@ def new_observation_dialog(lat, lon):
         returned_objects=["last_object_clicked"],
         key="new_obs_map",
     )
-
-
 
     
     if map_data.get("last_object_clicked"):
@@ -907,7 +891,7 @@ def observation_dialog():
         m,
         width="100%",
         height=350,
-        returned_objects=["last_marker_dragging"],
+        returned_objects=["last_object_clicked"],
         key=f"edit_obs_map_{obs['id']}",
     )
 
@@ -916,8 +900,7 @@ def observation_dialog():
         st.session_state.edit_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.edit_obs_coords
 
-    st.write(f"Current coordinates: {lat:.5f}, {lon:.5f}")
-    st.write(map_data)
+
 
     # Editable fields
     species = st.text_input("Species", value=obs.get("species", ""))
@@ -1021,8 +1004,6 @@ map_data = st_folium(
 lat = map_data["center"]["lat"]
 lon = map_data["center"]["lng"]
 st.session_state.new_obs_coords = (lat,lon) 
-
-st.write(st.session_state.new_obs_coords)
 
 # Approximate selection of observation by click
 if map_data.get("last_object_clicked") and obs_list:
