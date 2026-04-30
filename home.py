@@ -849,6 +849,7 @@ def new_observation_dialog():
         lat, lon = st.session_state.new_obs_coords
 
     st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
+    st.write(map_data)
 
     # Input fields
     species = st.text_input("Species")
