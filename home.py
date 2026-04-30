@@ -653,12 +653,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # SESSION STATE
 # -------------------------------------------------
 defaults = {
-    "user": None,
-    "project": None,
-    "observations": [],
-    "selected_obs": None,
-    "new_obs_coords": None,
-    "edit_obs_coords": None,
+    "user": None,              # row from login table
+    "project_name": None,      # selected project name
+    "observations": [],        # list of obs for this user+project
+    "selected_obs": None,      # obs selected on map
+    "new_obs_coords": None,    # (lat, lon) for new obs
+    "edit_obs_coords": None,   # (lat, lon) for editing obs
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -667,52 +667,63 @@ for k, v in defaults.items():
 # HELPERS: AUTH & PROJECTS
 # -------------------------------------------------
 def load_user_from_cookies():
-    uid = cookies.get("uid")
-    if uid:
-        res = supabase.table("users").select("*").eq("id", uid).single().execute()
+    username = cookies.get("username")
+    if username:
+        res = (
+            supabase.table("login")
+            .select("*")
+            .eq("username", username)
+            .single()
+            .execute()
+        )
         if res.data:
             st.session_state.user = res.data
 
 def save_user_to_cookies(user):
-    cookies["uid"] = str(user["id"])
+    cookies["username"] = user["username"]
     cookies.save()
 
 def clear_cookies():
-    cookies.pop("uid", None)
+    cookies.pop("username", None)
     cookies.save()
 
 def login_user(username, password):
-    # Replace with hashed password check in production
+    # login table: username, password, projects
     res = (
-        supabase.table("users")
+        supabase.table("login")
         .select("*")
         .eq("username", username)
-        .eq("password", password)
+        .eq("password", password)  # replace with hash check in production
         .single()
         .execute()
     )
     return res.data
 
-def load_projects(user_id):
-    res = supabase.table("projects").select("*").eq("user_id", user_id).execute()
-    return res.data or []
+def get_projects_from_user(user):
+    # login.projects can be a text[] or comma-separated string
+    projects = user.get("projects", [])
+    if isinstance(projects, list):
+        return projects
+    if isinstance(projects, str):
+        return [p.strip() for p in projects.split(",") if p.strip()]
+    return []
 
-def load_observations(project_id):
+def load_observations(username, project_name):
     res = (
         supabase.table("observations")
         .select("*")
-        .eq("project_id", project_id)
+        .eq("username", username)
+        .eq("project_name", project_name)
         .execute()
     )
     return res.data or []
 
-def create_observation(project_id, lat, lon, species, project_name,
+def create_observation(lat, lon, species, project_name,
                        username, behavior, obs_date):
     res = (
         supabase.table("observations")
         .insert(
             {
-                "project_id": project_id,
                 "lat": lat,
                 "lon": lon,
                 "species": species,
@@ -748,7 +759,7 @@ def update_observation(obs_id, lat, lon, species, project_name,
 
 def logout():
     st.session_state.user = None
-    st.session_state.project = None
+    st.session_state.project_name = None
     st.session_state.observations = []
     st.session_state.selected_obs = None
     st.session_state.new_obs_coords = None
@@ -781,19 +792,19 @@ def login_dialog():
 
 @st.dialog("Select project")
 def project_dialog():
-    projects = load_projects(st.session_state.user["id"])
+    projects = get_projects_from_user(st.session_state.user)
     if not projects:
         st.info("No projects found for this user.")
         if st.button("Close"):
             st.stop()
         return
 
-    names = [p["name"] for p in projects]
-    choice = st.selectbox("Project", names)
+    choice = st.selectbox("Project", projects)
     if st.button("Confirm", type="primary"):
-        st.session_state.project = next(p for p in projects if p["name"] == choice)
+        st.session_state.project_name = choice
         st.session_state.observations = load_observations(
-            st.session_state.project["id"]
+            st.session_state.user["username"],
+            st.session_state.project_name,
         )
         st.rerun()
 
@@ -839,9 +850,9 @@ def new_observation_dialog():
 
     st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
 
+    # Input fields
     species = st.text_input("Species")
-    # project is chosen earlier; we store its name with the observation
-    project_name = st.session_state.project["name"]
+    project_name = st.session_state.project_name
     username = st.session_state.user["username"]
     behavior = st.text_input("Behavior")
     obs_date = st.date_input("Date", value=date.today())
@@ -850,7 +861,6 @@ def new_observation_dialog():
     with col1:
         if st.button("Save", type="primary"):
             obs = create_observation(
-                st.session_state.project["id"],
                 lat,
                 lon,
                 species,
@@ -903,13 +913,16 @@ def observation_dialog():
 
     st.write(f"Current coordinates: {lat:.5f}, {lon:.5f}")
 
+    # Editable fields
     species = st.text_input("Species", value=obs.get("species", ""))
     project_name = st.text_input("Project", value=obs.get("project_name", ""))
     username = st.text_input("Username", value=obs.get("username", ""))
     behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
     obs_date = st.date_input(
         "Date",
-        value=date.fromisoformat(obs.get("obs_date")) if obs.get("obs_date") else date.today(),
+        value=date.fromisoformat(obs.get("obs_date"))
+        if obs.get("obs_date")
+        else date.today(),
     )
 
     col1, col2 = st.columns(2)
@@ -946,7 +959,7 @@ load_user_from_cookies()
 if st.session_state.user is None:
     login_dialog()
 
-if st.session_state.project is None and st.session_state.user is not None:
+if st.session_state.project_name is None and st.session_state.user is not None:
     project_dialog()
 
 st.title("Observation Map")
@@ -954,7 +967,7 @@ st.title("Observation Map")
 top1, top2, top3 = st.columns([3, 1, 1])
 with top1:
     st.markdown(f"**User:** {st.session_state.user['username']}")
-    st.markdown(f"**Project:** {st.session_state.project['name']}")
+    st.markdown(f"**Project:** {st.session_state.project_name}")
 with top2:
     if st.button("Change project"):
         project_dialog()
@@ -1014,9 +1027,9 @@ if map_data.get("last_object_clicked"):
             st.session_state.edit_obs_coords = None
             observation_dialog()
 
-# # -------------------------------------------------
-# # FLOATING CIRCULAR BUTTON
-# # -------------------------------------------------
+# -------------------------------------------------
+# FLOATING CIRCULAR BUTTON
+# -------------------------------------------------
 # st.markdown(
 #     """
 #     <style>
@@ -1046,3 +1059,4 @@ if map_data.get("last_object_clicked"):
 if st.button("Add observation", type="primary"):
     st.session_state.new_obs_coords = None
     new_observation_dialog()
+
