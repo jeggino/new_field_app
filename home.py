@@ -825,7 +825,7 @@ def new_observation_dialog():
     #         avg_lat, avg_lon = 52.37, 4.90
     #     st.session_state.new_obs_coords = (avg_lat, avg_lon)
 
-    # lat, lon = st.session_state.new_obs_coords
+    lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
     m = folium.Map(location=[lat, lon], zoom_start=20)
@@ -1018,7 +1018,10 @@ map_data = st_folium(
     key="main_map",
 )
 
-st.write(map_data)
+lat = map_data["center"]["lat"]
+lon = map_data["center"]["lng"]
+st.session_state.new_obs_coords = (lat,lon) 
+
 # Approximate selection of observation by click
 if map_data.get("last_object_clicked") and obs_list:
     clat = map_data["last_object_clicked"]["lat"]
