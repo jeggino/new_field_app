@@ -839,22 +839,21 @@ def new_observation_dialog():
         m,
         width="100%",
         height=350,
-        returned_objects=["last_object_clicked", "last_marker_dragging"],
+        returned_objects=["last_object_clicked"],
         key="new_obs_map",
     )
 
-    if map_data.get("last_object_clicked"):
+    if map_data["last_object_clicked"]:
         drag = map_data["last_object_clicked"]
         st.session_state.new_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.new_obs_coords
-        
+
     else:
-        st.write('click the buton')
-        st.stop()
+        st.write('clicca')
         
 
     # st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
-    st.write(map_data)
+    # st.write(map_data)
 
     # Input fields
     species = st.text_input("Species")
@@ -863,25 +862,20 @@ def new_observation_dialog():
     behavior = st.text_input("Behavior")
     obs_date = st.date_input("Date", value=date.today())
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Save", type="primary"):
-            obs = create_observation(
-                lat,
-                lon,
-                species,
-                project_name,
-                username,
-                behavior,
-                obs_date,
-            )
-            st.session_state.observations.append(obs)
-            st.session_state.new_obs_coords = None
-            st.rerun()
-    with col2:
-        if st.button("Cancel"):
-            st.session_state.new_obs_coords = None
-            st.rerun()
+    if st.button("Save", type="primary"):
+        obs = create_observation(
+            lat,
+            lon,
+            species,
+            project_name,
+            username,
+            behavior,
+            obs_date,
+        )
+        st.session_state.observations.append(obs)
+        st.session_state.new_obs_coords = None
+        st.rerun()
+
 
 @st.dialog("Observation details")
 def observation_dialog():
