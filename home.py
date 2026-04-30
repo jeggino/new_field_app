@@ -1022,6 +1022,8 @@ lat = map_data["center"]["lat"]
 lon = map_data["center"]["lng"]
 st.session_state.new_obs_coords = (lat,lon) 
 
+st.write(st.session_state.new_obs_coords)
+
 # Approximate selection of observation by click
 if map_data.get("last_object_clicked") and obs_list:
     clat = map_data["last_object_clicked"]["lat"]
