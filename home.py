@@ -812,20 +812,20 @@ def project_dialog():
 def new_observation_dialog():
     st.write("Drag the marker on the map to set the coordinates.")
 
-    # Initial coords
-    if st.session_state.new_obs_coords is None:
-        if st.session_state.observations:
-            avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
-                st.session_state.observations
-            )
-            avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
-                st.session_state.observations
-            )
-        else:
-            avg_lat, avg_lon = 52.37, 4.90
-        st.session_state.new_obs_coords = (avg_lat, avg_lon)
+    # # Initial coords
+    # if st.session_state.new_obs_coords is None:
+    #     if st.session_state.observations:
+    #         avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
+    #             st.session_state.observations
+    #         )
+    #         avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
+    #             st.session_state.observations
+    #         )
+    #     else:
+    #         avg_lat, avg_lon = 52.37, 4.90
+    #     st.session_state.new_obs_coords = (avg_lat, avg_lon)
 
-    lat, lon = st.session_state.new_obs_coords
+    # lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
     m = folium.Map(location=[lat, lon], zoom_start=20)
@@ -1014,10 +1014,11 @@ map_data = st_folium(
     m,
     width="100%",
     height=500,
-    returned_objects=["last_object_clicked"],
+    returned_objects=["last_object_clicked","center"],
     key="main_map",
 )
 
+st.write(map_data["center"]["lat"],map_data["center"]["lng"])
 # Approximate selection of observation by click
 if map_data.get("last_object_clicked") and obs_list:
     clat = map_data["last_object_clicked"]["lat"]
