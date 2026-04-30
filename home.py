@@ -951,20 +951,18 @@ if st.session_state.user is None:
 if st.session_state.project_name is None and st.session_state.user is not None:
     project_dialog()
 
-st.title("Observation Map")
 
-top1, top2, top3 = st.columns([3, 1, 1])
-with top1:
-    st.markdown(f"**User:** {st.session_state.user['username']}")
-    st.markdown(f"**Project:** {st.session_state.project_name}")
-with top2:
+with st.sidebar:
+
     if st.button("Change project"):
         project_dialog()
-with top3:
+
+    st.markdown("---")
+    
     if st.button("Logout"):
         logout()
 
-st.markdown("---")
+
 
 # -------------------------------------------------
 # MAIN MAP (st.folium, mobile-friendly)
