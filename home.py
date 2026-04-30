@@ -648,11 +648,9 @@ cookies = EncryptedCookieManager(
 if not cookies.ready():
     st.stop()
 
-
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-# USERS_TABLE = "users"
-# OBS_TABLE = "observations"
+
 
 @st.cache_resource
 def get_supabase_client() -> Client:
@@ -750,7 +748,7 @@ def create_observation(project_id, lat, lon, title, description, extra):
     )
     return res.data[0] if res.data else None
 
-def update_observation(obs_id, lat, lon, title, description):
+def update_observation(obs_id, lat, lon, title, description, extra):
     res = (
         supabase.table("observations")
         .update(
@@ -759,6 +757,7 @@ def update_observation(obs_id, lat, lon, title, description):
                 "lon": lon,
                 "title": title,
                 "description": description,
+                "extra_json": extra,
             }
         )
         .eq("id", obs_id)
@@ -827,6 +826,7 @@ def new_observation_dialog():
                 lon,
                 title,
                 description,
+                extra,
             )
             if obs:
                 st.session_state.observations.append(obs)
@@ -908,7 +908,7 @@ st.title("Observation Map")
 top_col1, top_col2, top_col3 = st.columns([3, 1, 1])
 with top_col1:
     st.markdown(f"**User:** {st.session_state.user['username']}")
-    # st.markdown(f"**Project:** {st.session_state.project['name']}")
+    st.markdown(f"**Project:** {st.session_state.project['name']}")
 with top_col2:
     if st.button("Change project"):
         project_dialog()
@@ -1053,5 +1053,3 @@ if st.session_state.new_marker_location and not add_obs:
 if st.session_state.selected_obs and map_data and map_data.get("last_marker_dragging"):
     drag = map_data["last_marker_dragging"]
     st.session_state["edit_position"] = (drag["lat"], drag["lng"])
-
-
