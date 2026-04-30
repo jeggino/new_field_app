@@ -720,7 +720,7 @@ def load_observations(username, project_name):
     return res.data or []
 
 def create_observation(lat, lon, species, project_name,
-                       username, behavior, obs_date):
+                       username, behavior):
     res = (
         supabase.table("observations")
         .insert(
@@ -731,7 +731,6 @@ def create_observation(lat, lon, species, project_name,
                 "project_name": project_name,
                 "username": username,
                 "behavior": behavior,
-                "obs_date": str(obs_date),
             }
         )
         .execute()
@@ -739,7 +738,7 @@ def create_observation(lat, lon, species, project_name,
     return res.data[0]
 
 def update_observation(obs_id, lat, lon, species, project_name,
-                       username, behavior, obs_date):
+                       username, behavior):
     res = (
         supabase.table("observations")
         .update(
@@ -750,7 +749,6 @@ def update_observation(obs_id, lat, lon, species, project_name,
                 "project_name": project_name,
                 "username": username,
                 "behavior": behavior,
-                "obs_date": str(obs_date),
             }
         )
         .eq("id", obs_id)
@@ -856,7 +854,6 @@ def new_observation_dialog():
     project_name = st.text_input("Project", value=st.session_state.project_name)
     username = st.text_input("Username", value=st.session_state.user["username"])
     behavior = st.text_input("Behavior")
-    obs_date = st.date_input("Date", value=date.today())
 
     col1, col2 = st.columns(2)
     with col1:
@@ -868,7 +865,6 @@ def new_observation_dialog():
                 project_name,
                 username,
                 behavior,
-                obs_date,
             )
             st.session_state.observations.append(obs)
             st.session_state.new_obs_coords = None
@@ -937,7 +933,6 @@ def observation_dialog():
                 project_name,
                 username,
                 behavior,
-                obs_date,
             )
             for i, o in enumerate(st.session_state.observations):
                 if o["id"] == updated["id"]:
