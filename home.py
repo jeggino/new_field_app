@@ -943,24 +943,28 @@ def observation_dialog():
 # -------------------------------------------------
 # MAIN FLOW
 # -------------------------------------------------
-load_user_from_cookies()
-
-if st.session_state.user is None:
-    login_dialog()
-
-if st.session_state.project_name is None and st.session_state.user is not None:
-    project_dialog()
-
-
-with st.sidebar:
-
-    if st.button("Change project"):
-        project_dialog()
-
-    st.markdown("---")
+try:
+    load_user_from_cookies()
     
-    if st.button("Logout"):
-        logout()
+    if st.session_state.user is None:
+        login_dialog()
+    
+    if st.session_state.project_name is None and st.session_state.user is not None:
+        project_dialog()
+    
+    
+    with st.sidebar:
+    
+        if st.button("Change project"):
+            project_dialog()
+    
+        st.markdown("---")
+        
+        if st.button("Logout"):
+            logout()
+
+except:
+    st.stop()
 
 
 
@@ -1017,55 +1021,6 @@ if map_data.get("last_object_clicked") and obs_list:
         st.session_state.edit_obs_coords = None
         observation_dialog()
 
-# -------------------------------------------------
-# FLOATING CIRCULAR BUTTON
-# -------------------------------------------------
-# button_circular = st.markdown(
-#     """
-#     <style>
-#     .circle-btn {
-#         position: fixed;
-#         bottom: 30px;
-#         right: 30px;
-#         width: 60px;
-#         height: 60px;
-#         border-radius: 50%;
-#         background-color: #FF4B4B;
-#         color: white;
-#         border: none;
-#         font-size: 36px;
-#         text-align: center;
-#         line-height: 60px;
-#         cursor: pointer;
-#         z-index: 9999;
-#     }
-#     </style>
-#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-#     """,
-#     unsafe_allow_html=True,
-# )
-
-# button_circular  =     """
-#     <style>
-#     .circle-btn {
-#         position: fixed;
-#         bottom: 30px;
-#         right: 30px;
-#         width: 60px;
-#         height: 60px;
-#         border-radius: 50%;
-#         background-color: #FF4B4B;
-#         color: white;
-#         border: none;
-#         font-size: 36px;
-#         text-align: center;
-#         line-height: 60px;
-#         cursor: pointer;
-#         z-index: 9999;
-#     }
-#     </style>
-#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-#     """
 
 # Fallback button (works reliably in Streamlit)
 if st.button('push', type="primary"):
