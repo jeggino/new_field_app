@@ -809,7 +809,7 @@ def project_dialog():
         st.rerun()
 
 @st.dialog("New observation")
-def new_observation_dialog():
+def new_observation_dialog(lat, lon):
     st.write("Drag the marker on the map to set the coordinates.")
 
     # # Initial coords
@@ -825,7 +825,7 @@ def new_observation_dialog():
     #         avg_lat, avg_lon = 52.37, 4.90
     #     st.session_state.new_obs_coords = (avg_lat, avg_lon)
 
-    # lat, lon = st.session_state.new_obs_coords
+    lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
     m = folium.Map(location=st.session_state.new_obs_coords, zoom_start=20)
@@ -1090,7 +1090,7 @@ if map_data.get("last_object_clicked") and obs_list:
 
 # Fallback button (works reliably in Streamlit)
 if st.button('push', type="primary"):
-    new_observation_dialog()
+    new_observation_dialog(lat, lon)
 
 # If no observations yet, prompt user
 if not obs_list:
