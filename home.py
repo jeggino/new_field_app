@@ -828,7 +828,7 @@ def new_observation_dialog():
     lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
-    m = folium.Map(location=[lat, lon], zoom_start=13)
+    m = folium.Map(location=[lat, lon], zoom_start=15)
     folium.Marker(
         [lat, lon],
         draggable=True,
@@ -853,8 +853,8 @@ def new_observation_dialog():
 
     # Input fields
     species = st.text_input("Species")
-    project_name = st.text_input("Project", value=st.session_state.project_name)
-    username = st.text_input("Username", value=st.session_state.user["username"])
+    project_name = st.session_state.project_name
+    username = st.session_state.user["username"]
     behavior = st.text_input("Behavior")
     obs_date = st.date_input("Date", value=date.today())
 
