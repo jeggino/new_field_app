@@ -1018,7 +1018,7 @@ map_data = st_folium(
     key="main_map",
 )
 
-st.write(map_data["center"]["lat"],map_data["center"]["lng"])
+st.write(map_data)
 # Approximate selection of observation by click
 if map_data.get("last_object_clicked") and obs_list:
     clat = map_data["last_object_clicked"]["lat"]
