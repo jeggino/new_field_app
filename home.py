@@ -843,13 +843,18 @@ def new_observation_dialog():
         key="new_obs_map",
     )
 
-    if map_data["last_object_clicked"]:
+
+
+    
+    if map_data and map_data.get("last_object_clicked"):
         drag = map_data["last_object_clicked"]
         st.session_state.new_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.new_obs_coords
 
     else:
-        st.write('clicca')
+        st.error("Could not determine marker position. Try clicking on the marker after dragging it.")
+        st.stop()
+
         
 
     # st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
