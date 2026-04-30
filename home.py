@@ -776,19 +776,15 @@ def login_dialog():
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Login", type="primary"):
-            user = login_user(username, password)
-            if user:
-                st.session_state.user = user
-                save_user_to_cookies(user)
-                st.rerun()
-            else:
-                st.error("Invalid credentials.")
-    with col2:
-        if st.button("Cancel"):
-            st.stop()
+    if st.button("Login", type="primary"):
+        user = login_user(username, password)
+        if user:
+            st.session_state.user = user
+            save_user_to_cookies(user)
+            st.rerun()
+        else:
+            st.error("Invalid credentials.")
+
 
 @st.dialog("Select project")
 def project_dialog():
@@ -810,7 +806,7 @@ def project_dialog():
 
 @st.dialog("--")
 def new_observation_dialog(lat, lon):
-    st.write("Drag the marker on the map to set the coordinates.")
+    st.write("Drag the marker on the map to set the coordinates and click on the marker after dragging it.")
     lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
@@ -824,25 +820,20 @@ def new_observation_dialog(lat, lon):
     map_data = st_folium(
         m,
         width="100%",
-        height=350,
+        height=300,
         returned_objects=["last_object_clicked"],
         key="new_obs_map",
     )
 
-    
+    st.write(map_data.get("last_object_clicked"))
     if map_data.get("last_object_clicked"):
         drag = map_data["last_object_clicked"]
         st.session_state.new_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.new_obs_coords
 
-    else:
-        st.error("Could not determine marker position. Try clicking on the marker after dragging it.")
-        st.stop()
+    # else:
+    #     st.stop()
 
-        
-
-    # st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
-    # st.write(map_data)
 
     # Input fields
     species = st.text_input("Species")
@@ -872,8 +863,6 @@ def observation_dialog():
     if obs is None:
         st.stop()
 
-    st.write(f"ID: {obs['id']}")
-
     # Initial edit coords
     if st.session_state.edit_obs_coords is None:
         st.session_state.edit_obs_coords = (obs["lat"], obs["lon"])
@@ -895,8 +884,8 @@ def observation_dialog():
         key=f"edit_obs_map_{obs['id']}",
     )
 
-    if map_data.get("last_marker_dragging"):
-        drag = map_data["last_marker_dragging"]
+    if map_data.get("last_object_clicked"):
+        drag = map_data["last_object_clicked"]
         st.session_state.edit_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.edit_obs_coords
 
@@ -904,8 +893,8 @@ def observation_dialog():
 
     # Editable fields
     species = st.text_input("Species", value=obs.get("species", ""))
-    project_name = st.text_input("Project", value=obs.get("project_name", ""))
-    username = st.text_input("Username", value=obs.get("username", ""))
+    project_name = st.session_state.project_name
+    username = st.session_state.user["username"]
     behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
     obs_date = st.date_input(
         "Date",
