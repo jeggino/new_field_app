@@ -912,6 +912,7 @@ def observation_dialog():
         lat, lon = st.session_state.edit_obs_coords
 
     st.write(f"Current coordinates: {lat:.5f}, {lon:.5f}")
+    st.write(map_data)
 
     # Editable fields
     species = st.text_input("Species", value=obs.get("species", ""))
@@ -1029,32 +1030,8 @@ if map_data.get("last_object_clicked") and obs_list:
 # -------------------------------------------------
 # FLOATING CIRCULAR BUTTON
 # -------------------------------------------------
-# st.markdown(
-#     """
-#     <style>
-#     .circle-btn {
-#         position: fixed;
-#         bottom: 30px;
-#         right: 30px;
-#         width: 60px;
-#         height: 60px;
-#         border-radius: 50%;
-#         background-color: #FF4B4B;
-#         color: white;
-#         border: none;
-#         font-size: 36px;
-#         text-align: center;
-#         line-height: 60px;
-#         cursor: pointer;
-#         z-index: 9999;
-#     }
-#     </style>
-#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-#     """,
-#     unsafe_allow_html=True,
-# )
-
-button_circular  =     """
+button_circular = st.markdown(
+    """
     <style>
     .circle-btn {
         position: fixed;
@@ -1074,7 +1051,31 @@ button_circular  =     """
     }
     </style>
     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-    """
+    """,
+    unsafe_allow_html=True,
+)
+
+# button_circular  =     """
+#     <style>
+#     .circle-btn {
+#         position: fixed;
+#         bottom: 30px;
+#         right: 30px;
+#         width: 60px;
+#         height: 60px;
+#         border-radius: 50%;
+#         background-color: #FF4B4B;
+#         color: white;
+#         border: none;
+#         font-size: 36px;
+#         text-align: center;
+#         line-height: 60px;
+#         cursor: pointer;
+#         z-index: 9999;
+#     }
+#     </style>
+#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
+#     """
 
 # Fallback button (works reliably in Streamlit)
 if st.button(button_circular, type="primary"):
