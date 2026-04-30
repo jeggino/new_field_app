@@ -828,7 +828,6 @@ def new_observation_dialog():
                 lon,
                 title,
                 description,
-                extra,
             )
             if obs:
                 st.session_state.observations.append(obs)
