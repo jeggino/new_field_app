@@ -1078,7 +1078,7 @@ button_circular = st.markdown(
 #     """
 
 # Fallback button (works reliably in Streamlit)
-if st.button(button_circular, type="primary"):
+if st.button('push', type="primary"):
     st.session_state.new_obs_coords = None
     new_observation_dialog()
 
