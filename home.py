@@ -628,110 +628,508 @@
 # if __name__ == "__main__":
 #     main()
 
-#_____________________3__________________
+# #_____________________3__________________
+# import streamlit as st
+# from streamlit_folium import st_folium
+# import folium
+# from supabase import create_client, Client
+# from streamlit_cookies_manager import EncryptedCookieManager
+
+# # -----------------------------
+# # CONFIG & INITIALIZATION
+# # -----------------------------
+# st.set_page_config(page_title="Observation Map", layout="wide")
+
+# # Cookie manager (for login persistence)
+# cookies = EncryptedCookieManager(
+#     prefix="obs_app_",
+#     password="CHANGE_THIS_TO_A_SECRET_PASSWORD",  # or use env var
+# )
+# if not cookies.ready():
+#     st.stop()
+
+
+# SUPABASE_URL = st.secrets["SUPABASE_URL"]
+# SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+# # USERS_TABLE = "users"
+# # OBS_TABLE = "observations"
+
+# @st.cache_resource
+# def get_supabase_client() -> Client:
+#     return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# supabase = get_supabase_client()
+
+# # -----------------------------
+# # SESSION STATE HELPERS
+# # -----------------------------
+# if "user" not in st.session_state:
+#     st.session_state.user = None
+# if "project" not in st.session_state:
+#     st.session_state.project = None
+# if "observations" not in st.session_state:
+#     st.session_state.observations = []
+# if "selected_obs" not in st.session_state:
+#     st.session_state.selected_obs = None
+# if "new_marker_location" not in st.session_state:
+#     st.session_state.new_marker_location = None
+
+# # -----------------------------
+# # AUTH & PROJECT SELECTION
+# # -----------------------------
+# def load_user_from_cookies():
+#     user_id = cookies.get("user_id")
+#     if user_id:
+#         res = (
+#             supabase.table("users")
+#             .select("*")
+#             .eq("id", user_id)
+#             .single()
+#             .execute()
+#         )
+#         if res.data:
+#             st.session_state.user = res.data
+
+# def save_user_to_cookies(user):
+#     cookies["user_id"] = str(user["id"])
+#     cookies.save()
+
+# def clear_user():
+#     st.session_state.user = None
+#     st.session_state.project = None
+#     cookies.pop("user_id", None)
+#     cookies.save()
+
+# def login(username, password):
+#     # Example: users table with columns: id, username, password_hash (simplified here)
+#     res = (
+#         supabase.table("users")
+#         .select("*")
+#         .eq("username", username)
+#         .eq("password", password)  # in real app: verify hash!
+#         .single()
+#         .execute()
+#     )
+#     return res.data
+
+# def get_projects_for_user(user_id):
+#     # Example: projects table with columns: id, name, user_id (or shared)
+#     res = (
+#         supabase.table("projects")
+#         .select("*")
+#         .eq("user_id", user_id)
+#         .execute()
+#     )
+#     return res.data or []
+
+# def load_observations(project_id):
+#     # Example: observations table with columns:
+#     # id, project_id, lat, lon, title, description, extra_json
+#     res = (
+#         supabase.table("observations")
+#         .select("*")
+#         .eq("project_id", project_id)
+#         .execute()
+#     )
+#     return res.data or []
+
+# def create_observation(project_id, lat, lon, title, description, extra):
+#     res = (
+#         supabase.table("observations")
+#         .insert(
+#             {
+#                 "project_id": project_id,
+#                 "lat": lat,
+#                 "lon": lon,
+#                 "title": title,
+#                 "description": description,
+#                 "extra_json": extra,
+#             }
+#         )
+#         .execute()
+#     )
+#     return res.data[0] if res.data else None
+
+# def update_observation(obs_id, lat, lon, title, description, extra):
+#     res = (
+#         supabase.table("observations")
+#         .update(
+#             {
+#                 "lat": lat,
+#                 "lon": lon,
+#                 "title": title,
+#                 "description": description,
+#                 "extra_json": extra,
+#             }
+#         )
+#         .eq("id", obs_id)
+#         .execute()
+#     )
+#     return res.data[0] if res.data else None
+
+# # -----------------------------
+# # DIALOGS
+# # -----------------------------
+# @st.dialog("Login")
+# def login_dialog():
+#     st.write("Please log in to continue.")
+#     username = st.text_input("Username")
+#     password = st.text_input("Password", type="password")
+#     col1, col2 = st.columns(2)
+#     with col1:
+#         if st.button("Login", type="primary"):
+#             user = login(username, password)
+#             if user:
+#                 st.session_state.user = user
+#                 save_user_to_cookies(user)
+#                 st.rerun()
+#             else:
+#                 st.error("Invalid credentials.")
+#     with col2:
+#         if st.button("Cancel"):
+#             st.stop()
+
+# @st.dialog("Select project")
+# def project_dialog():
+#     st.write("Choose a project to work on.")
+#     projects = get_projects_for_user(st.session_state.user["id"])
+#     if not projects:
+#         st.info("No projects found for this user.")
+#         if st.button("Close"):
+#             st.stop()
+#     else:
+#         project_names = [p["name"] for p in projects]
+#         selected_name = st.selectbox("Project", project_names)
+#         if st.button("Confirm", type="primary"):
+#             selected_project = next(p for p in projects if p["name"] == selected_name)
+#             st.session_state.project = selected_project
+#             st.session_state.observations = load_observations(selected_project["id"])
+#             st.rerun()
+
+# @st.dialog("New observation")
+# def new_observation_dialog():
+#     lat, lon = st.session_state.new_marker_location
+#     st.write(f"New observation at: {lat:.5f}, {lon:.5f}")
+#     title = st.text_input("Title")
+#     description = st.text_area("Description")
+#     extra_field_1 = st.text_input("Extra field 1")
+#     extra_field_2 = st.text_input("Extra field 2")
+
+#     col1, col2 = st.columns(2)
+#     with col1:
+#         if st.button("Save", type="primary"):
+#             extra = {
+#                 "extra_field_1": extra_field_1,
+#                 "extra_field_2": extra_field_2,
+#             }
+#             obs = create_observation(
+#                 st.session_state.project["id"],
+#                 lat,
+#                 lon,
+#                 title,
+#                 description,
+#                 extra,
+#             )
+#             if obs:
+#                 st.session_state.observations.append(obs)
+#             st.session_state.new_marker_location = None
+#             st.rerun()
+#     with col2:
+#         if st.button("Cancel"):
+#             st.session_state.new_marker_location = None
+#             st.rerun()
+
+# @st.dialog("Observation details")
+# def observation_dialog():
+#     obs = st.session_state.selected_obs
+#     if obs is None:
+#         st.stop()
+
+#     st.write(f"ID: {obs['id']}")
+#     st.write(f"Location: {obs['lat']:.5f}, {obs['lon']:.5f}")
+#     title = st.text_input("Title", value=obs.get("title", ""))
+#     description = st.text_area("Description", value=obs.get("description", ""))
+
+#     extra = obs.get("extra_json") or {}
+#     extra_field_1 = st.text_input("Extra field 1", value=extra.get("extra_field_1", ""))
+#     extra_field_2 = st.text_input("Extra field 2", value=extra.get("extra_field_2", ""))
+
+#     st.write("Drag the marker on the map to update position (will be saved on Edit).")
+
+#     col1, col2 = st.columns(2)
+#     with col1:
+#         if st.button("Edit", type="primary"):
+#             # Use possibly updated position from session_state
+#             lat = obs["lat"]
+#             lon = obs["lon"]
+#             if "edit_position" in st.session_state and st.session_state["edit_position"]:
+#                 lat, lon = st.session_state["edit_position"]
+
+#             updated = update_observation(
+#                 obs["id"],
+#                 lat,
+#                 lon,
+#                 title,
+#                 description,
+#                 {
+#                     "extra_field_1": extra_field_1,
+#                     "extra_field_2": extra_field_2,
+#                 },
+#             )
+#             # Update local list
+#             if updated:
+#                 for i, o in enumerate(st.session_state.observations):
+#                     if o["id"] == updated["id"]:
+#                         st.session_state.observations[i] = updated
+#                         break
+#             st.session_state.selected_obs = None
+#             st.session_state["edit_position"] = None
+#             st.rerun()
+#     with col2:
+#         if st.button("Cancel"):
+#             st.session_state.selected_obs = None
+#             st.session_state["edit_position"] = None
+#             st.rerun()
+
+# # -----------------------------
+# # MAIN FLOW: AUTH & PROJECT
+# # -----------------------------
+# load_user_from_cookies()
+
+# if st.session_state.user is None:
+#     login_dialog()
+
+# if st.session_state.project is None and st.session_state.user is not None:
+#     project_dialog()
+
+# # -----------------------------
+# # LAYOUT
+# # -----------------------------
+# st.title("Observation Map")
+
+# top_col1, top_col2, top_col3 = st.columns([3, 1, 1])
+# with top_col1:
+#     st.markdown(f"**User:** {st.session_state.user['username']}")
+#     # st.markdown(f"**Project:** {st.session_state.project['name']}")
+# with top_col2:
+#     if st.button("Change project"):
+#         project_dialog()
+# with top_col3:
+#     if st.button("Logout"):
+#         clear_user()
+#         st.rerun()
+
+# st.markdown("---")
+
+# # -----------------------------
+# # MAP SETUP
+# # -----------------------------
+# # Center map on average of observations or default
+# if st.session_state.observations:
+#     avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
+#         st.session_state.observations
+#     )
+#     avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
+#         st.session_state.observations
+#     )
+# else:
+#     avg_lat, avg_lon = 52.37, 4.90  # Example: Amsterdam
+
+# m = folium.Map(location=[avg_lat, avg_lon], zoom_start=12, control_scale=True)
+
+# # Add existing observations as markers
+# for obs in st.session_state.observations:
+#     popup_html = f"""
+#     <b>{obs.get('title','No title')}</b><br>
+#     {obs.get('description','')}<br>
+#     <i>Click marker in app to view/edit.</i>
+#     """
+#     folium.Marker(
+#         location=[obs["lat"], obs["lon"]],
+#         popup=popup_html,
+#         tooltip=obs.get("title", "Observation"),
+#         icon=folium.Icon(color="blue", icon="info-sign"),
+#     ).add_to(m)
+
+# # Draggable marker for new observation
+# if st.session_state.new_marker_location:
+#     lat, lon = st.session_state.new_marker_location
+# else:
+#     lat, lon = avg_lat, avg_lon
+
+# draggable_marker = folium.Marker(
+#     location=[lat, lon],
+#     draggable=True,
+#     icon=folium.Icon(color="red", icon="plus"),
+# )
+# draggable_marker.add_to(m)
+
+# # Render map (responsive height/width)
+# map_data = st_folium(
+#     m,
+#     width="100%",
+#     height=500,
+#     returned_objects=["last_object_clicked", "last_active_drawing", "last_marker_dragging"],
+# )
+
+# # -----------------------------
+# # MAP INTERACTIONS
+# # -----------------------------
+# # 1. Handle draggable marker for new observation
+# if map_data and map_data.get("last_marker_dragging"):
+#     drag = map_data["last_marker_dragging"]
+#     st.session_state.new_marker_location = (drag["lat"], drag["lng"])
+
+# # 2. Handle click on existing markers (approximate by nearest observation)
+# if map_data and map_data.get("last_object_clicked"):
+#     click = map_data["last_object_clicked"]
+#     click_lat, click_lon = click["lat"], click["lng"]
+
+#     # Find nearest observation within small threshold
+#     def distance_sq(o):
+#         return (o["lat"] - click_lat) ** 2 + (o["lon"] - click_lon) ** 2
+
+#     if st.session_state.observations:
+#         nearest = min(st.session_state.observations, key=distance_sq)
+#         # You can tune this threshold
+#         if distance_sq(nearest) < 0.0001:
+#             st.session_state.selected_obs = nearest
+#             observation_dialog()
+
+# # 3. Circular button to add new observation
+# st.markdown(
+#     """
+#     <style>
+#     .circle-btn {
+#         width: 60px;
+#         height: 60px;
+#         border-radius: 30px;
+#         background-color: #FF4B4B;
+#         color: white;
+#         border: none;
+#         font-size: 30px;
+#         text-align: center;
+#         line-height: 60px;
+#         cursor: pointer;
+#     }
+#     .circle-btn-container {
+#         position: fixed;
+#         bottom: 30px;
+#         right: 30px;
+#         z-index: 9999;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
+
+# circle_col = st.container()
+# with circle_col:
+#     st.markdown(
+#         """
+#         <div class="circle-btn-container">
+#             <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObservation'))">+</button>
+#         </div>
+#         """,
+#         unsafe_allow_html=True,
+#     )
+
+# # Small JS hack: we can't directly catch JS events in Streamlit,
+# # so we simulate with a button in the UI.
+# st.write("")
+# add_obs = st.button("Add observation (mobile-friendly alternative)", type="primary")
+
+# if add_obs:
+#     # Use current draggable marker position as starting point
+#     if st.session_state.new_marker_location is None:
+#         st.session_state.new_marker_location = (avg_lat, avg_lon)
+#     new_observation_dialog()
+
+# # If user has dragged marker but not clicked button yet, show hint
+# if st.session_state.new_marker_location and not add_obs:
+#     st.info("Drag the red marker, then click 'Add observation' to save it.")
+
+# # For editing position of existing observation:
+# # We reuse the same draggable marker; when an observation is selected,
+# # user can drag marker and then click Edit in dialog.
+# if st.session_state.selected_obs and map_data and map_data.get("last_marker_dragging"):
+#     drag = map_data["last_marker_dragging"]
+#     st.session_state["edit_position"] = (drag["lat"], drag["lng"])
+
+
+#--------------------4--------------
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from supabase import create_client, Client
+from supabase import create_client
 from streamlit_cookies_manager import EncryptedCookieManager
 
-# -----------------------------
-# CONFIG & INITIALIZATION
-# -----------------------------
+# ---------------------------------------------------
+# CONFIG
+# ---------------------------------------------------
 st.set_page_config(page_title="Observation Map", layout="wide")
 
-# Cookie manager (for login persistence)
-cookies = EncryptedCookieManager(
-    prefix="obs_app_",
-    password="CHANGE_THIS_TO_A_SECRET_PASSWORD",  # or use env var
-)
+cookies = EncryptedCookieManager(prefix="obs_", password=st.secrets["COOKIE_PASSWORD"])
+
 if not cookies.ready():
     st.stop()
 
-
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-# USERS_TABLE = "users"
-# OBS_TABLE = "observations"
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-@st.cache_resource
-def get_supabase_client() -> Client:
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+# ---------------------------------------------------
+# SESSION STATE
+# ---------------------------------------------------
+for key, default in {
+    "user": None,
+    "project": None,
+    "observations": [],
+    "selected_obs": None,
+    "new_marker_location": None,
+    "edit_position": None,
+}.items():
+    st.session_state.setdefault(key, default)
 
-supabase = get_supabase_client()
-
-# -----------------------------
-# SESSION STATE HELPERS
-# -----------------------------
-if "user" not in st.session_state:
-    st.session_state.user = None
-if "project" not in st.session_state:
-    st.session_state.project = None
-if "observations" not in st.session_state:
-    st.session_state.observations = []
-if "selected_obs" not in st.session_state:
-    st.session_state.selected_obs = None
-if "new_marker_location" not in st.session_state:
-    st.session_state.new_marker_location = None
-
-# -----------------------------
-# AUTH & PROJECT SELECTION
-# -----------------------------
-def load_user_from_cookies():
-    user_id = cookies.get("user_id")
-    if user_id:
-        res = (
-            supabase.table("users")
-            .select("*")
-            .eq("id", user_id)
-            .single()
-            .execute()
-        )
+# ---------------------------------------------------
+# AUTH HELPERS
+# ---------------------------------------------------
+def load_user_from_cookie():
+    uid = cookies.get("uid")
+    if uid:
+        res = supabase.table("users").select("*").eq("id", uid).single().execute()
         if res.data:
             st.session_state.user = res.data
 
-def save_user_to_cookies(user):
-    cookies["user_id"] = str(user["id"])
+def save_user_cookie(user):
+    cookies["uid"] = str(user["id"])
     cookies.save()
 
-def clear_user():
-    st.session_state.user = None
-    st.session_state.project = None
-    cookies.pop("user_id", None)
-    cookies.save()
-
-def login(username, password):
-    # Example: users table with columns: id, username, password_hash (simplified here)
+def login_user(username, password):
     res = (
         supabase.table("users")
         .select("*")
         .eq("username", username)
-        .eq("password", password)  # in real app: verify hash!
+        .eq("password", password)  # replace with hash check
         .single()
         .execute()
     )
     return res.data
 
-def get_projects_for_user(user_id):
-    # Example: projects table with columns: id, name, user_id (or shared)
-    res = (
-        supabase.table("projects")
-        .select("*")
-        .eq("user_id", user_id)
-        .execute()
-    )
-    return res.data or []
+def logout():
+    st.session_state.user = None
+    st.session_state.project = None
+    cookies.pop("uid", None)
+    cookies.save()
+
+# ---------------------------------------------------
+# PROJECT HELPERS
+# ---------------------------------------------------
+def load_projects(user_id):
+    return supabase.table("projects").select("*").eq("user_id", user_id).execute().data
 
 def load_observations(project_id):
-    # Example: observations table with columns:
-    # id, project_id, lat, lon, title, description, extra_json
-    res = (
-        supabase.table("observations")
-        .select("*")
-        .eq("project_id", project_id)
-        .execute()
-    )
-    return res.data or []
+    return supabase.table("observations").select("*").eq("project_id", project_id).execute().data
 
 def create_observation(project_id, lat, lon, title, description, extra):
     res = (
@@ -748,7 +1146,7 @@ def create_observation(project_id, lat, lon, title, description, extra):
         )
         .execute()
     )
-    return res.data[0] if res.data else None
+    return res.data[0]
 
 def update_observation(obs_id, lat, lon, title, description, extra):
     res = (
@@ -765,293 +1163,68 @@ def update_observation(obs_id, lat, lon, title, description, extra):
         .eq("id", obs_id)
         .execute()
     )
-    return res.data[0] if res.data else None
+    return res.data[0]
 
-# -----------------------------
+# ---------------------------------------------------
 # DIALOGS
-# -----------------------------
+# ---------------------------------------------------
 @st.dialog("Login")
 def login_dialog():
-    st.write("Please log in to continue.")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Login", type="primary"):
-            user = login(username, password)
-            if user:
-                st.session_state.user = user
-                save_user_to_cookies(user)
-                st.rerun()
-            else:
-                st.error("Invalid credentials.")
-    with col2:
-        if st.button("Cancel"):
-            st.stop()
+    st.write("Log in to continue")
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
 
-@st.dialog("Select project")
+    if st.button("Login", type="primary"):
+        user = login_user(u, p)
+        if user:
+            st.session_state.user = user
+            save_user_cookie(user)
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
+
+@st.dialog("Select Project")
 def project_dialog():
-    st.write("Choose a project to work on.")
-    projects = get_projects_for_user(st.session_state.user["id"])
-    if not projects:
-        st.info("No projects found for this user.")
-        if st.button("Close"):
-            st.stop()
-    else:
-        project_names = [p["name"] for p in projects]
-        selected_name = st.selectbox("Project", project_names)
-        if st.button("Confirm", type="primary"):
-            selected_project = next(p for p in projects if p["name"] == selected_name)
-            st.session_state.project = selected_project
-            st.session_state.observations = load_observations(selected_project["id"])
-            st.rerun()
+    projects = load_projects(st.session_state.user["id"])
+    names = [p["name"] for p in projects]
+    choice = st.selectbox("Choose project", names)
 
-@st.dialog("New observation")
-def new_observation_dialog():
-    lat, lon = st.session_state.new_marker_location
-    st.write(f"New observation at: {lat:.5f}, {lon:.5f}")
-    title = st.text_input("Title")
-    description = st.text_area("Description")
-    extra_field_1 = st.text_input("Extra field 1")
-    extra_field_2 = st.text_input("Extra field 2")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Save", type="primary"):
-            extra = {
-                "extra_field_1": extra_field_1,
-                "extra_field_2": extra_field_2,
-            }
-            obs = create_observation(
-                st.session_state.project["id"],
-                lat,
-                lon,
-                title,
-                description,
-                extra,
-            )
-            if obs:
-                st.session_state.observations.append(obs)
-            st.session_state.new_marker_location = None
-            st.rerun()
-    with col2:
-        if st.button("Cancel"):
-            st.session_state.new_marker_location = None
-            st.rerun()
-
-@st.dialog("Observation details")
-def observation_dialog():
-    obs = st.session_state.selected_obs
-    if obs is None:
-        st.stop()
-
-    st.write(f"ID: {obs['id']}")
-    st.write(f"Location: {obs['lat']:.5f}, {obs['lon']:.5f}")
-    title = st.text_input("Title", value=obs.get("title", ""))
-    description = st.text_area("Description", value=obs.get("description", ""))
-
-    extra = obs.get("extra_json") or {}
-    extra_field_1 = st.text_input("Extra field 1", value=extra.get("extra_field_1", ""))
-    extra_field_2 = st.text_input("Extra field 2", value=extra.get("extra_field_2", ""))
-
-    st.write("Drag the marker on the map to update position (will be saved on Edit).")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Edit", type="primary"):
-            # Use possibly updated position from session_state
-            lat = obs["lat"]
-            lon = obs["lon"]
-            if "edit_position" in st.session_state and st.session_state["edit_position"]:
-                lat, lon = st.session_state["edit_position"]
-
-            updated = update_observation(
-                obs["id"],
-                lat,
-                lon,
-                title,
-                description,
-                {
-                    "extra_field_1": extra_field_1,
-                    "extra_field_2": extra_field_2,
-                },
-            )
-            # Update local list
-            if updated:
-                for i, o in enumerate(st.session_state.observations):
-                    if o["id"] == updated["id"]:
-                        st.session_state.observations[i] = updated
-                        break
-            st.session_state.selected_obs = None
-            st.session_state["edit_position"] = None
-            st.rerun()
-    with col2:
-        if st.button("Cancel"):
-            st.session_state.selected_obs = None
-            st.session_state["edit_position"] = None
-            st.rerun()
-
-# -----------------------------
-# MAIN FLOW: AUTH & PROJECT
-# -----------------------------
-load_user_from_cookies()
-
-if st.session_state.user is None:
-    login_dialog()
-
-if st.session_state.project is None and st.session_state.user is not None:
-    project_dialog()
-
-# -----------------------------
-# LAYOUT
-# -----------------------------
-st.title("Observation Map")
-
-top_col1, top_col2, top_col3 = st.columns([3, 1, 1])
-with top_col1:
-    st.markdown(f"**User:** {st.session_state.user['username']}")
-    # st.markdown(f"**Project:** {st.session_state.project['name']}")
-with top_col2:
-    if st.button("Change project"):
-        project_dialog()
-with top_col3:
-    if st.button("Logout"):
-        clear_user()
+    if st.button("Confirm", type="primary"):
+        st.session_state.project = next(p for p in projects if p["name"] == choice)
+        st.session_state.observations = load_observations(st.session_state.project["id"])
         st.rerun()
 
-st.markdown("---")
-
-# -----------------------------
-# MAP SETUP
-# -----------------------------
-# Center map on average of observations or default
-if st.session_state.observations:
-    avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
-        st.session_state.observations
-    )
-    avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
-        st.session_state.observations
-    )
-else:
-    avg_lat, avg_lon = 52.37, 4.90  # Example: Amsterdam
-
-m = folium.Map(location=[avg_lat, avg_lon], zoom_start=12, control_scale=True)
-
-# Add existing observations as markers
-for obs in st.session_state.observations:
-    popup_html = f"""
-    <b>{obs.get('title','No title')}</b><br>
-    {obs.get('description','')}<br>
-    <i>Click marker in app to view/edit.</i>
-    """
-    folium.Marker(
-        location=[obs["lat"], obs["lon"]],
-        popup=popup_html,
-        tooltip=obs.get("title", "Observation"),
-        icon=folium.Icon(color="blue", icon="info-sign"),
-    ).add_to(m)
-
-# Draggable marker for new observation
-if st.session_state.new_marker_location:
+@st.dialog("New Observation")
+def new_obs_dialog():
     lat, lon = st.session_state.new_marker_location
-else:
-    lat, lon = avg_lat, avg_lon
+    st.write(f"Location: {lat:.5f}, {lon:.5f}")
 
-draggable_marker = folium.Marker(
-    location=[lat, lon],
-    draggable=True,
-    icon=folium.Icon(color="red", icon="plus"),
-)
-draggable_marker.add_to(m)
+    title = st.text_input("Title")
+    desc = st.text_area("Description")
+    extra1 = st.text_input("Extra field 1")
+    extra2 = st.text_input("Extra field 2")
 
-# Render map (responsive height/width)
-map_data = st_folium(
-    m,
-    width="100%",
-    height=500,
-    returned_objects=["last_object_clicked", "last_active_drawing", "last_marker_dragging"],
-)
+    if st.button("Save", type="primary"):
+        obs = create_observation(
+            st.session_state.project["id"],
+            lat,
+            lon,
+            title,
+            desc,
+            {"extra1": extra1, "extra2": extra2},
+        )
+        st.session_state.observations.append(obs)
+        st.session_state.new_marker_location = None
+        st.rerun()
 
-# -----------------------------
-# MAP INTERACTIONS
-# -----------------------------
-# 1. Handle draggable marker for new observation
-if map_data and map_data.get("last_marker_dragging"):
-    drag = map_data["last_marker_dragging"]
-    st.session_state.new_marker_location = (drag["lat"], drag["lng"])
+    if st.button("Cancel"):
+        st.session_state.new_marker_location = None
+        st.rerun()
 
-# 2. Handle click on existing markers (approximate by nearest observation)
-if map_data and map_data.get("last_object_clicked"):
-    click = map_data["last_object_clicked"]
-    click_lat, click_lon = click["lat"], click["lng"]
+@st.dialog("Observation Details")
+def obs_dialog():
+    obs = st.session_state.selected_obs
+    st.write(f"ID: {obs['id']}")
+    st.write(f"Location: {obs['lat']:.5f}, {obs['lon']:.5f}")
 
-    # Find nearest observation within small threshold
-    def distance_sq(o):
-        return (o["lat"] - click_lat) ** 2 + (o["lon"] - click_lon) ** 2
 
-    if st.session_state.observations:
-        nearest = min(st.session_state.observations, key=distance_sq)
-        # You can tune this threshold
-        if distance_sq(nearest) < 0.0001:
-            st.session_state.selected_obs = nearest
-            observation_dialog()
-
-# 3. Circular button to add new observation
-st.markdown(
-    """
-    <style>
-    .circle-btn {
-        width: 60px;
-        height: 60px;
-        border-radius: 30px;
-        background-color: #FF4B4B;
-        color: white;
-        border: none;
-        font-size: 30px;
-        text-align: center;
-        line-height: 60px;
-        cursor: pointer;
-    }
-    .circle-btn-container {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        z-index: 9999;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-circle_col = st.container()
-with circle_col:
-    st.markdown(
-        """
-        <div class="circle-btn-container">
-            <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObservation'))">+</button>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-# Small JS hack: we can't directly catch JS events in Streamlit,
-# so we simulate with a button in the UI.
-st.write("")
-add_obs = st.button("Add observation (mobile-friendly alternative)", type="primary")
-
-if add_obs:
-    # Use current draggable marker position as starting point
-    if st.session_state.new_marker_location is None:
-        st.session_state.new_marker_location = (avg_lat, avg_lon)
-    new_observation_dialog()
-
-# If user has dragged marker but not clicked button yet, show hint
-if st.session_state.new_marker_location and not add_obs:
-    st.info("Drag the red marker, then click 'Add observation' to save it.")
-
-# For editing position of existing observation:
-# We reuse the same draggable marker; when an observation is selected,
-# user can drag marker and then click Edit in dialog.
-if st.session_state.selected_obs and map_data and map_data.get("last_marker_dragging"):
-    drag = map_data["last_marker_dragging"]
-    st.session_state["edit_position"] = (drag["lat"], drag["lng"])
