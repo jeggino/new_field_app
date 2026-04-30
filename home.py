@@ -1014,7 +1014,7 @@ map_data = st_folium(
     m,
     width="100%",
     height=500,
-    returned_objects=["last_object_clicked","center"],
+    returned_objects=True,
     key="main_map",
 )
 
