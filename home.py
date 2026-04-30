@@ -828,7 +828,7 @@ def new_observation_dialog():
     # lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
-    m = folium.Map(location=[lat, lon], zoom_start=20)
+    m = folium.Map(location=st.session_state.new_obs_coords, zoom_start=20)
     folium.Marker(
         [lat, lon],
         draggable=True,
