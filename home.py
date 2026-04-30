@@ -825,7 +825,7 @@ def new_observation_dialog():
     #         avg_lat, avg_lon = 52.37, 4.90
     #     st.session_state.new_obs_coords = (avg_lat, avg_lon)
 
-    lat, lon = st.session_state.new_obs_coords
+    # lat, lon = st.session_state.new_obs_coords
 
     # Map inside dialog
     m = folium.Map(location=[lat, lon], zoom_start=20)
@@ -1041,30 +1041,30 @@ if map_data.get("last_object_clicked") and obs_list:
 # -------------------------------------------------
 # FLOATING CIRCULAR BUTTON
 # -------------------------------------------------
-button_circular = st.markdown(
-    """
-    <style>
-    .circle-btn {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: #FF4B4B;
-        color: white;
-        border: none;
-        font-size: 36px;
-        text-align: center;
-        line-height: 60px;
-        cursor: pointer;
-        z-index: 9999;
-    }
-    </style>
-    <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-    """,
-    unsafe_allow_html=True,
-)
+# button_circular = st.markdown(
+#     """
+#     <style>
+#     .circle-btn {
+#         position: fixed;
+#         bottom: 30px;
+#         right: 30px;
+#         width: 60px;
+#         height: 60px;
+#         border-radius: 50%;
+#         background-color: #FF4B4B;
+#         color: white;
+#         border: none;
+#         font-size: 36px;
+#         text-align: center;
+#         line-height: 60px;
+#         cursor: pointer;
+#         z-index: 9999;
+#     }
+#     </style>
+#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
 # button_circular  =     """
 #     <style>
@@ -1089,8 +1089,7 @@ button_circular = st.markdown(
 #     """
 
 # Fallback button (works reliably in Streamlit)
-if st.button('push', type="primary"):
-    st.session_state.new_obs_coords = None
+if st.button('push', type="primary
     new_observation_dialog()
 
 # If no observations yet, prompt user
