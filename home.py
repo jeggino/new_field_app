@@ -639,6 +639,7 @@ from datetime import date
 # -------------------------------------------------
 # CONFIG
 # -------------------------------------------------
+
 st.set_page_config(page_title="Observation Map", layout="wide")
 
 cookies = EncryptedCookieManager(prefix="obs_app_", password="CHANGE_ME")
