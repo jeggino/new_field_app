@@ -629,7 +629,7 @@
 #     main()
 
 #_____________________3__________________
-# import streamlit as st
+import streamlit as st
 from streamlit_folium import st_folium
 import folium
 from supabase import create_client
