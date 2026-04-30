@@ -629,7 +629,7 @@
 #     main()
 
 #_____________________3__________________
-import streamlit as st
+# import streamlit as st
 from streamlit_folium import st_folium
 import folium
 from supabase import create_client
@@ -641,7 +641,7 @@ from datetime import date
 # -------------------------------------------------
 st.set_page_config(page_title="Observation Map", layout="wide")
 
-cookies = EncryptedCookieManager(prefix="obs_app_", password=st.secrets["COOKIE_PASSWORD"])
+cookies = EncryptedCookieManager(prefix="obs_app_", password="CHANGE_ME")
 if not cookies.ready():
     st.stop()
 
@@ -852,8 +852,8 @@ def new_observation_dialog():
 
     # Input fields
     species = st.text_input("Species")
-    project_name = st.session_state.project_name
-    username = st.session_state.user["username"]
+    project_name = st.text_input("Project", value=st.session_state.project_name)
+    username = st.text_input("Username", value=st.session_state.user["username"])
     behavior = st.text_input("Behavior")
     obs_date = st.date_input("Date", value=date.today())
 
@@ -1013,50 +1013,52 @@ map_data = st_folium(
 )
 
 # Approximate selection of observation by click
-if map_data.get("last_object_clicked"):
+if map_data.get("last_object_clicked") and obs_list:
     clat = map_data["last_object_clicked"]["lat"]
     clon = map_data["last_object_clicked"]["lng"]
 
-    if obs_list:
-        def dist2(o):
-            return (o["lat"] - clat) ** 2 + (o["lon"] - clon) ** 2
+    def dist2(o):
+        return (o["lat"] - clat) ** 2 + (o["lon"] - clon) ** 2
 
-        nearest = min(obs_list, key=dist2)
-        if dist2(nearest) < 0.0001:
-            st.session_state.selected_obs = nearest
-            st.session_state.edit_obs_coords = None
-            observation_dialog()
+    nearest = min(obs_list, key=dist2)
+    if dist2(nearest) < 0.0001:
+        st.session_state.selected_obs = nearest
+        st.session_state.edit_obs_coords = None
+        observation_dialog()
 
 # -------------------------------------------------
 # FLOATING CIRCULAR BUTTON
 # -------------------------------------------------
-# st.markdown(
-#     """
-#     <style>
-#     .circle-btn {
-#         position: fixed;
-#         bottom: 30px;
-#         right: 30px;
-#         width: 60px;
-#         height: 60px;
-#         border-radius: 50%;
-#         background-color: #FF4B4B;
-#         color: white;
-#         border: none;
-#         font-size: 36px;
-#         text-align: center;
-#         line-height: 60px;
-#         cursor: pointer;
-#         z-index: 9999;
-#     }
-#     </style>
-#     <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
-#     """,
-#     unsafe_allow_html=True,
-# )
+ button = st.markdown(
+    """
+    <style>
+    .circle-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #FF4B4B;
+        color: white;
+        border: none;
+        font-size: 36px;
+        text-align: center;
+        line-height: 60px;
+        cursor: pointer;
+        z-index: 9999;
+    }
+    </style>
+    <button class="circle-btn" onclick="window.dispatchEvent(new Event('addObs'))">+</button>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Fallback button (works reliably in Streamlit)
-if st.button("Add observation", type="primary"):
+if st.button(button, type="primary"):
     st.session_state.new_obs_coords = None
     new_observation_dialog()
 
+# If no observations yet, prompt user
+if not obs_list:
+    st.info("No observations yet. Click 'Add observation' to insert a new one.")
