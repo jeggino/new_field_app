@@ -847,12 +847,15 @@ def new_observation_dialog():
         drag = map_data["last_object_clicked"]
         st.session_state.new_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.new_obs_coords
+        
+    else:
+        st.write('click the buton')
+        st.stop()
+        
 
     # st.write(f"Selected coordinates: {lat:.5f}, {lon:.5f}")
     st.write(map_data)
-    if  map_data["last_object_clicked"] in None:
-        st.write('click the buton')
-        st.stop()
+
     # Input fields
     species = st.text_input("Species")
     project_name = st.session_state.project_name
