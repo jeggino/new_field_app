@@ -839,7 +839,7 @@ def new_observation_dialog():
         m,
         width="100%",
         height=350,
-        returned_objects=["last_marker_dragging"],
+        # returned_objects=["last_marker_dragging"],
         key="new_obs_map",
     )
 
