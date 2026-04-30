@@ -1089,7 +1089,7 @@ if map_data.get("last_object_clicked") and obs_list:
 #     """
 
 # Fallback button (works reliably in Streamlit)
-if st.button('push', type="primary):
+if st.button('push', type="primary"):
     new_observation_dialog()
 
 # If no observations yet, prompt user
