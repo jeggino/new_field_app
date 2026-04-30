@@ -639,7 +639,6 @@ from datetime import date
 # -------------------------------------------------
 # CONFIG
 # -------------------------------------------------
-
 st.set_page_config(page_title="Observation Map", layout="wide")
 
 cookies = EncryptedCookieManager(prefix="obs_app_", password="CHANGE_ME")
@@ -720,7 +719,7 @@ def load_observations(username, project_name):
     return res.data or []
 
 def create_observation(lat, lon, species, project_name,
-                       username, behavior):
+                       username, behavior, obs_date):
     res = (
         supabase.table("observations")
         .insert(
@@ -731,6 +730,7 @@ def create_observation(lat, lon, species, project_name,
                 "project_name": project_name,
                 "username": username,
                 "behavior": behavior,
+                "obs_date": str(obs_date),
             }
         )
         .execute()
@@ -738,7 +738,7 @@ def create_observation(lat, lon, species, project_name,
     return res.data[0]
 
 def update_observation(obs_id, lat, lon, species, project_name,
-                       username, behavior):
+                       username, behavior, obs_date):
     res = (
         supabase.table("observations")
         .update(
@@ -749,6 +749,7 @@ def update_observation(obs_id, lat, lon, species, project_name,
                 "project_name": project_name,
                 "username": username,
                 "behavior": behavior,
+                "obs_date": str(obs_date),
             }
         )
         .eq("id", obs_id)
@@ -854,6 +855,7 @@ def new_observation_dialog():
     project_name = st.text_input("Project", value=st.session_state.project_name)
     username = st.text_input("Username", value=st.session_state.user["username"])
     behavior = st.text_input("Behavior")
+    obs_date = st.date_input("Date", value=date.today())
 
     col1, col2 = st.columns(2)
     with col1:
@@ -865,6 +867,7 @@ def new_observation_dialog():
                 project_name,
                 username,
                 behavior,
+                obs_date,
             )
             st.session_state.observations.append(obs)
             st.session_state.new_obs_coords = None
@@ -933,6 +936,7 @@ def observation_dialog():
                 project_name,
                 username,
                 behavior,
+                obs_date,
             )
             for i, o in enumerate(st.session_state.observations):
                 if o["id"] == updated["id"]:
@@ -1022,10 +1026,10 @@ if map_data.get("last_object_clicked") and obs_list:
         st.session_state.edit_obs_coords = None
         observation_dialog()
 
-# -------------------------------------------------
-# FLOATING CIRCULAR BUTTON
-# -------------------------------------------------
-#  button = st.markdown(
+# # -------------------------------------------------
+# # FLOATING CIRCULAR BUTTON
+# # -------------------------------------------------
+# st.markdown(
 #     """
 #     <style>
 #     .circle-btn {
@@ -1051,7 +1055,7 @@ if map_data.get("last_object_clicked") and obs_list:
 # )
 
 # Fallback button (works reliably in Streamlit)
-if st.button("peppe", type="primary"):
+if st.button("Add observation", type="primary"):
     st.session_state.new_obs_coords = None
     new_observation_dialog()
 
