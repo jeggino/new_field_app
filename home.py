@@ -843,8 +843,8 @@ def new_observation_dialog():
         key="new_obs_map",
     )
 
-    if map_data.get("last_marker_dragging"):
-        drag = map_data["last_marker_dragging"]
+    if map_data.get("last_object_clicked"):
+        drag = map_data["last_object_clicked"]
         st.session_state.new_obs_coords = (drag["lat"], drag["lng"])
         lat, lon = st.session_state.new_obs_coords
 
