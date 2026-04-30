@@ -750,7 +750,7 @@ def create_observation(project_id, lat, lon, title, description, extra):
     )
     return res.data[0] if res.data else None
 
-def update_observation(obs_id, lat, lon, title, description, extra):
+def update_observation(obs_id, lat, lon, title, description):
     res = (
         supabase.table("observations")
         .update(
@@ -759,7 +759,6 @@ def update_observation(obs_id, lat, lon, title, description, extra):
                 "lon": lon,
                 "title": title,
                 "description": description,
-                "extra_json": extra,
             }
         )
         .eq("id", obs_id)
