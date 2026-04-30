@@ -910,7 +910,7 @@ st.title("Observation Map")
 top_col1, top_col2, top_col3 = st.columns([3, 1, 1])
 with top_col1:
     st.markdown(f"**User:** {st.session_state.user['username']}")
-    st.markdown(f"**Project:** {st.session_state.project['name']}")
+    # st.markdown(f"**Project:** {st.session_state.project['name']}")
 with top_col2:
     if st.button("Change project"):
         project_dialog()
