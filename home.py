@@ -709,6 +709,11 @@ def update_observation(obs_id: int, data: dict):
     supabase.table(OBS_TABLE).update(data).eq("id", obs_id).execute()
     load_observations(st.session_state.project)
 
+def delete_observation(obs_id: int, data: dict):
+    supabase.table(OBS_TABLE).delete(data).eq("id", obs_id).execute()
+    load_observations(st.session_state.project)
+
+
 
 # ----------------- COOKIES -----------------
 def set_login_cookies(username: str):
@@ -975,8 +980,9 @@ def show_main_app():
                 edit_observation_dialog(selected_obs)
         with col2:
             if st.button("Cancel selection"):
-                st.session_state.selected_obs_id = None
-                st.rerun()
+                delete_observation(selected_obs)
+                # st.session_state.selected_obs_id = None
+                # st.rerun()
 
 
 # ----------------- ROUTING -----------------
