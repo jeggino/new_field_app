@@ -807,6 +807,23 @@ def new_observation_dialog():
     st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
     m = folium.Map(location=base_center, zoom_start=zoom)
 
+    # Add a fixed image overlay using HTML and CSS
+    html = """
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none; /* Let clicks pass through */
+        z-index: 9999;
+    ">
+        <img src="https://e1.pngegg.com/pngimages/314/988/png-clipart-symbolize-x.png"
+             style="width:150px; height:auto; opacity:0.8;">
+    </div>
+    """
+
+    m.get_root().html.add_child(folium.Element(html))
+
     # Just a normal map; the cross is shown as an image overlay in Streamlit
     map_data = st_folium(m, width="100%", height=400)
     st.write(map_data)
