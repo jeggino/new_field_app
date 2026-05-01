@@ -25,7 +25,7 @@ supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
     prefix="obs_app_",
-    password="CHANGE_THIS_SECRET_PASSWORD",
+    password=st.secrets["COOKIE_PASSWORD"],
 )
 if not cookies.ready():
     st.stop()
@@ -143,19 +143,19 @@ def show_project_selection():
 
 
 # ----------------- DIALOGS -----------------
-def _get_center_from_map_data(map_data, fallback_center):
-    if not map_data:
-        return fallback_center
-    bounds = map_data.get("bounds")
-    if not bounds:
-        return fallback_center
-    sw = bounds.get("_southWest")
-    ne = bounds.get("_northEast")
-    if not sw or not ne:
-        return fallback_center
-    center_lat = (sw["lat"] + ne["lat"]) / 2
-    center_lon = (sw["lng"] + ne["lng"]) / 2
-    return [center_lat, center_lon]
+# def _get_center_from_map_data(map_data, fallback_center):
+#     if not map_data:
+#         return fallback_center
+#     bounds = map_data.get("bounds")
+#     if not bounds:
+#         return fallback_center
+#     sw = bounds.get("_southWest")
+#     ne = bounds.get("_northEast")
+#     if not sw or not ne:
+#         return fallback_center
+#     center_lat = (sw["lat"] + ne["lat"]) / 2
+#     center_lon = (sw["lng"] + ne["lng"]) / 2
+#     return [center_lat, center_lon]
 
 
 @st.dialog("New Observation")
@@ -310,8 +310,6 @@ def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
 
 
 def show_main_app():
-    st.title("Observations Map")
-
     # Sidebar
     with st.sidebar:
         st.subheader("Controls")
@@ -322,7 +320,7 @@ def show_main_app():
             .circle-btn button {
                 border-radius: 50% !important;
                 height: 60px !important;
-                width: 60px !important;
+                width: 160px !important;
                 padding: 0 !important;
                 font-size: 24px !important;
             }
@@ -333,7 +331,7 @@ def show_main_app():
         st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
         if st.button("＋", key="add_obs_circle"):
             new_observation_dialog()
-        st.markdown("</div>", unsafe_allow_html=True)
+        # st.markdown("</div>", unsafe_allow_html=True)
 
         if st.button("Logout", type="secondary", use_container_width=True):
             st.session_state.logged_in = False
@@ -367,7 +365,7 @@ def show_main_app():
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
             popup=popup_text,
-            icon=folium.Icon(color="green", icon="cloud", prefix="fa")
+            icon=folium.Icon(color="red", icon="tree", prefix="fa")
         ).add_to(m)
 
     map_data = st_folium(m, width="100%", height=500)
