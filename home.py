@@ -629,6 +629,10 @@
 #     main()
 
 # #_____________________3__________________
+
+
+
+
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
@@ -638,7 +642,6 @@ from datetime import datetime
 
 # ----------------- CONFIG -----------------
 st.set_page_config(page_title="Observations Map", layout="wide")
-
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
@@ -655,25 +658,26 @@ def get_supabase() -> Client:
 supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_2",
+    prefix="obs_app_",
     password=SECRET_PASSWORD,
 )
 if not cookies.ready():
     st.stop()
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "username" not in st.session_state:
-    st.session_state.username = None
-if "project" not in st.session_state:
-    st.session_state.project = None
-if "observations" not in st.session_state:
-    st.session_state.observations = []
-if "selected_obs_id" not in st.session_state:
-    st.session_state.selected_obs_id = None
+# Session state
+for key, default in [
+    ("logged_in", False),
+    ("username", None),
+    ("project", None),
+    ("observations", []),
+    ("selected_obs_id", None),
+    ("map_center", [0.0, 0.0]),
+]:
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 
-# ----------------- AUTH HELPERS -----------------
+# ----------------- SUPABASE HELPERS -----------------
 def login(username: str, password: str) -> bool:
     res = (
         supabase.table(USERS_TABLE)
@@ -709,10 +713,10 @@ def update_observation(obs_id: int, data: dict):
     supabase.table(OBS_TABLE).update(data).eq("id", obs_id).execute()
     load_observations(st.session_state.project)
 
-def delete_observation(obs_id: int, data: dict):
-    supabase.table(OBS_TABLE).delete(data).eq("id", obs_id).execute()
-    load_observations(st.session_state.project)
 
+def delete_observation(obs_id: int):
+    supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
+    load_observations(st.session_state.project)
 
 
 # ----------------- COOKIES -----------------
@@ -749,7 +753,7 @@ def show_login():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 set_login_cookies(username)
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
 
@@ -766,13 +770,13 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
-        st.rerun()
+        st.experimental_rerun()
 
 
 # ----------------- DIALOGS -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    st.write("Fill in the details and drag the marker to the correct position.")
+    st.write("Fill in the details and drag/click the marker to set the position.")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -784,28 +788,33 @@ def new_observation_dialog():
         lat = st.number_input("Latitude", format="%.6f")
         lon = st.number_input("Longitude", format="%.6f")
 
+    # Map centered on current main map center
+    center_lat, center_lon = st.session_state.map_center
+    if not lat and not lon:
+        lat, lon = center_lat, center_lon
+
     st.markdown("**Set position on map**")
-    m = folium.Map(location=[lat or 0, lon or 0], zoom_start=2)
-    draggable_marker = folium.Marker(
-        location=[lat or 0, lon or 0],
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    marker = folium.Marker(
+        location=[lat, lon],
         draggable=True,
     )
-    draggable_marker.add_to(m)
+    marker.add_to(m)
 
     map_data = st_folium(m, width="100%", height=400)
 
+    # If user clicks on map/marker
     if map_data and map_data.get("last_object_clicked"):
-        # fallback if user clicks instead of dragging
         lat = map_data["last_object_clicked"]["lat"]
         lon = map_data["last_object_clicked"]["lng"]
 
+    # If draggable marker returns geometry (depending on st_folium version)
     if map_data and map_data.get("last_active_drawing"):
-        # if draggable marker returns coordinates
         coords = map_data["last_active_drawing"]["geometry"]["coordinates"]
         lon, lat = coords[0], coords[1]
 
     if st.button("Save observation"):
-        if not lat or not lon:
+        if lat is None or lon is None:
             st.warning("Please provide latitude and longitude (via map or inputs).")
             st.stop()
         if not species:
@@ -823,7 +832,7 @@ def new_observation_dialog():
         }
         insert_observation(data)
         st.success("Observation saved.")
-        st.rerun()
+        st.experimental_rerun()
 
 
 @st.dialog("Edit Observation")
@@ -847,11 +856,11 @@ def edit_observation_dialog(obs):
 
     st.markdown("**Adjust position on map**")
     m = folium.Map(location=[lat, lon], zoom_start=8)
-    draggable_marker = folium.Marker(
+    marker = folium.Marker(
         location=[lat, lon],
         draggable=True,
     )
-    draggable_marker.add_to(m)
+    marker.add_to(m)
 
     map_data = st_folium(m, width="100%", height=400)
 
@@ -866,7 +875,7 @@ def edit_observation_dialog(obs):
     col_a, col_b = st.columns(2)
     with col_a:
         if st.button("Save changes"):
-            if not lat or not lon:
+            if lat is None or lon is None:
                 st.warning("Please provide latitude and longitude.")
                 st.stop()
             data = {
@@ -879,10 +888,10 @@ def edit_observation_dialog(obs):
             }
             update_observation(obs["id"], data)
             st.success("Observation updated.")
-            st.rerun()
+            st.experimental_rerun()
     with col_b:
         if st.button("Cancel"):
-            st.rerun()
+            st.experimental_rerun()
 
 
 # ----------------- MAIN APP -----------------
@@ -892,15 +901,34 @@ def show_main_app():
     # Sidebar
     with st.sidebar:
         st.subheader("Controls")
-        if st.button("🔴 Add observation", use_container_width=True):
-            new_observation_dialog()
+
+        # Circular button via simple CSS
+        st.markdown(
+            """
+            <style>
+            .circle-btn button {
+                border-radius: 50% !important;
+                height: 60px !important;
+                width: 60px !important;
+                padding: 0 !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        circle_container = st.container()
+        with circle_container:
+            st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
+            if st.button("＋", key="add_obs_circle"):
+                new_observation_dialog()
+            st.markdown("</div>", unsafe_allow_html=True)
 
         if st.button("Logout", type="secondary", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.project = None
             clear_login_cookies()
-            st.rerun()
+            st.experimental_rerun()
 
         st.markdown("---")
         st.write(f"User: **{st.session_state.username}**")
@@ -916,9 +944,11 @@ def show_main_app():
         )
         center = [avg_lat, avg_lon]
     else:
-        center = [0, 0]
+        center = [0.0, 0.0]
 
-    # Map
+    st.session_state.map_center = center
+
+    # Main map (mobile/laptop friendly)
     m = folium.Map(location=center, zoom_start=2)
     for obs in st.session_state.observations:
         popup_text = f"{obs.get('species', '')} ({obs.get('username', '')})"
@@ -927,12 +957,12 @@ def show_main_app():
             popup=popup_text,
         ).add_to(m)
 
-    map_data = st_folium(m, width="100%", height=500)
+    st_folium(m, width="100%", height=500)
 
     # Observation selection + table
     st.subheader("Observations")
     if not st.session_state.observations:
-        st.info("No observations yet. Use the 'Add observation' button to create one.")
+        st.info("No observations yet. Use the circular button in the sidebar to create one.")
         return
 
     ids = [o["id"] for o in st.session_state.observations]
@@ -940,7 +970,7 @@ def show_main_app():
         f"{o['id']} - {o.get('species','')} ({o.get('date','')})"
         for o in st.session_state.observations
     ]
-    selected_label = st.selectbox("Select observation", labels)
+    selected_label = st.selectbox("Select observation", labels, index=0)
     selected_id = int(selected_label.split(" - ")[0])
     st.session_state.selected_obs_id = selected_id
 
@@ -979,10 +1009,11 @@ def show_main_app():
             if st.button("Edit observation"):
                 edit_observation_dialog(selected_obs)
         with col2:
-            if st.button("Cancel selection"):
-                delete_observation(selected_obs)
-                # st.session_state.selected_obs_id = None
-                # st.rerun()
+            if st.button("Delete observation"):
+                delete_observation(selected_obs["id"])
+                st.success("Observation deleted.")
+                st.session_state.selected_obs_id = None
+                st.experimental_rerun()
 
 
 # ----------------- ROUTING -----------------
