@@ -15,7 +15,9 @@ USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
 CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png" 
-OPACITY = 0.8
+
+# add point mark
+OPACITY = 1
 WIDTH = 30
 
 
