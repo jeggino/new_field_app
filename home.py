@@ -225,6 +225,7 @@ def new_observation_dialog():
 
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
+    st.write(obs)
     st.write("Update the details and position.")
 
     base_center = [obs.get("lat", 0),obs.get("lon", 0)]
