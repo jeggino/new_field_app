@@ -798,15 +798,7 @@ def _get_center_from_map_data(map_data, fallback_center):
 def new_observation_dialog():
     st.write("Fill in the details and use the map center as position if you want.")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        species = st.text_input("Species")
-        username = st.text_input("Username", value=st.session_state.username or "")
-        behavior = st.text_input("Behavior")
-    with col2:
-        date = st.date_input("Date", value=datetime.utcnow().date())
-        lat = st.number_input("Latitude", format="%.6f")
-        lon = st.number_input("Longitude", format="%.6f")
+    
 
     base_center = st.session_state.map_center
 
@@ -816,13 +808,23 @@ def new_observation_dialog():
     # Just a normal map; the cross is shown as an image overlay in Streamlit
     map_data = st_folium(m, width="100%", height=400)
 
-    st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
+    # st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
 
     current_center = _get_center_from_map_data(map_data, base_center)
 
     if st.button("Use current map center as coordinates"):
-        lat, lon = current_center
-        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
+        lat_, lon_ = current_center
+        st.info(f"Using center coordinates: lat={lat_:.6f}, lon={lon_:.6f}")
+
+    col1, col2 = st.columns(2)
+        with col1:
+            species = st.text_input("Species")
+            username = st.text_input("Username", value=st.session_state.username or "")
+            behavior = st.text_input("Behavior")
+        with col2:
+            date = st.date_input("Date", value=datetime.utcnow().date())
+            lat = st.number_input("Latitude", lat_)
+            lon = st.number_input("Longitude", lon_)
 
     if st.button("Save observation"):
         if lat is None or lon is None:
