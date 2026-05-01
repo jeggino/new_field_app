@@ -228,7 +228,7 @@ def edit_observation_dialog(obs):
     st.write(obs)
     st.write("Update the details and position.")
 
-    base_center = [obs.get("lat", 0),obs.get("lon", 0)]
+    base_center = [obs.get("lat", 0), obs.get("lon", 0)]
     st.write(base_center)
 
     m = folium.Map(location=base_center, zoom_start=20)
@@ -252,11 +252,13 @@ def edit_observation_dialog(obs):
 
     map_data = st_folium(m, width="100%", height=400)
 
-    
+    lat = obs.get("lat", 0)
+    lon = obs.get("lon", 0)    
     
     if st.button("Use current map center as coordinates (edit)"):
         lat = map_data['center']['lat']
         lon = map_data['center']['lng']
+
 
     st.write(lat)
     st.write(lon)
