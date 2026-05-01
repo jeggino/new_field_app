@@ -179,7 +179,7 @@ def new_observation_dialog():
         z-index: 9999;
     ">
         <img src="https://www.bookmarkseparators.com/img/fav/dot-black.png"
-             style="width:20px; height:auto; opacity:0.2;">
+             style="width:20px; height:auto; opacity:0.5;">
     </div>
     """
 
