@@ -15,6 +15,7 @@ USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
 CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png" 
+OPACITY = 0.6
 
 
 # "https://www.bookmarkseparators.com/img/fav/dot-black.png"
@@ -190,7 +191,7 @@ def new_observation_dialog():
         z-index: 9999;
     ">
         <img src={CROSS_IMAGE_PATH }
-             style="width:20px; height:auto; opacity:0.8; color:red">
+             style="width:20px; height:auto; opacity:{OPACITY}; color:red">
     </div>
     """
 
@@ -257,7 +258,7 @@ def edit_observation_dialog(obs):
         z-index: 9999;
     ">
         <img src={CROSS_IMAGE_PATH }
-             style="width:20px; height:auto; opacity:0.8; color:red">
+             style="width:20px; height:auto; opacity:{OPACITY}; color:red">
     </div>
     """
 
