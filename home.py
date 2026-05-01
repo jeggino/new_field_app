@@ -142,7 +142,7 @@ def show_project_selection():
         st.rerun()
 
 
------------------ DIALOGS -----------------
+# ----------------- DIALOGS -----------------
 def _get_center_from_map_data(map_data, fallback_center):
     if not map_data:
         return fallback_center
