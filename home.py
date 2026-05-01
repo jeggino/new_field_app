@@ -978,7 +978,7 @@ def show_main_app():
 
     st.write(map_data)
     st.session_state.map_input_zoom = map_data["zoom"]
-    st.session_state.map_input_center = [map_data["cente"]['lat'],map_data["cente"]['lng']]
+    st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
 
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
