@@ -254,12 +254,16 @@ def edit_observation_dialog(obs):
 
     map_data = st_folium(m, width="100%", height=400)
 
-    lat = obs.get("lat", 0)
-    lon = obs.get("lon", 0)    
+    
     
     if st.button("Use current map center as coordinates (edit)"):
         lat = map_data['center']['lat']
         lon = map_data['center']['lng']
+        st.info(f"New coordinates ({lat},{lon})")
+
+    else:
+        lat = obs.get("lat", 0)
+        lon = obs.get("lon", 0)
 
     col1, col2 = st.columns(2)
     with col1:
