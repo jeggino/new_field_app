@@ -659,13 +659,12 @@ def get_supabase() -> Client:
 supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_3",
+    prefix="obs_app_5",
     password=SECRET_PASSWORD,
 )
 if not cookies.ready():
     st.stop()
 
-# Session state
 defaults = {
     "logged_in": False,
     "username": None,
@@ -755,7 +754,7 @@ def show_login():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 set_login_cookies(username)
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
 
@@ -772,13 +771,13 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
-        st.rerun()
+        st.experimental_rerun()
 
 
 # ----------------- DIALOGS -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    st.write("Fill in the details and set the position.")
+    st.write("Fill in the details and use the map center as position if you want.")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -791,38 +790,26 @@ def new_observation_dialog():
         lon = st.number_input("Longitude", format="%.6f")
 
     center_lat, center_lon = st.session_state.map_center
-    if not lat and not lon:
+
+    st.markdown("**Map (center will be used if you click the button below)**")
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    folium.CircleMarker(
+        location=[center_lat, center_lon],
+        radius=6,
+        color="red",
+        fill=True,
+        fill_color="red",
+    ).add_to(m)
+
+    st_folium(m, width="100%", height=400)
+
+    if st.button("Use center of map as coordinates"):
         lat, lon = center_lat, center_lon
-
-    st.markdown("**Set position on map**")
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=18)
-    marker = folium.Marker(
-        location=[lat, lon],
-        draggable=True,
-        icon=folium.Icon(color='blue', icon='info-sign')
-    )
-    marker.add_to(m)
-
-    map_data = st_folium(m, width="100%", height=400)
-    st.write(map_data)
-
-    # Clicking on the marker or map
-    if map_data and map_data.get("last_object_clicked"):
-        lat = map_data["last_object_clicked"]["lat"]
-        lon = map_data["last_object_clicked"]["lng"]
-
-    # Optional separate button to explicitly use marker position
-    if st.button("Use marker position"):
-        if map_data and map_data.get("last_object_clicked"):
-            lat = map_data["last_object_clicked"]["lat"]
-            lon = map_data["last_object_clicked"]["lng"]
-        else:
-            st.warning("Click on the marker on the map first to capture its position.")
+        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     if st.button("Save observation"):
-        if lat is None or lon is None or (lat == 0 and lon == 0 and not species):
-            # simple guard; you can refine this
-            st.warning("Please provide latitude and longitude (via map or inputs).")
+        if lat is None or lon is None:
+            st.warning("Please provide latitude and longitude (via button or manual input).")
             st.stop()
         if not species:
             st.warning("Species is required.")
@@ -839,7 +826,7 @@ def new_observation_dialog():
         }
         insert_observation(data)
         st.success("Observation saved.")
-        st.rerun()
+        st.experimental_rerun()
 
 
 @st.dialog("Edit Observation")
@@ -861,28 +848,22 @@ def edit_observation_dialog(obs):
         lat = st.number_input("Latitude", value=float(obs.get("lat", 0)), format="%.6f")
         lon = st.number_input("Longitude", value=float(obs.get("lon", 0)), format="%.6f")
 
-    st.markdown("**Adjust position on map**")
-    m = folium.Map(location=[lat, lon], zoom_start=8)
-    marker = folium.Marker(
-        location=[lat, lon],
-        draggable=True,
-        icon=folium.Icon(color='blue', icon='info-sign')
-    )
-    marker.add_to(m)
+    st.markdown("**Map (you can reuse the main map center if desired)**")
+    center_lat, center_lon = st.session_state.map_center
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    folium.CircleMarker(
+        location=[center_lat, center_lon],
+        radius=6,
+        color="blue",
+        fill=True,
+        fill_color="blue",
+    ).add_to(m)
 
-    map_data = st_folium(m, width="100%", height=400)
-    st.write(map_data)
+    st_folium(m, width="100%", height=400)
 
-    if map_data and map_data.get("last_object_clicked"):
-        lat = map_data["last_object_clicked"]["lat"]
-        lon = map_data["last_object_clicked"]["lng"]
-
-    if st.button("Use marker position (edit)"):
-        if map_data and map_data.get("last_object_clicked"):
-            lat = map_data["last_object_clicked"]["lat"]
-            lon = map_data["last_object_clicked"]["lng"]
-        else:
-            st.warning("Click on the marker on the map first to capture its position.")
+    if st.button("Use center of map as coordinates (edit)"):
+        lat, lon = center_lat, center_lon
+        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -900,20 +881,16 @@ def edit_observation_dialog(obs):
             }
             update_observation(obs["id"], data)
             st.success("Observation updated.")
-            st.rerun()
+            st.experimental_rerun()
     with col_b:
         if st.button("Cancel"):
-            st.rerun()
+            st.experimental_rerun()
 
 
 # ----------------- MAIN APP -----------------
 def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
-    """Match click to an observation by lat/lon (simple tolerance)."""
     for o in observations:
-        if (
-            abs(o["lat"] - click_lat) < tol
-            and abs(o["lon"] - click_lon) < tol
-        ):
+        if abs(o["lat"] - click_lat) < tol and abs(o["lon"] - click_lon) < tol:
             return o
     return None
 
@@ -925,7 +902,6 @@ def show_main_app():
     with st.sidebar:
         st.subheader("Controls")
 
-        # Circular button via CSS
         st.markdown(
             """
             <style>
@@ -950,7 +926,7 @@ def show_main_app():
             st.session_state.username = None
             st.session_state.project = None
             clear_login_cookies()
-            st.rerun()
+            st.experimental_rerun()
 
         st.markdown("---")
         st.write(f"User: **{st.session_state.username}**")
@@ -966,23 +942,21 @@ def show_main_app():
         )
         center = [avg_lat, avg_lon]
     else:
-        center = [51.86009748709087, 5.074785652996887]
+        center = [0.0, 0.0]
 
     st.session_state.map_center = center
 
     # Main map (mobile/laptop friendly)
-    m = folium.Map(location=center, zoom_start=13)
+    m = folium.Map(location=center, zoom_start=2)
     for obs in st.session_state.observations:
         popup_text = f"{obs.get('species', '')} ({obs.get('username', '')})"
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
             popup=popup_text,
-            icon=folium.Icon(color='blue', icon='info-sign')
         ).add_to(m)
 
     map_data = st_folium(m, width="100%", height=500)
 
-    # Handle marker click -> show table only when marker clicked
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
         click_lat = map_data["last_object_clicked"]["lat"]
@@ -1002,7 +976,6 @@ def show_main_app():
         st.info("No observations yet. Use the circular button in the sidebar to create one.")
         return
 
-    # Only show table when a marker has been clicked and matched
     if st.session_state.selected_obs_id is not None:
         selected_obs = next(
             (o for o in st.session_state.observations if o["id"] == st.session_state.selected_obs_id),
@@ -1044,7 +1017,7 @@ def show_main_app():
                 delete_observation(selected_obs["id"])
                 st.success("Observation deleted.")
                 st.session_state.selected_obs_id = None
-                st.rerun()
+                st.experimental_rerun()
     else:
         st.info("Click on a marker on the map to see its details.")
 
