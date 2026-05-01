@@ -179,7 +179,7 @@ def new_observation_dialog():
         z-index: 9999;
     ">
         <img src="https://www.bookmarkseparators.com/img/fav/dot-black.png"
-             style="width:20px; height:auto; opacity:0.5;">
+             style="width:15px; height:auto; opacity:0.7;">
     </div>
     """
 
@@ -189,9 +189,6 @@ def new_observation_dialog():
     map_data = st_folium(m, width="100%", height=400)
     st.write(map_data)
 
-    # st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
-
-    # current_center = _get_center_from_map_data(map_data, base_center)
 
     # lat, lon = current_center
     lat = map_data['center']['lat']
@@ -205,8 +202,7 @@ def new_observation_dialog():
         behavior = st.text_input("Behavior")
     with col2:
         date = st.date_input("Date", value=datetime.utcnow().date())
-        # lat = st.number_input("Latitude", lat, format="%0.12f")
-        # lon = st.number_input("Longitude", lon, format="%0.12f")
+
 
     if st.button("Save observation"):
         if lat is None or lon is None:
@@ -347,6 +343,7 @@ def show_main_app():
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
             popup=popup_text,
+            icon=folium.Icon(color="green", icon="cloud", prefix="fa")
         ).add_to(m)
 
     map_data = st_folium(m, width="100%", height=500)
