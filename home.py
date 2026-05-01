@@ -885,22 +885,19 @@ def edit_observation_dialog(obs):
     with col_a:
         if st.button("Save changes"):
             if lat is None or lon is None:
-                st.warning("Please provide latitude and longitude.")
-                st.stop()
-            data = {
-                "species": species,
-                "username": username,
-                "behavior": behavior,
-                "date": str(date),
-                "lat": float(lat),
-                "lon": float(lon),
-            }
-            update_observation(obs["id"], data)
-            st.success("Observation updated.")
-            st.rerun()
-    with col_b:
-        if st.button("Cancel"):
-            st.rerun()
+            st.warning("Please provide latitude and longitude.")
+            st.stop()
+        data = {
+            "species": species,
+            "username": username,
+            "behavior": behavior,
+            "date": str(date),
+            "lat": float(lat),
+            "lon": float(lon),
+        }
+        update_observation(obs["id"], data)
+        st.success("Observation updated.")
+        st.rerun()
 
 
 # ----------------- MAIN APP -----------------
