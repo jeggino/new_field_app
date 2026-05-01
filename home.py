@@ -641,7 +641,7 @@ from datetime import date
 # -------------------------------------------------
 st.set_page_config(page_title="Observation Map", layout="wide")
 
-cookies = EncryptedCookieManager(prefix="obs_app_", password=st.secrets["COOKIE_PASSWORD"])
+cookies = EncryptedCookieManager(prefix="fieldapp_", password=st.secrets["COOKIE_PASSWORD"])
 if not cookies.ready():
     st.stop()
 
