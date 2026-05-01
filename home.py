@@ -744,7 +744,7 @@ def show_login():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 set_login_cookies(username)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid credentials")
 
@@ -761,7 +761,7 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
-        st.experimental_rerun()
+        st.rerun()
 
 
 # ----------------- DIALOGS -----------------
@@ -818,7 +818,7 @@ def new_observation_dialog():
         }
         insert_observation(data)
         st.success("Observation saved.")
-        st.experimental_rerun()
+        st.rerun()
 
 
 @st.dialog("Edit Observation")
@@ -877,7 +877,7 @@ def edit_observation_dialog(obs):
             st.experimental_rerun()
     with col_b:
         if st.button("Cancel"):
-            st.experimental_rerun()
+            st.rerun()
 
 
 # ----------------- MAIN APP -----------------
@@ -895,7 +895,7 @@ def show_main_app():
             st.session_state.username = None
             st.session_state.project = None
             clear_login_cookies()
-            st.experimental_rerun()
+            st.rerun()
 
         st.markdown("---")
         st.write(f"User: **{st.session_state.username}**")
@@ -976,7 +976,7 @@ def show_main_app():
         with col2:
             if st.button("Cancel selection"):
                 st.session_state.selected_obs_id = None
-                st.experimental_rerun()
+                st.rerun()
 
 
 # ----------------- ROUTING -----------------
