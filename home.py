@@ -319,6 +319,7 @@ def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
 def show_main_app():
 
     st.write(cookies)
+    st.write(st.session_state)
     # Sidebar
     with st.sidebar:
         st.subheader("Controls")
