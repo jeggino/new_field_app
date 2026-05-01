@@ -355,7 +355,7 @@ def show_main_app():
     st.session_state.map_center = center
 
     # Main map (mobile/laptop friendly)
-    m = folium.Map(location=center, zoom_start=2)
+    m = folium.Map(location=center, zoom_start=15)
     for obs in st.session_state.observations:
         popup_text = f"{obs.get('species', '')} ({obs.get('username', '')})"
         folium.Marker(
