@@ -347,7 +347,7 @@ def show_main_app():
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.project = None
-            st.session_state.clear()
+            del st.session_state
             clear_login_cookies()
             st.rerun()
 
