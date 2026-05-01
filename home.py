@@ -735,7 +735,7 @@ def create_observation(lat, lon, species, project_name,
         )
         .execute()
     )
-    return res.data[0]
+    return res.data[0], st.toast("Your abservation was saved!", icon="😍")
 
 def update_observation(obs_id, lat, lon, species, project_name,
                        username, behavior, obs_date):
@@ -854,7 +854,6 @@ def new_observation_dialog(lat, lon):
         )
         st.session_state.observations.append(obs)
         st.session_state.new_obs_coords = None
-        st.toast("Your abservation was saved!", icon="😍")
         st.rerun()
 
 
