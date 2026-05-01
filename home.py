@@ -809,10 +809,11 @@ def new_observation_dialog():
 
     # Just a normal map; the cross is shown as an image overlay in Streamlit
     map_data = st_folium(m, width="100%", height=400)
+    st.write(map_data)
 
     # st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
 
-    current_center = _get_center_from_map_data(map_data, base_center)
+    # current_center = _get_center_from_map_data(map_data, base_center)
 
     if st.button("Use current map center as coordinates"):
         # lat, lon = current_center
