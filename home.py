@@ -888,9 +888,6 @@ def edit_observation_dialog(obs):
             }
             update_observation(obs["id"], data)
             st.success("Observation updated.")
-            st.experimental_rerun()
-    with col_b:
-        if st.button("Cancel"):
             st.rerun()
 
 
