@@ -32,6 +32,7 @@ if not cookies.ready():
 
 defaults = {
     "logged_in": False,
+    "logged_in_project": False,
     "username": None,
     "project": None,
     "observations": [],
@@ -108,9 +109,11 @@ def clear_login_cookies():
 
 
 def restore_login_from_cookies():
-    if cookies.get("logged_in") == "1" and not st.session_state.logged_in:
+    if cookies.get("logged_in") == "1" and not st.session_state.logged_in and cookies.get("logged_in_project") == "1":
         st.session_state.logged_in = True
+        st.session_state.logged_in_project = True
         st.session_state.username = cookies.get("username")
+        st.session_state.project = cookies.get("project")
 
 
 restore_login_from_cookies()
