@@ -816,44 +816,43 @@ def new_observation_dialog():
     
         # current_center = _get_center_from_map_data(map_data, base_center)
     
-        if st.form_submit_button("Use current map center as coordinates"):
-            # lat, lon = current_center
-            lat = map_data['center']['lat']
-            lon = map_data['center']['lng']
-            st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
-            st.write(lat)
-            st.write(lon)
+        # lat, lon = current_center
+        lat = map_data['center']['lat']
+        lon = map_data['center']['lng']
+        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
+        st.write(lat)
+        st.write(lon)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            species = st.text_input("Species")
+            username = st.text_input("Username", value=st.session_state.username or "")
+            behavior = st.text_input("Behavior")
+        with col2:
+            date = st.date_input("Date", value=datetime.utcnow().date())
+            # lat = st.number_input("Latitude", lat_)
+            # lon = st.number_input("Longitude", lon_)
     
-            col1, col2 = st.columns(2)
-            with col1:
-                species = st.text_input("Species")
-                username = st.text_input("Username", value=st.session_state.username or "")
-                behavior = st.text_input("Behavior")
-            with col2:
-                date = st.date_input("Date", value=datetime.utcnow().date())
-                # lat = st.number_input("Latitude", lat_)
-                # lon = st.number_input("Longitude", lon_)
-        
-            if st.button("Save observation"):
-                if lat is None or lon is None:
-                    st.warning("Please provide latitude and longitude (via button or manual input).")
-                    st.stop()
-                if not species:
-                    st.warning("Species is required.")
-                    st.stop()
-        
-                data = {
-                    "species": species,
-                    "project": st.session_state.project,
-                    "username": username,
-                    "behavior": behavior,
-                    "date": str(date),
-                    "lat": lat,
-                    "lon": lon,
-                }
-                insert_observation(data)
-                st.success("Observation saved.")
-                st.rerun()
+        if st.form_submit_button("Save observation"):
+            if lat is None or lon is None:
+                st.warning("Please provide latitude and longitude (via button or manual input).")
+                st.stop()
+            if not species:
+                st.warning("Species is required.")
+                st.stop()
+    
+            data = {
+                "species": species,
+                "project": st.session_state.project,
+                "username": username,
+                "behavior": behavior,
+                "date": str(date),
+                "lat": lat,
+                "lon": lon,
+            }
+            insert_observation(data)
+            st.success("Observation saved.")
+            st.rerun()
 
 
 @st.dialog("Edit Observation")
