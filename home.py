@@ -187,13 +187,11 @@ def new_observation_dialog():
 
     # Just a normal map; the cross is shown as an image overlay in Streamlit
     map_data = st_folium(m, width="100%", height=400)
-    st.write(map_data)
-
 
     # lat, lon = current_center
     lat = map_data['center']['lat']
     lon = map_data['center']['lng']
-    st.info(f"Coordinates: lat={lat}, lon={lon}")
+    # st.info(f"Coordinates: lat={lat}, lon={lon}")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -229,6 +227,36 @@ def new_observation_dialog():
 def edit_observation_dialog(obs):
     st.write("Update the details and position.")
 
+    base_center = [obs.get("lat", 0),obs.get("lon", 0)]
+    zoom = st.session_state.map_input_zoom
+
+    m = folium.Map(location=base_center, zoom_start=6)
+
+    # Add a fixed image overlay using HTML and CSS
+    html = """
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none; /* Let clicks pass through */
+        z-index: 9999;
+    ">
+        <img src="https://www.bookmarkseparators.com/img/fav/dot-black.png"
+             style="width:20px; height:auto; opacity:0.8; color:red">
+    </div>
+    """
+
+    m.get_root().html.add_child(folium.Element(html))
+
+    map_data = st_folium(m, width="100%", height=400)
+
+    
+    
+    if st.button("Use current map center as coordinates (edit)"):
+        lat = map_data['center']['lat']
+        lon = map_data['center']['lng']
+
     col1, col2 = st.columns(2)
     with col1:
         species = st.text_input("Species", value=obs.get("species", ""))
@@ -241,22 +269,7 @@ def edit_observation_dialog(obs):
             if obs.get("date")
             else datetime.utcnow().date(),
         )
-        lat = st.number_input("Latitude", value=float(obs.get("lat", 0)), format="%.6f")
-        lon = st.number_input("Longitude", value=float(obs.get("lon", 0)), format="%.6f")
 
-    base_center = st.session_state.map_center
-
-    st.markdown("**Map (cross image indicates center; you can reuse it as new position)**")
-    m = folium.Map(location=base_center, zoom_start=6)
-    map_data = st_folium(m, width="100%", height=400)
-
-    st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
-
-    current_center = _get_center_from_map_data(map_data, base_center)
-
-    if st.button("Use current map center as coordinates (edit)"):
-        lat, lon = current_center
-        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -273,7 +286,6 @@ def edit_observation_dialog(obs):
             "lon": float(lon),
         }
         update_observation(obs["id"], data)
-        st.success("Observation updated.")
         st.rerun()
 
 
