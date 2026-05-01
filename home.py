@@ -676,7 +676,9 @@ defaults = {
     "observations": [],
     "selected_obs_id": None,
     "map_center": [0.0, 0.0],
-    "map_center_input": None,
+    "map_input_center": None,
+    "map_input_zoom": None,
+    
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -801,10 +803,11 @@ def new_observation_dialog():
 
     
 
-    base_center = st.session_state.map_center
+    base_center = st.session_state.map_input_center
+    zoom = st.session_state.map_input_zoom
 
     st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
-    m = folium.Map(location=base_center, zoom_start=6)
+    m = folium.Map(location=base_center, zoom_start=zoom)
 
     # Just a normal map; the cross is shown as an image overlay in Streamlit
     map_data = st_folium(m, width="100%", height=400)
@@ -974,6 +977,8 @@ def show_main_app():
     map_data = st_folium(m, width="100%", height=500)
 
     st.write(map_data)
+    st.session_state.map_input_zoom = map_data["zoom"]
+    st.session_state.map_input_center = [map_data["cente"]['lat'],map_data["cente"]['lng']]
 
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
