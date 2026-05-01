@@ -945,11 +945,11 @@ with st.sidebar:
 
     if st.button("Change project"):
         project_dialog()
-
-    st.markdown("---")
     
     if st.button("Logout"):
         logout()
+
+    st.markdown("---")
 
 
 
@@ -1010,7 +1010,7 @@ if map_data.get("last_object_clicked") and obs_list:
 
 
 # Fallback button (works reliably in Streamlit)
-if st.button('push', type="primary"):
+if st.sidebar.button('push', type="primary"):
     new_observation_dialog(lat, lon)
 
 # If no observations yet, prompt user
