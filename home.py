@@ -650,6 +650,7 @@ USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
 
+
 # ----------------- INIT -----------------
 @st.cache_resource
 def get_supabase() -> Client:
@@ -658,23 +659,24 @@ def get_supabase() -> Client:
 supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_",
+    prefix="obs_app_3",
     password=SECRET_PASSWORD,
 )
 if not cookies.ready():
     st.stop()
 
 # Session state
-for key, default in [
-    ("logged_in", False),
-    ("username", None),
-    ("project", None),
-    ("observations", []),
-    ("selected_obs_id", None),
-    ("map_center", [0.0, 0.0]),
-]:
-    if key not in st.session_state:
-        st.session_state[key] = default
+defaults = {
+    "logged_in": False,
+    "username": None,
+    "project": None,
+    "observations": [],
+    "selected_obs_id": None,
+    "map_center": [0.0, 0.0],
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
 
 # ----------------- SUPABASE HELPERS -----------------
@@ -753,7 +755,7 @@ def show_login():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 set_login_cookies(username)
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
 
@@ -770,13 +772,13 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
-        st.rerun()
+        st.experimental_rerun()
 
 
 # ----------------- DIALOGS -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    st.write("Fill in the details and drag/click the marker to set the position.")
+    st.write("Fill in the details and set the position.")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -788,7 +790,6 @@ def new_observation_dialog():
         lat = st.number_input("Latitude", format="%.6f")
         lon = st.number_input("Longitude", format="%.6f")
 
-    # Map centered on current main map center
     center_lat, center_lon = st.session_state.map_center
     if not lat and not lon:
         lat, lon = center_lat, center_lon
@@ -803,18 +804,22 @@ def new_observation_dialog():
 
     map_data = st_folium(m, width="100%", height=400)
 
-    # If user clicks on map/marker
+    # Clicking on the marker or map
     if map_data and map_data.get("last_object_clicked"):
         lat = map_data["last_object_clicked"]["lat"]
         lon = map_data["last_object_clicked"]["lng"]
 
-    # If draggable marker returns geometry (depending on st_folium version)
-    if map_data and map_data.get("last_active_drawing"):
-        coords = map_data["last_active_drawing"]["geometry"]["coordinates"]
-        lon, lat = coords[0], coords[1]
+    # Optional separate button to explicitly use marker position
+    if st.button("Use marker position"):
+        if map_data and map_data.get("last_object_clicked"):
+            lat = map_data["last_object_clicked"]["lat"]
+            lon = map_data["last_object_clicked"]["lng"]
+        else:
+            st.warning("Click on the marker on the map first to capture its position.")
 
     if st.button("Save observation"):
-        if lat is None or lon is None:
+        if lat is None or lon is None or (lat == 0 and lon == 0 and not species):
+            # simple guard; you can refine this
             st.warning("Please provide latitude and longitude (via map or inputs).")
             st.stop()
         if not species:
@@ -832,7 +837,7 @@ def new_observation_dialog():
         }
         insert_observation(data)
         st.success("Observation saved.")
-        st.rerun()
+        st.experimental_rerun()
 
 
 @st.dialog("Edit Observation")
@@ -868,9 +873,12 @@ def edit_observation_dialog(obs):
         lat = map_data["last_object_clicked"]["lat"]
         lon = map_data["last_object_clicked"]["lng"]
 
-    if map_data and map_data.get("last_active_drawing"):
-        coords = map_data["last_active_drawing"]["geometry"]["coordinates"]
-        lon, lat = coords[0], coords[1]
+    if st.button("Use marker position (edit)"):
+        if map_data and map_data.get("last_object_clicked"):
+            lat = map_data["last_object_clicked"]["lat"]
+            lon = map_data["last_object_clicked"]["lng"]
+        else:
+            st.warning("Click on the marker on the map first to capture its position.")
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -888,10 +896,24 @@ def edit_observation_dialog(obs):
             }
             update_observation(obs["id"], data)
             st.success("Observation updated.")
-            st.rerun()
+            st.experimental_rerun()
+    with col_b:
+        if st.button("Cancel"):
+            st.experimental_rerun()
 
 
 # ----------------- MAIN APP -----------------
+def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
+    """Match click to an observation by lat/lon (simple tolerance)."""
+    for o in observations:
+        if (
+            abs(o["lat"] - click_lat) < tol
+            and abs(o["lon"] - click_lon) < tol
+        ):
+            return o
+    return None
+
+
 def show_main_app():
     st.title("Observations Map")
 
@@ -899,7 +921,7 @@ def show_main_app():
     with st.sidebar:
         st.subheader("Controls")
 
-        # Circular button via simple CSS
+        # Circular button via CSS
         st.markdown(
             """
             <style>
@@ -908,24 +930,23 @@ def show_main_app():
                 height: 60px !important;
                 width: 60px !important;
                 padding: 0 !important;
+                font-size: 24px !important;
             }
             </style>
             """,
             unsafe_allow_html=True,
         )
-        circle_container = st.container()
-        with circle_container:
-            st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
-            if st.button("＋", key="add_obs_circle"):
-                new_observation_dialog()
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
+        if st.button("＋", key="add_obs_circle"):
+            new_observation_dialog()
+        st.markdown("</div>", unsafe_allow_html=True)
 
         if st.button("Logout", type="secondary", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.project = None
             clear_login_cookies()
-            st.rerun()
+            st.experimental_rerun()
 
         st.markdown("---")
         st.write(f"User: **{st.session_state.username}**")
@@ -954,26 +975,34 @@ def show_main_app():
             popup=popup_text,
         ).add_to(m)
 
-    st_folium(m, width="100%", height=500)
+    map_data = st_folium(m, width="100%", height=500)
 
-    # Observation selection + table
+    # Handle marker click -> show table only when marker clicked
+    selected_obs = None
+    if map_data and map_data.get("last_object_clicked"):
+        click_lat = map_data["last_object_clicked"]["lat"]
+        click_lon = map_data["last_object_clicked"]["lng"]
+        selected_obs = find_clicked_observation(
+            click_lat, click_lon, st.session_state.observations
+        )
+        if selected_obs:
+            st.session_state.selected_obs_id = selected_obs["id"]
+        else:
+            st.session_state.selected_obs_id = None
+    else:
+        selected_obs = None
+
     st.subheader("Observations")
     if not st.session_state.observations:
         st.info("No observations yet. Use the circular button in the sidebar to create one.")
         return
 
-    ids = [o["id"] for o in st.session_state.observations]
-    labels = [
-        f"{o['id']} - {o.get('species','')} ({o.get('date','')})"
-        for o in st.session_state.observations
-    ]
-    selected_label = st.selectbox("Select observation", labels, index=0)
-    selected_id = int(selected_label.split(" - ")[0])
-    st.session_state.selected_obs_id = selected_id
-
-    selected_obs = next(
-        (o for o in st.session_state.observations if o["id"] == selected_id), None
-    )
+    # Only show table when a marker has been clicked and matched
+    if st.session_state.selected_obs_id is not None:
+        selected_obs = next(
+            (o for o in st.session_state.observations if o["id"] == st.session_state.selected_obs_id),
+            None,
+        )
 
     if selected_obs:
         st.table(
@@ -1010,7 +1039,9 @@ def show_main_app():
                 delete_observation(selected_obs["id"])
                 st.success("Observation deleted.")
                 st.session_state.selected_obs_id = None
-                st.rerun()
+                st.experimental_rerun()
+    else:
+        st.info("Click on a marker on the map to see its details.")
 
 
 # ----------------- ROUTING -----------------
