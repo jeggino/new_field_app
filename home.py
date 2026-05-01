@@ -17,7 +17,7 @@ OBS_TABLE = "observations"
 CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/19/Circle-Cross-Vibrant-Design-PNG-thumb.png"  # put your JPEG cross in the same folder
 
 
-# "https://e1.pngegg.com/pngimages/314/988/png-clipart-symbolize-x.png"
+# "https://www.bookmarkseparators.com/img/fav/dot-black.png"
 # ----------------- INIT -----------------
 @st.cache_resource
 def get_supabase() -> Client:
@@ -181,7 +181,7 @@ def new_observation_dialog():
     m = folium.Map(location=base_center, zoom_start=zoom)
 
     # Add a fixed image overlay using HTML and CSS
-    html = """
+    html = f"""
     <div style="
         position: fixed;
         top: 50%;
@@ -190,7 +190,7 @@ def new_observation_dialog():
         pointer-events: none; /* Let clicks pass through */
         z-index: 9999;
     ">
-        <img src="https://www.bookmarkseparators.com/img/fav/dot-black.png"
+        <img src={CROSS_IMAGE_PATH }
              style="width:20px; height:auto; opacity:0.8; color:red">
     </div>
     """
@@ -248,7 +248,7 @@ def edit_observation_dialog(obs):
     ).add_to(m)
 
     # Add a fixed image overlay using HTML and CSS
-    html = """
+    html = f"""
     <div style="
         position: fixed;
         top: 50%;
@@ -257,7 +257,7 @@ def edit_observation_dialog(obs):
         pointer-events: none; /* Let clicks pass through */
         z-index: 9999;
     ">
-        <img src="https://www.bookmarkseparators.com/img/fav/dot-black.png"
+        <img src={CROSS_IMAGE_PATH }
              style="width:20px; height:auto; opacity:0.8; color:red">
     </div>
     """
