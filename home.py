@@ -817,14 +817,14 @@ def new_observation_dialog():
         st.info(f"Using center coordinates: lat={lat_:.6f}, lon={lon_:.6f}")
 
     col1, col2 = st.columns(2)
-        with col1:
-            species = st.text_input("Species")
-            username = st.text_input("Username", value=st.session_state.username or "")
-            behavior = st.text_input("Behavior")
-        with col2:
-            date = st.date_input("Date", value=datetime.utcnow().date())
-            lat = st.number_input("Latitude", lat_)
-            lon = st.number_input("Longitude", lon_)
+    with col1:
+        species = st.text_input("Species")
+        username = st.text_input("Username", value=st.session_state.username or "")
+        behavior = st.text_input("Behavior")
+    with col2:
+        date = st.date_input("Date", value=datetime.utcnow().date())
+        lat = st.number_input("Latitude", lat_)
+        lon = st.number_input("Longitude", lon_)
 
     if st.button("Save observation"):
         if lat is None or lon is None:
