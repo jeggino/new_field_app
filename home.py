@@ -651,6 +651,7 @@ PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
 
 
+
 # ----------------- INIT -----------------
 @st.cache_resource
 def get_supabase() -> Client:
@@ -659,7 +660,7 @@ def get_supabase() -> Client:
 supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_5",
+    prefix="obs_app_45",
     password=SECRET_PASSWORD,
 )
 if not cookies.ready():
@@ -791,14 +792,25 @@ def new_observation_dialog():
 
     center_lat, center_lon = st.session_state.map_center
 
-    st.markdown("**Map (center will be used if you click the button below)**")
+    st.markdown("**Map (cross at center; use button to take its coordinates)**")
     m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
-    folium.CircleMarker(
-        location=[center_lat, center_lon],
-        radius=6,
+
+    # "Cross" at center: two small lines
+    folium.PolyLine(
+        locations=[
+            [center_lat + 0.01, center_lon],
+            [center_lat - 0.01, center_lon],
+        ],
         color="red",
-        fill=True,
-        fill_color="red",
+        weight=3,
+    ).add_to(m)
+    folium.PolyLine(
+        locations=[
+            [center_lat, center_lon - 0.01],
+            [center_lat, center_lon + 0.01],
+        ],
+        color="red",
+        weight=3,
     ).add_to(m)
 
     st_folium(m, width="100%", height=400)
@@ -848,15 +860,26 @@ def edit_observation_dialog(obs):
         lat = st.number_input("Latitude", value=float(obs.get("lat", 0)), format="%.6f")
         lon = st.number_input("Longitude", value=float(obs.get("lon", 0)), format="%.6f")
 
-    st.markdown("**Map (you can reuse the main map center if desired)**")
     center_lat, center_lon = st.session_state.map_center
+
+    st.markdown("**Map (cross at center; you can reuse it as new position)**")
     m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
-    folium.CircleMarker(
-        location=[center_lat, center_lon],
-        radius=6,
+
+    folium.PolyLine(
+        locations=[
+            [center_lat + 0.01, center_lon],
+            [center_lat - 0.01, center_lon],
+        ],
         color="blue",
-        fill=True,
-        fill_color="blue",
+        weight=3,
+    ).add_to(m)
+    folium.PolyLine(
+        locations=[
+            [center_lat, center_lon - 0.01],
+            [center_lat, center_lon + 0.01],
+        ],
+        color="blue",
+        weight=3,
     ).add_to(m)
 
     st_folium(m, width="100%", height=400)
