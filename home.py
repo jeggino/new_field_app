@@ -14,7 +14,7 @@ SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/17/Circle-X-Abstract-Form-PNG-thumb.png" 
+CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png" 
 
 
 # "https://www.bookmarkseparators.com/img/fav/dot-black.png"
