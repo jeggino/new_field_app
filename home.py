@@ -326,11 +326,6 @@ def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
 
 def show_main_app():
 
-    # st.write(cookies)
-    # st.write(st.session_state)
-    # Sidebar
-    if st.button("＋", key="add_obs_circle"):
-        new_observation_dialog()
     with st.sidebar:
         st.subheader("Controls")
 
@@ -416,7 +411,8 @@ def show_main_app():
             (o for o in st.session_state.observations if o["id"] == st.session_state.selected_obs_id),
             None,
         )
-
+    if st.button("＋", key="add_obs_circle",width="stretch"):
+        new_observation_dialog()
     if selected_obs:
         st.table(
             {
