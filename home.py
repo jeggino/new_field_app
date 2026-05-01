@@ -818,7 +818,7 @@ def new_observation_dialog():
     # lat, lon = current_center
     lat = map_data['center']['lat']
     lon = map_data['center']['lng']
-    st.info(f"Using center coordinates: lat={lat}, lon={lon}")
+    st.info(f"Coordinates: lat={lat}, lon={lon}")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -827,8 +827,8 @@ def new_observation_dialog():
         behavior = st.text_input("Behavior")
     with col2:
         date = st.date_input("Date", value=datetime.utcnow().date())
-        lat = st.number_input("Latitude", lat, format="%0.8f")
-        lon = st.number_input("Longitude", lon, format="%0.8f")
+        # lat = st.number_input("Latitude", lat, format="%0.12f")
+        # lon = st.number_input("Longitude", lon, format="%0.12f")
 
     if st.button("Save observation"):
         if lat is None or lon is None:
@@ -844,8 +844,8 @@ def new_observation_dialog():
             "username": username,
             "behavior": behavior,
             "date": str(date),
-            "lat": lat,
-            "lon": lon,
+            "lat": float(lat),
+            "lon": float(lon),
         }
         insert_observation(data)
         st.rerun()
@@ -973,9 +973,8 @@ def show_main_app():
 
     map_data = st_folium(m, width="100%", height=500)
 
-    if map_data:
-        st.session_state.map_input_zoom = map_data["zoom"]
-        st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
+    st.session_state.map_input_zoom = map_data["zoom"]
+    st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
 
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
