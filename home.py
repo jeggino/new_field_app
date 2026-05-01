@@ -294,8 +294,8 @@ def edit_observation_dialog(obs):
                 "username": username,
                 "behavior": behavior,
                 "date": str(date),
-                "lat": float(lat),
-                "lon": float(lon),
+                "lat": float(number),
+                "lon": float(number_2),
             }
             update_observation(obs["id"], data)
             st.rerun()
