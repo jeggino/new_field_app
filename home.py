@@ -813,8 +813,8 @@ def new_observation_dialog():
     current_center = _get_center_from_map_data(map_data, base_center)
 
     if st.button("Use current map center as coordinates"):
-        lat_, lon_ = current_center
-        st.info(f"Using center coordinates: lat={lat_:.6f}, lon={lon_:.6f}")
+        lat, lon = current_center
+        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -823,8 +823,8 @@ def new_observation_dialog():
         behavior = st.text_input("Behavior")
     with col2:
         date = st.date_input("Date", value=datetime.utcnow().date())
-        lat = st.number_input("Latitude", lat_)
-        lon = st.number_input("Longitude", lon_)
+        # lat = st.number_input("Latitude", lat_)
+        # lon = st.number_input("Longitude", lon_)
 
     if st.button("Save observation"):
         if lat is None or lon is None:
