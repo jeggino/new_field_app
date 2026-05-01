@@ -846,8 +846,8 @@ def new_observation_dialog():
                 "username": username,
                 "behavior": behavior,
                 "date": str(date),
-                "lat": float(lat),
-                "lon": float(lon),
+                "lat": lat,
+                "lon": lon,
             }
             insert_observation(data)
             st.success("Observation saved.")
