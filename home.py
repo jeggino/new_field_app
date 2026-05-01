@@ -801,8 +801,6 @@ def _get_center_from_map_data(map_data, fallback_center):
 def new_observation_dialog():
     st.write("Fill in the details and use the map center as position if you want.")
 
-    
-
     base_center = st.session_state.map_input_center
     zoom = st.session_state.map_input_zoom
 
@@ -817,7 +815,9 @@ def new_observation_dialog():
     current_center = _get_center_from_map_data(map_data, base_center)
 
     if st.button("Use current map center as coordinates"):
-        lat, lon = current_center
+        # lat, lon = current_center
+        lat = map_data['center']['lat']
+        lon = map_data['center']['lng']
         st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
         st.write(lat)
         st.write(lon)
