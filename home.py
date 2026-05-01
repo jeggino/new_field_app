@@ -14,8 +14,10 @@ SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-CROSS_IMAGE_PATH = "https://e1.pngegg.com/pngimages/314/988/png-clipart-symbolize-x.png"  # put your JPEG cross in the same folder
+CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/19/Circle-Cross-Vibrant-Design-PNG-thumb.png"  # put your JPEG cross in the same folder
 
+
+# "https://e1.pngegg.com/pngimages/314/988/png-clipart-symbolize-x.png"
 # ----------------- INIT -----------------
 @st.cache_resource
 def get_supabase() -> Client:
@@ -321,9 +323,11 @@ def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
 
 def show_main_app():
 
-    st.write(cookies)
-    st.write(st.session_state)
+    # st.write(cookies)
+    # st.write(st.session_state)
     # Sidebar
+    if st.button("＋", key="add_obs_circle"):
+        new_observation_dialog()
     with st.sidebar:
         st.subheader("Controls")
 
@@ -342,8 +346,7 @@ def show_main_app():
             unsafe_allow_html=True,
         )
         st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
-        if st.button("＋", key="add_obs_circle"):
-            new_observation_dialog()
+
         # st.markdown("</div>", unsafe_allow_html=True)
 
         if st.button("Logout", type="secondary", use_container_width=True):
