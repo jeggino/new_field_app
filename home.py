@@ -281,16 +281,16 @@ def edit_observation_dialog(obs):
             if lat is None or lon is None:
                 st.warning("Please provide latitude and longitude.")
                 st.stop()
-        data = {
-            "species": species,
-            "username": username,
-            "behavior": behavior,
-            "date": str(date),
-            "lat": float(lat),
-            "lon": float(lon),
-        }
-        update_observation(obs["id"], data)
-        st.rerun()
+            data = {
+                "species": species,
+                "username": username,
+                "behavior": behavior,
+                "date": str(date),
+                "lat": float(lat),
+                "lon": float(lon),
+            }
+            update_observation(obs["id"], data)
+            st.rerun()
 
 
 # ----------------- MAIN APP -----------------
