@@ -14,7 +14,7 @@ SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/17/Circle-X-Abstract-Form-PNG-thumb.png"  # put your JPEG cross in the same folder
+CROSS_IMAGE_PATH = "https://images.rawpixel.com/image_png_social_square/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTExL3YxMTc2LXdhLWVsZW1lbnQtMTg2LXBfMS5wbmc.png"  # put your JPEG cross in the same folder
 
 
 # "https://www.bookmarkseparators.com/img/fav/dot-black.png"
