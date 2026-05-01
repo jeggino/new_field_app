@@ -815,7 +815,7 @@ def new_observation_dialog():
 
     # current_center = _get_center_from_map_data(map_data, base_center)
 
-    if st.button("Use current map center as coordinates"):
+    if st.form_submit_button("Use current map center as coordinates"):
         # lat, lon = current_center
         lat = map_data['center']['lat']
         lon = map_data['center']['lng']
