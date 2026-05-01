@@ -827,8 +827,8 @@ def new_observation_dialog():
         behavior = st.text_input("Behavior")
     with col2:
         date = st.date_input("Date", value=datetime.utcnow().date())
-        lat = st.number_input("Latitude", lat)
-        lon = st.number_input("Longitude", lon)
+        lat = st.number_input("Latitude", lat, format="%0.8f")
+        lon = st.number_input("Longitude", lon, format="%0.8f")
 
     if st.button("Save observation"):
         if lat is None or lon is None:
@@ -973,9 +973,9 @@ def show_main_app():
 
     map_data = st_folium(m, width="100%", height=500)
 
-    st.write(map_data)
-    st.session_state.map_input_zoom = map_data["zoom"]
-    st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
+    if map_data:
+        st.session_state.map_input_zoom = map_data["zoom"]
+        st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
 
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
