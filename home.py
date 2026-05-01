@@ -14,7 +14,7 @@ SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/19/Circle-Cross-Vibrant-Design-PNG-thumb.png"  # put your JPEG cross in the same folder
+CROSS_IMAGE_PATH = "https://www.pngall.com/wp-content/uploads/17/Circle-X-Abstract-Form-PNG-thumb.png"  # put your JPEG cross in the same folder
 
 
 # "https://www.bookmarkseparators.com/img/fav/dot-black.png"
@@ -177,7 +177,6 @@ def new_observation_dialog():
     base_center = st.session_state.map_input_center
     zoom = st.session_state.map_input_zoom
 
-    st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
     m = folium.Map(location=base_center, zoom_start=zoom)
 
     # Add a fixed image overlay using HTML and CSS
