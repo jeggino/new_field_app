@@ -854,6 +854,7 @@ def new_observation_dialog(lat, lon):
         )
         st.session_state.observations.append(obs)
         st.session_state.new_obs_coords = None
+        st.toast("Your abservation was saved!", icon="😍")
         st.rerun()
 
 
