@@ -804,7 +804,7 @@ def project_dialog():
         )
         st.rerun()
 
-@st.dialog("--")
+@st.dialog(" ")
 def new_observation_dialog(lat, lon):
     st.write("Drag the marker on the map to set the coordinates and click on the marker after dragging it.")
     lat, lon = st.session_state.new_obs_coords
@@ -932,28 +932,26 @@ def observation_dialog():
 # -------------------------------------------------
 # MAIN FLOW
 # -------------------------------------------------
-try:
-    load_user_from_cookies()
-    
-    if st.session_state.user is None:
-        login_dialog()
-    
-    if st.session_state.project_name is None and st.session_state.user is not None:
-        project_dialog()
-    
-    
-    with st.sidebar:
-    
-        if st.button("Change project"):
-            project_dialog()
-    
-        st.markdown("---")
-        
-        if st.button("Logout"):
-            logout()
+load_user_from_cookies()
 
-except:
-    st.stop()
+if st.session_state.user is None:
+    login_dialog()
+
+if st.session_state.project_name is None and st.session_state.user is not None:
+    project_dialog()
+
+
+with st.sidebar:
+
+    if st.button("Change project"):
+        project_dialog()
+
+    st.markdown("---")
+    
+    if st.button("Logout"):
+        logout()
+
+
 
 
 
