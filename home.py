@@ -676,6 +676,7 @@ defaults = {
     "observations": [],
     "selected_obs_id": None,
     "map_center": [0.0, 0.0],
+    "map_center_input": None,
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -815,6 +816,8 @@ def new_observation_dialog():
     if st.button("Use current map center as coordinates"):
         lat, lon = current_center
         st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
+        st.write(lat)
+        st.write(lon)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -955,7 +958,7 @@ def show_main_app():
         )
         center = [avg_lat, avg_lon]
     else:
-        center = [0.0, 0.0]
+        center = [52.01594052906511, 5.300651216815735]
 
     st.session_state.map_center = center
 
@@ -969,6 +972,8 @@ def show_main_app():
         ).add_to(m)
 
     map_data = st_folium(m, width="100%", height=500)
+
+    st.write(map_data)
 
     selected_obs = None
     if map_data and map_data.get("last_object_clicked"):
