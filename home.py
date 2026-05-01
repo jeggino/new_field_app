@@ -142,20 +142,20 @@ def show_project_selection():
         st.rerun()
 
 
-# ----------------- DIALOGS -----------------
-# def _get_center_from_map_data(map_data, fallback_center):
-#     if not map_data:
-#         return fallback_center
-#     bounds = map_data.get("bounds")
-#     if not bounds:
-#         return fallback_center
-#     sw = bounds.get("_southWest")
-#     ne = bounds.get("_northEast")
-#     if not sw or not ne:
-#         return fallback_center
-#     center_lat = (sw["lat"] + ne["lat"]) / 2
-#     center_lon = (sw["lng"] + ne["lng"]) / 2
-#     return [center_lat, center_lon]
+----------------- DIALOGS -----------------
+def _get_center_from_map_data(map_data, fallback_center):
+    if not map_data:
+        return fallback_center
+    bounds = map_data.get("bounds")
+    if not bounds:
+        return fallback_center
+    sw = bounds.get("_southWest")
+    ne = bounds.get("_northEast")
+    if not sw or not ne:
+        return fallback_center
+    center_lat = (sw["lat"] + ne["lat"]) / 2
+    center_lon = (sw["lng"] + ne["lng"]) / 2
+    return [center_lat, center_lon]
 
 
 @st.dialog("New Observation")
