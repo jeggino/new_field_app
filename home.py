@@ -795,14 +795,16 @@ def new_observation_dialog():
         lat, lon = center_lat, center_lon
 
     st.markdown("**Set position on map**")
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=18)
     marker = folium.Marker(
         location=[lat, lon],
         draggable=True,
+        icon=folium.Icon(color='blue', icon='info-sign')
     )
     marker.add_to(m)
 
     map_data = st_folium(m, width="100%", height=400)
+    st.write(map_data)
 
     # Clicking on the marker or map
     if map_data and map_data.get("last_object_clicked"):
@@ -864,10 +866,12 @@ def edit_observation_dialog(obs):
     marker = folium.Marker(
         location=[lat, lon],
         draggable=True,
+        icon=folium.Icon(color='blue', icon='info-sign')
     )
     marker.add_to(m)
 
     map_data = st_folium(m, width="100%", height=400)
+    st.write(map_data)
 
     if map_data and map_data.get("last_object_clicked"):
         lat = map_data["last_object_clicked"]["lat"]
@@ -967,12 +971,13 @@ def show_main_app():
     st.session_state.map_center = center
 
     # Main map (mobile/laptop friendly)
-    m = folium.Map(location=center, zoom_start=2)
+    m = folium.Map(location=center, zoom_start=13)
     for obs in st.session_state.observations:
         popup_text = f"{obs.get('species', '')} ({obs.get('username', '')})"
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
             popup=popup_text,
+            icon=folium.Icon(color='blue', icon='info-sign')
         ).add_to(m)
 
     map_data = st_folium(m, width="100%", height=500)
