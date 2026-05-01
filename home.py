@@ -962,7 +962,7 @@ def show_main_app():
         )
         center = [avg_lat, avg_lon]
     else:
-        center = [0.0, 0.0]
+        center = [51.86009748709087, 5.074785652996887]
 
     st.session_state.map_center = center
 
