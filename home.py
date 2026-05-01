@@ -384,6 +384,9 @@ def show_main_app():
 
     map_data = st_folium(m, width="100%", height=500)
 
+    if st.button("＋", key="add_obs_circle",width="stretch"):
+        new_observation_dialog()
+
     st.session_state.map_input_zoom = map_data["zoom"]
     st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
 
@@ -411,8 +414,7 @@ def show_main_app():
             (o for o in st.session_state.observations if o["id"] == st.session_state.selected_obs_id),
             None,
         )
-    if st.button("＋", key="add_obs_circle",width="stretch"):
-        new_observation_dialog()
+
     if selected_obs:
         st.table(
             {
