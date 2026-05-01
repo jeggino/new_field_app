@@ -95,10 +95,16 @@ def set_login_cookies(username: str):
     cookies.save()
 
 
+def set_project_cookies(selected: str):
+    cookies["logged_in_project"] = "1"
+    cookies["project"] = selected
+    cookies.save()
+
 def clear_login_cookies():
     for k in list(cookies.keys()):
         del cookies[k]
     cookies.save()
+    
 
 
 def restore_login_from_cookies():
@@ -139,6 +145,7 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
+        set_project_cookies(selected)
         st.rerun()
 
 
