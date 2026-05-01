@@ -633,6 +633,10 @@
 
 
 
+
+
+
+
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
@@ -649,8 +653,7 @@ SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-
-
+CROSS_IMAGE_PATH = "https://e1.pngegg.com/pngimages/314/988/png-clipart-symbolize-x.png"  # put your JPEG cross in the same folder
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -660,8 +663,8 @@ def get_supabase() -> Client:
 supabase = get_supabase()
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_45",
-    password=SECRET_PASSWORD,
+    prefix="obs_app_",
+    password="CHANGE_THIS_SECRET_PASSWORD",
 )
 if not cookies.ready():
     st.stop()
@@ -776,6 +779,21 @@ def show_project_selection():
 
 
 # ----------------- DIALOGS -----------------
+def _get_center_from_map_data(map_data, fallback_center):
+    if not map_data:
+        return fallback_center
+    bounds = map_data.get("bounds")
+    if not bounds:
+        return fallback_center
+    sw = bounds.get("_southWest")
+    ne = bounds.get("_northEast")
+    if not sw or not ne:
+        return fallback_center
+    center_lat = (sw["lat"] + ne["lat"]) / 2
+    center_lon = (sw["lng"] + ne["lng"]) / 2
+    return [center_lat, center_lon]
+
+
 @st.dialog("New Observation")
 def new_observation_dialog():
     st.write("Fill in the details and use the map center as position if you want.")
@@ -790,33 +808,20 @@ def new_observation_dialog():
         lat = st.number_input("Latitude", format="%.6f")
         lon = st.number_input("Longitude", format="%.6f")
 
-    center_lat, center_lon = st.session_state.map_center
+    base_center = st.session_state.map_center
 
-    st.markdown("**Map (cross at center; use button to take its coordinates)**")
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
+    m = folium.Map(location=base_center, zoom_start=6)
 
-    # "Cross" at center: two small lines
-    folium.PolyLine(
-        locations=[
-            [center_lat + 0.01, center_lon],
-            [center_lat - 0.01, center_lon],
-        ],
-        color="red",
-        weight=3,
-    ).add_to(m)
-    folium.PolyLine(
-        locations=[
-            [center_lat, center_lon - 0.01],
-            [center_lat, center_lon + 0.01],
-        ],
-        color="red",
-        weight=3,
-    ).add_to(m)
+    # Just a normal map; the cross is shown as an image overlay in Streamlit
+    map_data = st_folium(m, width="100%", height=400)
 
-    st_folium(m, width="100%", height=400)
+    st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
 
-    if st.button("Use center of map as coordinates"):
-        lat, lon = center_lat, center_lon
+    current_center = _get_center_from_map_data(map_data, base_center)
+
+    if st.button("Use current map center as coordinates"):
+        lat, lon = current_center
         st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     if st.button("Save observation"):
@@ -860,32 +865,18 @@ def edit_observation_dialog(obs):
         lat = st.number_input("Latitude", value=float(obs.get("lat", 0)), format="%.6f")
         lon = st.number_input("Longitude", value=float(obs.get("lon", 0)), format="%.6f")
 
-    center_lat, center_lon = st.session_state.map_center
+    base_center = st.session_state.map_center
 
-    st.markdown("**Map (cross at center; you can reuse it as new position)**")
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+    st.markdown("**Map (cross image indicates center; you can reuse it as new position)**")
+    m = folium.Map(location=base_center, zoom_start=6)
+    map_data = st_folium(m, width="100%", height=400)
 
-    folium.PolyLine(
-        locations=[
-            [center_lat + 0.01, center_lon],
-            [center_lat - 0.01, center_lon],
-        ],
-        color="blue",
-        weight=3,
-    ).add_to(m)
-    folium.PolyLine(
-        locations=[
-            [center_lat, center_lon - 0.01],
-            [center_lat, center_lon + 0.01],
-        ],
-        color="blue",
-        weight=3,
-    ).add_to(m)
+    st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
 
-    st_folium(m, width="100%", height=400)
+    current_center = _get_center_from_map_data(map_data, base_center)
 
-    if st.button("Use center of map as coordinates (edit)"):
-        lat, lon = center_lat, center_lon
+    if st.button("Use current map center as coordinates (edit)"):
+        lat, lon = current_center
         st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
 
     col_a, col_b = st.columns(2)
@@ -1052,3 +1043,4 @@ elif not st.session_state.project:
     show_project_selection()
 else:
     show_main_app()
+
