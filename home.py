@@ -276,10 +276,10 @@ def edit_observation_dialog(obs):
             else datetime.utcnow().date(),
         )
         number = st.number_input(
-            "Insert a number", value=lat, placeholder="Type a number..."
+            "Insert a number", value=lat, placeholder="Type a number...",format="%0.20f"
         )
         number_2 = st.number_input(
-            "Insert a number", value=lon, placeholder="Type a number..."
+            "Insert a number", value=lon, placeholder="Type a number...",format="%0.20f"
         )
 
 
