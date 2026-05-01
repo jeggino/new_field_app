@@ -735,7 +735,7 @@ def create_observation(lat, lon, species, project_name,
         )
         .execute()
     )
-    return res.data[0], st.toast("Your abservation was saved!", icon="😍")
+    return res.data[0]
 
 def update_observation(obs_id, lat, lon, species, project_name,
                        username, behavior, obs_date):
@@ -933,6 +933,8 @@ def observation_dialog():
 # MAIN FLOW
 # -------------------------------------------------
 load_user_from_cookies()
+
+st.write(st.session_state)
 
 if st.session_state.user is None:
     login_dialog()
