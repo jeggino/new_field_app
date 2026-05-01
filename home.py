@@ -764,7 +764,7 @@ def logout():
     st.session_state.selected_obs = None
     st.session_state.new_obs_coords = None
     st.session_state.edit_obs_coords = None
-    clear_cookies()
+    # clear_cookies()
     st.rerun()
 
 # -------------------------------------------------
