@@ -229,9 +229,9 @@ def edit_observation_dialog(obs):
     st.write("Update the details and position.")
 
     base_center = [obs.get("lat", 0),obs.get("lon", 0)]
-    zoom = st.session_state.map_input_zoom
+    st.write(base_center)
 
-    m = folium.Map(location=base_center, zoom_start=6)
+    m = folium.Map(location=base_center, zoom_start=20)
 
     # Add a fixed image overlay using HTML and CSS
     html = """
@@ -257,6 +257,9 @@ def edit_observation_dialog(obs):
     if st.button("Use current map center as coordinates (edit)"):
         lat = map_data['center']['lat']
         lon = map_data['center']['lng']
+
+    st.write(lat)
+    st.write(lon)
 
     col1, col2 = st.columns(2)
     with col1:
