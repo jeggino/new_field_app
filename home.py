@@ -799,60 +799,56 @@ def _get_center_from_map_data(map_data, fallback_center):
 
 @st.dialog("New Observation")
 def new_observation_dialog():
-    with st.form("my_form"):
-        st.write("Fill in the details and use the map center as position if you want.")
-    
-        base_center = st.session_state.map_input_center
-        zoom = st.session_state.map_input_zoom
-    
-        st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
-        m = folium.Map(location=base_center, zoom_start=zoom)
-    
-        # Just a normal map; the cross is shown as an image overlay in Streamlit
-        map_data = st_folium(m, width="100%", height=400)
-        st.write(map_data)
-    
-        # st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
-    
-        # current_center = _get_center_from_map_data(map_data, base_center)
-    
-        # lat, lon = current_center
-        lat = map_data['center']['lat']
-        lon = map_data['center']['lng']
-        st.info(f"Using center coordinates: lat={lat:.6f}, lon={lon:.6f}")
-        st.write(lat)
-        st.write(lon)
+    st.write("Fill in the details and use the map center as position if you want.")
 
-        col1, col2 = st.columns(2)
-        with col1:
-            species = st.text_input("Species")
-            username = st.text_input("Username", value=st.session_state.username or "")
-            behavior = st.text_input("Behavior")
-        with col2:
-            date = st.date_input("Date", value=datetime.utcnow().date())
-            # lat = st.number_input("Latitude", lat_)
-            # lon = st.number_input("Longitude", lon_)
-    
-        if st.form_submit_button("Save observation"):
-            if lat is None or lon is None:
-                st.warning("Please provide latitude and longitude (via button or manual input).")
-                st.stop()
-            if not species:
-                st.warning("Species is required.")
-                st.stop()
-    
-            data = {
-                "species": species,
-                "project": st.session_state.project,
-                "username": username,
-                "behavior": behavior,
-                "date": str(date),
-                "lat": lat,
-                "lon": lon,
-            }
-            insert_observation(data)
-            st.success("Observation saved.")
-            st.rerun()
+    base_center = st.session_state.map_input_center
+    zoom = st.session_state.map_input_zoom
+
+    st.markdown("**Map (cross image indicates center; pan/zoom as needed)**")
+    m = folium.Map(location=base_center, zoom_start=zoom)
+
+    # Just a normal map; the cross is shown as an image overlay in Streamlit
+    map_data = st_folium(m, width="100%", height=400)
+    st.write(map_data)
+
+    # st.image(CROSS_IMAGE_PATH, caption="Center cross", use_container_width=False)
+
+    # current_center = _get_center_from_map_data(map_data, base_center)
+
+    # lat, lon = current_center
+    lat = map_data['center']['lat']
+    lon = map_data['center']['lng']
+    st.info(f"Using center coordinates: lat={lat}, lon={lon}")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        species = st.text_input("Species")
+        username = st.text_input("Username", value=st.session_state.username or "")
+        behavior = st.text_input("Behavior")
+    with col2:
+        date = st.date_input("Date", value=datetime.utcnow().date())
+        lat = st.number_input("Latitude", lat)
+        lon = st.number_input("Longitude", lon)
+
+    if st.button("Save observation"):
+        if lat is None or lon is None:
+            st.warning("Please provide latitude and longitude (via button or manual input).")
+            st.stop()
+        if not species:
+            st.warning("Species is required.")
+            st.stop()
+
+        data = {
+            "species": species,
+            "project": st.session_state.project,
+            "username": username,
+            "behavior": behavior,
+            "date": str(date),
+            "lat": lat,
+            "lon": lon,
+        }
+        insert_observation(data)
+        st.rerun()
 
 
 @st.dialog("Edit Observation")
