@@ -14,6 +14,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.markdown("""
+<style>
+.leaflet-container {
+    touch-action: none !important;  /* prevents page scroll when dragging map */
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
