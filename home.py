@@ -91,7 +91,7 @@ defaults = {
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
-    "selected_obs_id": None,   # ⭐ highlight target
+    "selected_obs_id": None,
 }
 
 for k, v in defaults.items():
@@ -344,18 +344,86 @@ def new_observation_dialog():
 
         load_observations(st.session_state.project)
         st.rerun()
+
+
+# ----------------- UI: LOGIN -----------------
+def show_login():
+    st.sidebar.title("Login")
+
+    with st.sidebar.form("login_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login")
+
+        if submitted:
+            res = login(email, password)
+            if res and res.user:
+                st.session_state.logged_in = True
+                st.session_state.user = res.user
+                st.session_state.session = res.session
+                st.rerun()
+            else:
+                st.sidebar.error("Invalid email or password")
+
+    if st.sidebar.button("Create Account"):
+        st.session_state.show_signup = True
+        st.rerun()
+
+
+# ----------------- UI: SIGNUP -----------------
+def show_signup():
+    st.sidebar.title("Create Account")
+
+    with st.sidebar.form("signup_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Sign Up")
+
+        if submitted:
+            res = signup(email, password)
+            if res and res.user:
+                st.sidebar.success("Account created. Please log in.")
+                st.session_state.show_signup = False
+                st.rerun()
+            else:
+                st.sidebar.error("Sign-up failed")
+
+    if st.sidebar.button("Back to Login"):
+        st.session_state.show_signup = False
+        st.rerun()
+
+
+# ----------------- UI: PROJECT SELECT -----------------
+def show_project_selection():
+    st.sidebar.title("Select Project")
+
+    projects = load_projects()
+    if not projects:
+        st.sidebar.warning("No projects found for this user.")
+        return
+
+    project_names = [p["name"] for p in projects]
+    selected = st.sidebar.selectbox("Project", project_names)
+
+    if st.sidebar.button("Confirm project"):
+        st.session_state.project = selected
+        supabase.auth.update_user({"data": {"project": selected}})
+        load_observations(selected)
+        st.session_state.changing_project = False
+        st.rerun()
+
+
 # ----------------- MAIN APP -----------------
 def show_main_app():
-
-    # HEADER WITH NEW OBSERVATION BUTTON (mobile-friendly)
-    col1, col2 = st.columns([0.75, 0.25])
+    # NO title on main page, only New Observation button (mobile-friendly)
+    col1, col2 = st.columns([0.7, 0.3])
     with col1:
-        st.markdown("<h2 style='margin-top:0;'>Observations</h2>", unsafe_allow_html=True)
+        st.write("")  # empty, no title
     with col2:
         if st.button("➕ New Observation"):
             new_observation_dialog()
 
-    # ----------------- SIDEBAR MENU -----------------
+    # Sidebar menu (no observations title, no new observation button)
     st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
     if st.sidebar.button("Legend"):
@@ -368,7 +436,8 @@ def show_main_app():
     if st.sidebar.button("Logout"):
         logout()
 
-    # ----------------- FILTERS -----------------
+    st.sidebar.header("Filters")
+
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
     selected_species = st.sidebar.multiselect("Species", species_values)
 
@@ -395,7 +464,6 @@ def show_main_app():
     else:
         date_range = None
 
-    # APPLY FILTERS
     filtered = st.session_state.observations
 
     if selected_species:
@@ -414,7 +482,7 @@ def show_main_app():
                     pass
         filtered = tmp
 
-    # ----------------- MAP -----------------
+    # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
     LocateControl(auto_start=False).add_to(m)
 
@@ -433,7 +501,6 @@ def show_main_app():
             text_color="white"
         )
 
-        # popup contains ONLY the observation ID
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=str(obs["id"]),
@@ -442,29 +509,21 @@ def show_main_app():
 
     map_data = st_folium(m, height=550, width="100%")
 
-    # Update map center
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
-    # ----------------- MARKER CLICK HANDLER -----------------
-    if map_data and "last_object_clicked" in map_data:
-        clicked = map_data["last_object_clicked"]
-        if clicked and "popup" in clicked:
-            st.session_state.selected_obs_id = clicked["popup"]
+    # Use last_object_clicked_popup from st_folium
+    if map_data and map_data.get("last_object_clicked_popup"):
+        st.session_state.selected_obs_id = str(map_data["last_object_clicked_popup"])
 
-    # ----------------- SIDEBAR OBSERVATION LIST -----------------
-    # (NO TITLE, NO NEW OBSERVATION BUTTON)
-
+    # OBSERVATION LIST IN SIDEBAR (no title, no new button)
     for obs in filtered:
         obs_id = str(obs["id"])
         base_label = f"{obs.get('species','')} – {obs.get('function','')}"
-
-        # Highlight only if selected by MARKER
         if st.session_state.selected_obs_id == obs_id:
-            label = f"🔴 **{base_label}**"
+            label = f"🔴 {base_label}"
         else:
             label = base_label
 
-        # Unique key required
         if st.sidebar.button(label, key=f"obs_{obs_id}"):
             edit_observation_dialog(obs)
 
@@ -506,7 +565,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-# ----------------- END OF FILE -----------------
 
 
 
