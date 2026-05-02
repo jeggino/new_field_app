@@ -167,28 +167,63 @@ def new_observation_dialog():
     base_center = st.session_state.map_input_center
     zoom = st.session_state.map_input_zoom
 
+    # Create map
     m = folium.Map(location=base_center, zoom_start=zoom)
 
-    html = f"""
-    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
-        <img src="{CROSS_IMAGE_PATH}" style="width:{WIDTH}px; opacity:{OPACITY};" />
+    # Crosshair overlay
+    crosshair_html = f"""
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+    ">
+        <img src="{CROSS_IMAGE_PATH}"
+             style="width:{WIDTH}px; opacity:{OPACITY};">
     </div>
     """
+    m.get_root().html.add_child(folium.Element(crosshair_html))
 
-    folium.Marker(location=base_center, icon=folium.DivIcon(html=html)).add_to(m)
+    # Render map
+    map_data = st_folium(m, width="100%", height=400)
 
-    map_data = st_folium(m, height=400, width=700)
-    center = _get_center_from_map_data(map_data, base_center)
+    # Extract center safely
+    try:
+        lat = map_data["center"]["lat"]
+        lon = map_data["center"]["lng"]
+    except Exception:
+        lat, lon = base_center
 
-    description = st.text_area("Description")
+    # Input fields
+    col1, col2 = st.columns(2)
+
+    with col1:
+        species = st.text_input("Species")
+        behavior = st.text_input("Behavior")
+        username = st.text_input("Observer", value=st.session_state.user.email)
+
+    with col2:
+        date = st.date_input("Date", value=datetime.utcnow().date())
+
+    # Save button
     if st.button("Save observation"):
-        supabase.table(OBS_TABLE).insert({
+        if not species:
+            st.warning("Species is required.")
+            st.stop()
+
+        data = {
+            "species": species,
+            "behavior": behavior,
+            "username": username,
+            "date": str(date),
             "project": st.session_state.project,
-            "lat": center[0],
-            "lon": center[1],
-            "description": description,
-            "timestamp": datetime.utcnow().isoformat(),
-        }).execute()
+            "lat": float(lat),
+            "lon": float(lon),
+        }
+
+        supabase.table(OBS_TABLE).insert(data).execute()
         load_observations(st.session_state.project)
         st.rerun()
 
@@ -216,6 +251,24 @@ def edit_observation_dialog(obs):
         st.rerun()
 
 
+# ----------------- RESTORE SESSION (AFTER FUNCTIONS) -----------------
+def restore_session_after_functions():
+    sess = supabase.auth.get_session()
+    if sess and sess.user:
+        st.session_state.logged_in = True
+        st.session_state.user = sess.user
+        st.session_state.session = sess
+
+        metadata = sess.user.user_metadata or {}
+        saved_project = metadata.get("project")
+
+        if saved_project:
+            st.session_state.project = saved_project
+            load_observations(saved_project)
+
+restore_session_after_functions()
+
+
 # ----------------- MAIN APP -----------------
 def show_main_app():
     st.title(f"Observations for project: {st.session_state.project}")
@@ -234,7 +287,7 @@ def show_main_app():
     m = folium.Map(location=st.session_state.map_center, zoom_start=4)
 
     for obs in st.session_state.observations:
-        folium.Marker([obs["lat"], obs["lon"]], popup=obs.get("description", "")).add_to(m)
+        folium.Marker([obs["lat"], obs["lon"]], popup=obs.get("species", "")).add_to(m)
 
     map_data = st_folium(m, height=500, width=900)
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
@@ -246,27 +299,9 @@ def show_main_app():
         new_observation_dialog()
 
     for obs in st.session_state.observations:
-        label = f"{obs['id']} - {obs.get('description', '')[:30]}"
+        label = f"{obs['id']} - {obs.get('species', '')[:30]}"
         if st.sidebar.button(label):
             edit_observation_dialog(obs)
-
-
-# ----------------- RESTORE SESSION (AFTER FUNCTIONS ARE DEFINED) -----------------
-def restore_session_after_functions():
-    sess = supabase.auth.get_session()
-    if sess and sess.user:
-        st.session_state.logged_in = True
-        st.session_state.user = sess.user
-        st.session_state.session = sess
-
-        metadata = sess.user.user_metadata or {}
-        saved_project = metadata.get("project")
-
-        if saved_project:
-            st.session_state.project = saved_project
-            load_observations(saved_project)
-
-restore_session_after_functions()
 
 
 # ----------------- MAIN -----------------
@@ -286,6 +321,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
