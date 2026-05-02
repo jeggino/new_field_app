@@ -646,7 +646,8 @@ def show_main_app():
         species = obs.get("species", "")
         color = SPECIES_COLORS.get(species, "blue")
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
-        shape = "circle" if animal_type == "bat" else "rectangle"
+        # shape = "circle" if animal_type == "bat" else "rectangle"
+        shape = None
 
         marker_icon = BeautifyIcon(
             icon=icon,
