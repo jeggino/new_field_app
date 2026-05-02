@@ -372,7 +372,8 @@ def edit_observation_dialog(obs: Dict[str, Any]):
         if confirm:
             try:
                 res = supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
-                if getattr(res, "error")
+                if getattr(res, "error"):
+                    st.write('jhfbkjsfvkjdf')
 
 
 if __name__ == "__main__":
