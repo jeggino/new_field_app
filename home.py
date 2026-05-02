@@ -51,19 +51,15 @@ def restore_session():
         st.session_state.user = sess.user
         st.session_state.session = sess
 
+        # Restore project from user metadata
+        metadata = sess.user.user_metadata or {}
+        saved_project = metadata.get("project")
+
+        if saved_project and not st.session_state.project:
+            st.session_state.project = saved_project
+            load_observations(saved_project)
+
 restore_session()
-
-
-# ----------------- RESTORE PROJECT FROM URL -----------------
-query_params = st.experimental_get_query_params()
-if "project" in query_params and not st.session_state.project:
-    st.session_state.project = query_params["project"][0]
-    # Load observations immediately
-    try:
-        res = supabase.table(OBS_TABLE).select("*").eq("project", st.session_state.project).execute()
-        st.session_state.observations = res.data or []
-    except:
-        pass
 
 
 # ----------------- AUTH -----------------
@@ -84,7 +80,6 @@ def logout():
     st.session_state.clear()
     for k, v in defaults.items():
         st.session_state[k] = v
-    st.experimental_set_query_params()  # clear URL
     st.rerun()
 
 
@@ -160,7 +155,10 @@ def show_project_selection():
 
     if st.button("Confirm project"):
         st.session_state.project = selected
-        st.experimental_set_query_params(project=selected)  # <-- PERSIST IN URL
+
+        # Persist project in Supabase user metadata
+        supabase.auth.update_user({"data": {"project": selected}})
+
         load_observations(selected)
         st.session_state.changing_project = False
         st.rerun()
@@ -288,6 +286,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
     
 
