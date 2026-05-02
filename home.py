@@ -37,6 +37,7 @@ defaults = {
     "map_input_center": [0.0, 0.0],
     "map_input_zoom": 2,
     "show_signup": False,
+    "changing_project": False,
 }
 
 for k, v in defaults.items():
@@ -176,6 +177,7 @@ def show_project_selection():
     if st.button("Confirm project"):
         st.session_state.project = selected
         load_observations(selected)
+        st.session_state.changing_project = False
         st.rerun()
 
 
@@ -265,10 +267,14 @@ def edit_observation_dialog(obs):
 def show_main_app():
     st.title(f"Observations for project: {st.session_state.project}")
 
-    col1, col2 = st.columns([3, 1])
+    col1, col2, col3 = st.columns([3, 1, 1])
     with col1:
         st.write(f"Logged in as: {st.session_state.user.email}")
     with col2:
+        if st.button("Change Project"):
+            st.session_state.changing_project = True
+            st.rerun()
+    with col3:
         if st.button("Logout"):
             logout()
 
@@ -303,7 +309,7 @@ def main():
             show_signup()
         else:
             show_login()
-    elif not st.session_state.project:
+    elif st.session_state.changing_project or not st.session_state.project:
         show_project_selection()
     else:
         show_main_app()
