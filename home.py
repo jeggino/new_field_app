@@ -1,9 +1,9 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from folium.plugins import LocateControl
+from folium.plugins import LocateControl, BeautifyIcon
 from supabase import create_client, Client
-from datetime import datetime, date
+from datetime import datetime
 import uuid
 
 # ----------------- CONFIG -----------------
@@ -41,10 +41,14 @@ FUNCTION_ICONS = {
     "group observation": "users"
 }
 
-SPECIES_COLORS = {
-    "bat": "purple",
-    "bird": "green"
-}
+# Assign a unique color per species
+ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
+COLOR_PALETTE = [
+    "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
+    "darkgreen","cadetblue","darkpurple","white","pink","lightblue","lightgreen",
+    "gray","black"
+]
+SPECIES_COLORS = {species: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, species in enumerate(ALL_SPECIES)}
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -149,6 +153,23 @@ def upload_photo(file):
     except Exception as e:
         st.error(f"Upload failed: {e}")
         return None
+
+
+# ----------------- LEGEND DIALOG -----------------
+@st.dialog("Legend")
+def show_legend():
+    st.subheader("Animal Type (shape)")
+    st.write("🟣 **Circle** = Bat")
+    st.write("🟩 **Square** = Bird")
+
+    st.subheader("Species Colors")
+    for sp, col in SPECIES_COLORS.items():
+        st.write(f"● <span style='color:{col}'>{sp}</span>", unsafe_allow_html=True)
+
+    st.subheader("Function Icons")
+    st.write("🏠 nest/roost")
+    st.write("ℹ️ single observation")
+    st.write("👥 group observation")
 
 
 # ----------------- UI: LOGIN -----------------
@@ -261,10 +282,8 @@ def new_observation_dialog():
     except Exception:
         lat, lon = base_center
 
-    # STEP 1 — Ask if bat or bird
     animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
 
-    # STEP 2 — Show correct species list
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
     else:
@@ -288,7 +307,7 @@ def new_observation_dialog():
             "species": species,
             "behavior": behavior,
             "function": function,
-            "animal_type": animal_type,  # NEW FIELD
+            "animal_type": animal_type,
             "username": username,
             "date": str(obs_date),
             "project": st.session_state.project,
@@ -311,6 +330,9 @@ def show_main_app():
     st.sidebar.title("Menu")
 
     st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
+
+    if st.sidebar.button("Legend"):
+        show_legend()
 
     if st.sidebar.button("Change Project"):
         st.session_state.changing_project = True
@@ -369,11 +391,15 @@ def show_main_app():
 
     for obs in filtered:
         animal_type = obs.get("animal_type", "bat")
-        color = SPECIES_COLORS.get(animal_type, "blue")
+        species = obs.get("species", "")
+        color = SPECIES_COLORS.get(species, "blue")
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
 
+        # SHAPE: circle for bat, square for bird
+        shape = "circle" if animal_type == "bat" else "rectangle"
+
         popup = f"""
-        <b>Species:</b> {obs.get('species', '')}<br>
+        <b>Species:</b> {species}<br>
         <b>Function:</b> {obs.get('function', '')}<br>
         <b>Observer:</b> {obs.get('username', '')}<br>
         <b>Date:</b> {obs.get('date', '')}<br>
@@ -381,10 +407,17 @@ def show_main_app():
         if obs.get("photo_url"):
             popup += f'<img src="{obs["photo_url"]}" width="150"><br>'
 
+        marker_icon = BeautifyIcon(
+            icon=icon,
+            icon_shape=shape,
+            background_color=color,
+            text_color="white"
+        )
+
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=popup,
-            icon=folium.Icon(color=color, icon=icon),
+            icon=marker_icon,
         ).add_to(m)
 
     map_data = st_folium(m, height=550, width="100%")
@@ -437,6 +470,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
