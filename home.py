@@ -566,20 +566,6 @@ def show_main_app():
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
     LocateControl(auto_start=False).add_to(m)
 
-    # # Add project boundary polygon
-    # boundary = load_project_boundary(st.session_state.project)
-    
-    # if boundary:
-    #     folium.GeoJson(
-    #         boundary,
-    #         name="Boundary",
-    #         style_function=lambda x: {
-    #             "fillColor": "#ffcc00",
-    #             "color": "#ff8800",
-    #             "weight": 3,
-    #             "fillOpacity": 0.05,
-    #         }
-    #     ).add_to(m)
 
     # Load boundary
     boundary, bounds = load_project_boundary(st.session_state.project)
@@ -598,11 +584,6 @@ def show_main_app():
     
         if bounds:
             m.fit_bounds(bounds)
-
-    st.write("DEBUG boundary:", boundary)
-    st.write("DEBUG bounds:", bounds)
-
-
 
 
     for obs in filtered:
