@@ -23,7 +23,6 @@ WIDTH = 30
 def get_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
 supabase = get_supabase()
 
 defaults = {
@@ -31,14 +30,12 @@ defaults = {
     "user": None,
     "session": None,
     "project": None,
-    "saved_project": None,   # <-- NEW: persistent project
+    "changing_project": False,
     "observations": [],
-    "selected_obs_id": None,
     "map_center": [0.0, 0.0],
     "map_input_center": [0.0, 0.0],
     "map_input_zoom": 2,
     "show_signup": False,
-    "changing_project": False,
 }
 
 for k, v in defaults.items():
@@ -46,7 +43,7 @@ for k, v in defaults.items():
         st.session_state[k] = v
 
 
-# ----------------- AUTH SESSION RESTORE -----------------
+# ----------------- RESTORE AUTH SESSION -----------------
 def restore_session():
     sess = supabase.auth.get_session()
     if sess and sess.user:
@@ -54,74 +51,54 @@ def restore_session():
         st.session_state.user = sess.user
         st.session_state.session = sess
 
-        # Restore project if saved
-        if st.session_state.saved_project and not st.session_state.project:
-            st.session_state.project = st.session_state.saved_project
-            load_observations(st.session_state.project)
-
-
 restore_session()
 
 
-# ----------------- SUPABASE AUTH -----------------
+# ----------------- RESTORE PROJECT FROM URL -----------------
+query_params = st.experimental_get_query_params()
+if "project" in query_params and not st.session_state.project:
+    st.session_state.project = query_params["project"][0]
+    # Load observations immediately
+    try:
+        res = supabase.table(OBS_TABLE).select("*").eq("project", st.session_state.project).execute()
+        st.session_state.observations = res.data or []
+    except:
+        pass
+
+
+# ----------------- AUTH -----------------
 def login(email: str, password: str):
     try:
-        res = supabase.auth.sign_in_with_password(
-            {"email": email, "password": password}
-        )
-        return res
-    except Exception:
+        return supabase.auth.sign_in_with_password({"email": email, "password": password})
+    except:
         return None
-
 
 def signup(email: str, password: str):
     try:
-        res = supabase.auth.sign_up({"email": email, "password": password})
-        return res
-    except Exception:
+        return supabase.auth.sign_up({"email": email, "password": password})
+    except:
         return None
-
 
 def logout():
     supabase.auth.sign_out()
     st.session_state.clear()
     for k, v in defaults.items():
         st.session_state[k] = v
+    st.experimental_set_query_params()  # clear URL
     st.rerun()
 
 
-# ----------------- SUPABASE DATA HELPERS -----------------
+# ----------------- DATA HELPERS -----------------
 def load_projects():
     res = supabase.table(PROJECTS_TABLE).select("*").execute()
     return res.data or []
 
-
 def load_observations(project_name: str):
-    res = (
-        supabase.table(OBS_TABLE)
-        .select("*")
-        .eq("project", project_name)
-        .execute()
-    )
+    res = supabase.table(OBS_TABLE).select("*").eq("project", project_name).execute()
     st.session_state.observations = res.data or []
 
 
-def insert_observation(data: dict):
-    supabase.table(OBS_TABLE).insert(data).execute()
-    load_observations(st.session_state.project)
-
-
-def update_observation(obs_id: int, data: dict):
-    supabase.table(OBS_TABLE).update(data).eq("id", obs_id).execute()
-    load_observations(st.session_state.project)
-
-
-def delete_observation(obs_id: int):
-    supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
-    load_observations(st.session_state.project)
-
-
-# ----------------- UI: LOGIN & SIGNUP -----------------
+# ----------------- UI: LOGIN -----------------
 def show_login():
     st.title("Login")
 
@@ -146,6 +123,7 @@ def show_login():
         st.rerun()
 
 
+# ----------------- UI: SIGNUP -----------------
 def show_signup():
     st.title("Create Account")
 
@@ -174,7 +152,7 @@ def show_project_selection():
 
     projects = load_projects()
     if not projects:
-        st.warning("No projects found in Supabase.")
+        st.warning("No projects found.")
         return
 
     project_names = [p["name"] for p in projects]
@@ -182,7 +160,7 @@ def show_project_selection():
 
     if st.button("Confirm project"):
         st.session_state.project = selected
-        st.session_state.saved_project = selected  # <-- NEW: persist project
+        st.experimental_set_query_params(project=selected)  # <-- PERSIST IN URL
         load_observations(selected)
         st.session_state.changing_project = False
         st.rerun()
@@ -199,15 +177,13 @@ def _get_center_from_map_data(map_data, fallback_center):
     ne = bounds.get("_northEast")
     if not sw or not ne:
         return fallback_center
-    center_lat = (sw["lat"] + ne["lat"]) / 2
-    center_lon = (sw["lng"] + ne["lng"]) / 2
-    return [center_lat, center_lon]
+    return [(sw["lat"] + ne["lat"]) / 2, (sw["lng"] + ne["lng"]) / 2]
 
 
 # ----------------- DIALOGS -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    st.write("Fill in the details and use the map center as position if you want.")
+    st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
     zoom = st.session_state.map_input_zoom
@@ -215,58 +191,49 @@ def new_observation_dialog():
     m = folium.Map(location=base_center, zoom_start=zoom)
 
     html = f"""
-    <div style="
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-    ">
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
         <img src="{CROSS_IMAGE_PATH}" style="width:{WIDTH}px; opacity:{OPACITY};" />
     </div>
     """
 
-    folium.Marker(
-        location=base_center,
-        popup="Map center",
-        icon=folium.DivIcon(html=html),
-    ).add_to(m)
+    folium.Marker(location=base_center, icon=folium.DivIcon(html=html)).add_to(m)
 
     map_data = st_folium(m, height=400, width=700)
     center = _get_center_from_map_data(map_data, base_center)
 
     description = st.text_area("Description")
     if st.button("Save observation"):
-        data = {
+        supabase.table(OBS_TABLE).insert({
             "project": st.session_state.project,
             "lat": center[0],
             "lon": center[1],
             "description": description,
             "timestamp": datetime.utcnow().isoformat(),
-        }
-        insert_observation(data)
+        }).execute()
+        load_observations(st.session_state.project)
         st.rerun()
 
 
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
-    st.write("Edit the observation details.")
+    st.write("Edit the observation.")
 
     lat = st.number_input("Latitude", value=obs["lat"])
     lon = st.number_input("Longitude", value=obs["lon"])
     description = st.text_area("Description", value=obs.get("description", ""))
 
     if st.button("Update"):
-        data = {
+        supabase.table(OBS_TABLE).update({
             "lat": lat,
             "lon": lon,
             "description": description,
-        }
-        update_observation(obs["id"], data)
+        }).eq("id", obs["id"]).execute()
+        load_observations(st.session_state.project)
         st.rerun()
 
     if st.button("Delete", type="secondary"):
-        delete_observation(obs["id"])
+        supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
+        load_observations(st.session_state.project)
         st.rerun()
 
 
@@ -288,15 +255,10 @@ def show_main_app():
     m = folium.Map(location=st.session_state.map_center, zoom_start=4)
 
     for obs in st.session_state.observations:
-        folium.Marker(
-            location=[obs["lat"], obs["lon"]],
-            popup=obs.get("description", ""),
-        ).add_to(m)
+        folium.Marker([obs["lat"], obs["lon"]], popup=obs.get("description", "")).add_to(m)
 
     map_data = st_folium(m, height=500, width=900)
-    st.session_state.map_input_center = _get_center_from_map_data(
-        map_data, st.session_state.map_center
-    )
+    st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     if map_data and "zoom" in map_data:
         st.session_state.map_input_zoom = map_data["zoom"]
 
@@ -326,4 +288,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    
 
