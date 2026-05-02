@@ -516,8 +516,8 @@ def show_main_app():
             style_function=lambda x: {
                 "fillColor": "#ffcc00",
                 "color": "#ff8800",
-                "weight": 2,
-                "fillOpacity": 0.15,
+                "weight": 3,
+                "fillOpacity": 0.05,
             }
         ).add_to(m)
 
