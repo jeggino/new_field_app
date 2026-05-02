@@ -554,7 +554,7 @@ def show_main_app():
     if st.sidebar.button("Logout"):
         logout()
 
-    "---"
+    st.sidebar.divider()
 
     if st.sidebar.button("Legend"):
         show_legend()
@@ -606,7 +606,7 @@ def show_main_app():
                     pass
         filtered = tmp
 
-    "---"
+    st.sidebar.divider()
     
     st.sidebar.header("Daily Report")
     
@@ -676,7 +676,7 @@ def show_main_app():
     if map_data and map_data.get("last_object_clicked_popup"):
         st.session_state.selected_obs_id = str(map_data["last_object_clicked_popup"])
 
-    "---"
+    st.sidebar.divider()
     
     st.sidebar.header("Observations")
     
