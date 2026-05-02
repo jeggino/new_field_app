@@ -659,7 +659,7 @@ def show_main_app():
 
         folium.Marker(
             [obs["lat"], obs["lon"]],
-            popup=f"{str(obs["species"])} - {obs["function"] ({str(obs["id"])})",
+            popup=f"{str(obs["species"])} - {obs["function"]} ({str(obs["id"])})",
             icon=marker_icon,
         ).add_to(m)
 
