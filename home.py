@@ -71,7 +71,7 @@ COLOR_PALETTE = [
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
 
 # ----------------- SHAPE SETTINGS -----------------
-BAT_BORDER = True
+BAT_BORDER = True  # border around bat markers
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -91,7 +91,7 @@ defaults = {
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
-    "selected_obs_id": None,   # ⭐ NEW
+    "selected_obs_id": None,  # for marker/side list selection
 }
 
 for k, v in defaults.items():
@@ -529,14 +529,16 @@ def show_main_app():
 
     for obs in filtered:
         obs_id = str(obs["id"])
-        label = f"{obs['species']} – {obs.get('function','')}"
-
-        # Highlight if selected
+        base_label = f"{obs.get('species','')} – {obs.get('function','')}"
         if st.session_state.selected_obs_id == obs_id:
-            label = f"**{label}**"
+            label = f"🟨 {base_label}"
+        else:
+            label = f"   {base_label}"
 
-        if st.sidebar.button(label):
+        # unique key so buttons don't conflict
+        if st.sidebar.button(label, key=f"obs_{obs_id}"):
             edit_observation_dialog(obs)
+
 
 # ----------------- RESTORE SESSION -----------------
 def restore_session_after_functions():
@@ -574,6 +576,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
