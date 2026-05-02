@@ -94,16 +94,25 @@ def upload_photo(file):
         ext = file.name.split(".")[-1]
         file_id = f"{uuid.uuid4()}.{ext}"
 
-        supabase.storage.from_(BUCKET).upload(
+        # IMPORTANT: Python client expects raw bytes, not {"file": ...}
+        res = supabase.storage.from_(BUCKET).upload(
             file_id,
-            {"file": file_bytes},   # <-- REQUIRED for your client version
+            file_bytes,
+            {"content-type": file.type}
         )
 
-        return supabase.storage.from_(BUCKET).get_public_url(file_id)
+        if res.get("error"):
+            st.error(res["error"]["message"])
+            return None
+
+        # Get public URL
+        url = supabase.storage.from_(BUCKET).get_public_url(file_id)
+        return url
 
     except Exception as e:
         st.error(f"Upload failed: {e}")
         return None
+
 
 
 
