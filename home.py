@@ -26,7 +26,7 @@ COOKIE_NAME = "fieldapp_session_v1"
 # ---------------------------------------------------------
 # Supabase + cookies
 # ---------------------------------------------------------
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookies = EncryptedCookieManager(
     prefix="fieldapp_",
