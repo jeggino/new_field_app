@@ -170,7 +170,6 @@ def safe_center(map_data, fallback):
         return fallback
     return [center.get("lat", fallback[0]), center.get("lng", fallback[1])]
 
-
 # ----------------- LEGEND -----------------
 def show_legend():
     with st.modal("Legend"):
@@ -407,6 +406,7 @@ def show_main_app():
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
     selected_species = st.sidebar.multiselect("Species", species_values)
 
+    # DATE FILTER (FIXED)
     dates = []
     for o in st.session_state.observations:
         if o.get("date"):
@@ -417,12 +417,17 @@ def show_main_app():
 
     if dates:
         min_d, max_d = min(dates), max(dates)
-        date_range = st.sidebar.slider(
-            "Date range",
-            min_value=min_d,
-            max_value=max_d,
-            value=(min_d, max_d),
-        )
+
+        if min_d == max_d:
+            st.sidebar.write(f"Date: {min_d}")
+            date_range = (min_d, max_d)
+        else:
+            date_range = st.sidebar.slider(
+                "Date range",
+                min_value=min_d,
+                max_value=max_d,
+                value=(min_d, max_d),
+            )
     else:
         date_range = None
 
@@ -467,7 +472,7 @@ def show_main_app():
         folium.Marker(
             [obs["lat"], obs["lon"]],
             tooltip=f"{species} ({obs['id']})",
-            popup=str(obs["id"]),  # store ID for click detection
+            popup=str(obs["id"]),
             icon=marker_icon,
         ).add_to(m)
 
@@ -522,6 +527,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
     
 
