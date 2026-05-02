@@ -543,11 +543,9 @@ def show_main_app():
         if st.button("➕ New Observation"):
             new_observation_dialog()
 
-    # Sidebar menu (no observations title, no new observation button)
-    st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
+    # # Sidebar menu (no observations title, no new observation button)
+    # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
-    if st.sidebar.button("Legend"):
-        show_legend()
 
     if st.sidebar.button("Change Project"):
         st.session_state.changing_project = True
@@ -555,6 +553,12 @@ def show_main_app():
 
     if st.sidebar.button("Logout"):
         logout()
+
+    "---"
+
+    if st.sidebar.button("Legend"):
+        show_legend()
+    
 
     st.sidebar.header("Filters")
 
@@ -602,7 +606,11 @@ def show_main_app():
                     pass
         filtered = tmp
 
-    if st.sidebar.button("Daily Report"):
+    "---"
+    
+    st.sidebar.header("Daily Report")
+    
+    if st.sidebar.button("Fill a Report"):
         daily_report_dialog()
     
     if st.sidebar.button("View Reports"):
@@ -668,6 +676,10 @@ def show_main_app():
     if map_data and map_data.get("last_object_clicked_popup"):
         st.session_state.selected_obs_id = str(map_data["last_object_clicked_popup"])
 
+    "---"
+    
+    st.sidebar.header("Observations")
+    
     # OBSERVATION LIST IN SIDEBAR (no title, no new button)
     for obs in filtered:
         obs_id = str(obs["id"])
