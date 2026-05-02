@@ -8,7 +8,7 @@ import uuid
 
 # ----------------- CONFIG -----------------
 st.set_page_config(
-    page_title="Observations",
+    page_title="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -36,6 +36,7 @@ BIRD_SPECIES = [
     'Boomkruiper','Kauw','..ander'
 ]
 
+# ----------------- FUNCTION LISTS -----------------
 BAT_FUNCTIONS = [
     'vleermuis waarneming','zomerverblijfplaats','kraamverblijfplaats',
     'paarverblijfplaats','winterverblijfplaats','vleermuiskast','zender'
@@ -45,6 +46,7 @@ BIRD_FUNCTIONS = [
     'vogel waarneming','nestlocatie','mogelijke nestlocatie'
 ]
 
+# ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
     "vleermuis waarneming": "info-sign",
     "zomerverblijfplaats": "sun",
@@ -53,11 +55,13 @@ FUNCTION_ICONS = {
     "winterverblijfplaats": "snowflake",
     "vleermuiskast": "home",
     "zender": "signal",
+
     "vogel waarneming": "info-sign",
     "nestlocatie": "home",
     "mogelijke nestlocatie": "question-sign",
 }
 
+# ----------------- COLORS FOR SPECIES -----------------
 ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
 COLOR_PALETTE = [
     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
@@ -66,6 +70,7 @@ COLOR_PALETTE = [
 ]
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
 
+# ----------------- SHAPE SETTINGS -----------------
 BAT_BORDER = True
 
 # ----------------- INIT -----------------
@@ -97,17 +102,20 @@ for k, v in defaults.items():
 def login(email: str, password: str):
     try:
         return supabase.auth.sign_in_with_password({"email": email, "password": password})
-    except:
+    except Exception:
         return None
+
 
 def signup(email: str, password: str):
     try:
         return supabase.auth.sign_up({"email": email, "password": password})
-    except:
+    except Exception:
         return None
+
 
 def logout():
     supabase.auth.sign_out()
+    st.session_state.clear()
     for k, v in defaults.items():
         st.session_state[k] = v
     st.rerun()
@@ -127,6 +135,7 @@ def load_projects():
     )
     return res.data or []
 
+
 def load_observations(project_name: str):
     res = (
         supabase
@@ -144,16 +153,24 @@ def load_observations(project_name: str):
         st.session_state.map_input_center = [last["lat"], last["lon"]]
 
 
-# ----------------- STORAGE -----------------
+# ----------------- STORAGE HELPERS -----------------
 def upload_photo(file):
     if not file:
         return None
+
     try:
         file_bytes = file.read()
+        if not file_bytes:
+            return None
+
         ext = file.name.split(".")[-1]
         file_id = f"{uuid.uuid4()}.{ext}"
 
-        supabase.storage.from_(BUCKET).upload(file_id, file_bytes)
+        supabase.storage.from_(BUCKET).upload(
+            file_id,
+            {"file": file_bytes},
+        )
+
         return supabase.storage.from_(BUCKET).get_public_url(file_id)
 
     except Exception as e:
@@ -162,152 +179,170 @@ def upload_photo(file):
 
 
 # ----------------- MAP HELPERS -----------------
-def safe_center(map_data, fallback):
-    if not isinstance(map_data, dict):
-        return fallback
-    center = map_data.get("center")
-    if not center:
-        return fallback
-    return [center.get("lat", fallback[0]), center.get("lng", fallback[1])]
+def _get_center_from_map_data(map_data, fallback_center):
+    if not map_data:
+        return fallback_center
+    if "center" not in map_data:
+        return fallback_center
+    return [map_data["center"]["lat"], map_data["center"]["lng"]]
+
 
 # ----------------- LEGEND -----------------
+@st.dialog("Legend")
 def show_legend():
-    with st.modal("Legend"):
-        st.subheader("Animal Type (shape)")
-        st.write("🟣 **Circle** = Bat")
-        st.write("🟩 **Square** = Bird")
+    st.subheader("Animal Type (shape)")
+    st.write("🟣 **Circle** = Bat")
+    st.write("🟩 **Square** = Bird")
 
-        st.subheader("Species Colors")
-        for sp, col in SPECIES_COLORS.items():
-            st.write(f"● <span style='color:{col}'>{sp}</span>", unsafe_allow_html=True)
+    st.subheader("Species Colors")
+    for sp, col in SPECIES_COLORS.items():
+        st.write(f"● <span style='color:{col}'>{sp}</span>", unsafe_allow_html=True)
 
-        st.subheader("Function Icons")
-        for func, icon in FUNCTION_ICONS.items():
-            st.write(f"🔹 {func} → {icon}")
+    st.subheader("Function Icons")
+    for func, icon in FUNCTION_ICONS.items():
+        st.write(f"🔹 {func} → {icon}")
 
 
 # ----------------- EDIT OBSERVATION -----------------
+@st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
-    with st.modal("Edit Observation"):
-        st.write("Edit the observation.")
+    st.write("Edit the observation.")
 
-        if obs.get("photo_url"):
-            st.image(obs["photo_url"], width=250)
+    if obs.get("photo_url"):
+        st.image(obs["photo_url"], width=250, caption="Current photo")
 
-        animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if obs["animal_type"] == "bat" else 1)
+    animal_type = obs.get("animal_type", "bat")
+    animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if animal_type == "bat" else 1)
 
-        species_list = BAT_SPECIES if animal_type == "bat" else BIRD_SPECIES
-        func_list = BAT_FUNCTIONS if animal_type == "bat" else BIRD_FUNCTIONS
+    if animal_type == "bat":
+        species_list = BAT_SPECIES
+        func_list = BAT_FUNCTIONS
+    else:
+        species_list = BIRD_SPECIES
+        func_list = BIRD_FUNCTIONS
 
-        species = st.selectbox("Species", species_list, index=species_list.index(obs["species"]))
-        function = st.selectbox("Function", func_list, index=func_list.index(obs["function"]))
+    species_value = obs.get("species", species_list[0])
+    if species_value not in species_list:
+        species_value = species_list[0]
 
-        behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
-        username = st.text_input("Observer", value=obs.get("username", ""))
+    function_value = obs.get("function", func_list[0])
+    if function_value not in func_list:
+        function_value = func_list[0]
 
-        try:
-            d = datetime.fromisoformat(obs["date"]).date()
-        except:
-            d = datetime.utcnow().date()
+    species = st.selectbox("Species", species_list, index=species_list.index(species_value))
+    function = st.selectbox("Function", func_list, index=func_list.index(function_value))
 
-        obs_date = st.date_input("Date", value=d)
-        new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
+    behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
+    username = st.text_input("Observer", value=obs.get("username", ""))
 
-        lat = st.number_input("Latitude", value=float(obs["lat"]))
-        lon = st.number_input("Longitude", value=float(obs["lon"]))
+    try:
+        d = datetime.fromisoformat(obs["date"]).date()
+    except:
+        d = datetime.utcnow().date()
 
-        if st.button("Update"):
-            photo_url = obs.get("photo_url")
-            if new_photo:
-                photo_url = upload_photo(new_photo)
+    obs_date = st.date_input("Date", value=d)
+    new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
-            supabase.table(OBS_TABLE).update({
-                "animal_type": animal_type,
-                "species": species,
-                "function": function,
-                "behavior": behavior,
-                "username": username,
-                "date": str(obs_date),
-                "lat": lat,
-                "lon": lon,
-                "photo_url": photo_url,
-            }).eq("id", obs["id"]).execute()
+    lat = st.number_input("Latitude", value=float(obs["lat"]))
+    lon = st.number_input("Longitude", value=float(obs["lon"]))
 
-            load_observations(st.session_state.project)
-            st.rerun()
+    if st.button("Update"):
+        photo_url = obs.get("photo_url")
+        if new_photo:
+            photo_url = upload_photo(new_photo)
 
-        if st.button("Delete", type="secondary"):
-            supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
-            load_observations(st.session_state.project)
-            st.rerun()
+        supabase.table(OBS_TABLE).update({
+            "animal_type": animal_type,
+            "species": species,
+            "function": function,
+            "behavior": behavior,
+            "username": username,
+            "date": str(obs_date),
+            "lat": lat,
+            "lon": lon,
+            "photo_url": photo_url,
+        }).eq("id", obs["id"]).execute()
+
+        load_observations(st.session_state.project)
+        st.rerun()
+
+    if st.button("Delete", type="secondary"):
+        supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
+        load_observations(st.session_state.project)
+        st.rerun()
 
 
 # ----------------- NEW OBSERVATION -----------------
+@st.dialog("New Observation")
 def new_observation_dialog():
-    with st.modal("New Observation"):
-        st.write("Use the map center as the observation position.")
+    st.write("Use the map center as the observation position.")
 
-        base_center = st.session_state.map_input_center
-        zoom = 18
+    base_center = st.session_state.map_input_center
+    zoom = 18
 
-        m = folium.Map(location=base_center, zoom_start=zoom)
-        LocateControl(auto_start=False).add_to(m)
+    m = folium.Map(location=base_center, zoom_start=zoom)
+    LocateControl(auto_start=False).add_to(m)
 
-        crosshair_html = f"""
-        <div style="
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-        ">
-            <img src="{CROSS_IMAGE_PATH}"
-                 style="width:{WIDTH}px; opacity:{OPACITY};">
-        </div>
-        """
-        m.get_root().html.add_child(folium.Element(crosshair_html))
+    crosshair_html = f"""
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+    ">
+        <img src="{CROSS_IMAGE_PATH}"
+             style="width:{WIDTH}px; opacity:{OPACITY};">
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(crosshair_html))
 
-        map_data = st_folium(m, width="100%", height=350)
-        center = safe_center(map_data, base_center)
-        lat, lon = center
+    map_data = st_folium(m, width="100%", height=350)
 
-        animal_type = st.radio("Animal type", ["bat", "bird"])
+    try:
+        lat = map_data["center"]["lat"]
+        lon = map_data["center"]["lng"]
+    except Exception:
+        lat, lon = base_center
 
-        species_list = BAT_SPECIES if animal_type == "bat" else BIRD_SPECIES
-        func_list = BAT_FUNCTIONS if animal_type == "bat" else BIRD_FUNCTIONS
+    animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
 
-        species = st.selectbox("Species", species_list)
-        function = st.selectbox("Function", func_list)
-        behavior = st.text_input("Behavior")
-        username = st.text_input("Observer")
-        obs_date = st.date_input("Date", value=datetime.utcnow().date())
-        photo = st.file_uploader("Photo", type=["jpg", "jpeg", "png"])
+    if animal_type == "bat":
+        species = st.selectbox("Species", BAT_SPECIES)
+        function = st.selectbox("Function", BAT_FUNCTIONS)
+    else:
+        species = st.selectbox("Species", BIRD_SPECIES)
+        function = st.selectbox("Function", BIRD_FUNCTIONS)
 
-        if st.button("Save"):
-            photo_url = upload_photo(photo) if photo else None
+    behavior = st.text_input("Behavior")
+    username = st.text_input("Observer", value=st.session_state.user.email)
+    obs_date = st.date_input("Date", value=datetime.utcnow().date())
+    photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
-            data = {
-                "id": str(uuid.uuid4()),
-                "project": st.session_state.project,
-                "animal_type": animal_type,
-                "species": species,
-                "function": function,
-                "behavior": behavior,
-                "username": username,
-                "date": str(obs_date),
-                "lat": float(lat),
-                "lon": float(lon),
-                "photo_url": photo_url,
-            }
+    if st.button("Save observation"):
+        photo_url = upload_photo(photo)
 
-            supabase.table(OBS_TABLE).insert(data).execute()
+        data = {
+            "animal_type": animal_type,
+            "species": species,
+            "function": function,
+            "behavior": behavior,
+            "username": username,
+            "date": str(obs_date),
+            "project": st.session_state.project,
+            "lat": float(lat),
+            "lon": float(lon),
+            "photo_url": photo_url,
+        }
 
-            st.session_state.map_center = [float(lat), float(lon)]
-            st.session_state.map_input_center = [float(lat), float(lon)]
+        supabase.table(OBS_TABLE).insert(data).execute()
 
-            load_observations(st.session_state.project)
-            st.rerun()
+        st.session_state.map_center = [float(lat), float(lon)]
+        st.session_state.map_input_center = [float(lat), float(lon)]
+
+        load_observations(st.session_state.project)
+        st.rerun()
 
 
 # ----------------- UI: LOGIN -----------------
@@ -379,7 +414,8 @@ def show_project_selection():
 
 # ----------------- MAIN APP -----------------
 def show_main_app():
-    # HEADER
+
+    # HEADER WITH NEW OBSERVATION BUTTON
     col1, col2 = st.columns([0.8, 0.2])
     with col1:
         st.title("Observations")
@@ -400,13 +436,12 @@ def show_main_app():
     if st.sidebar.button("Logout"):
         logout()
 
-    # FILTERS
     st.sidebar.header("Filters")
 
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
     selected_species = st.sidebar.multiselect("Species", species_values)
 
-    # DATE FILTER (FIXED)
+    # DATE FILTER
     dates = []
     for o in st.session_state.observations:
         if o.get("date"):
@@ -417,9 +452,7 @@ def show_main_app():
 
     if dates:
         min_d, max_d = min(dates), max(dates)
-
         if min_d == max_d:
-            st.sidebar.write(f"Date: {min_d}")
             date_range = (min_d, max_d)
         else:
             date_range = st.sidebar.slider(
@@ -469,20 +502,21 @@ def show_main_app():
             text_color="white"
         )
 
+        # IMPORTANT: popup now contains ONLY the observation ID
         folium.Marker(
             [obs["lat"], obs["lon"]],
-            tooltip=f"{species} ({obs['id']})",
             popup=str(obs["id"]),
             icon=marker_icon,
         ).add_to(m)
 
     map_data = st_folium(m, height=550, width="100%")
 
-    st.session_state.map_input_center = safe_center(map_data, st.session_state.map_center)
+    # Update map center
+    st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
-    # CLICK HANDLER
-    if isinstance(map_data, dict):
-        clicked = map_data.get("last_object_clicked") or map_data.get("last_clicked")
+    # CLICK HANDLER — open edit dialog when marker is clicked
+    if map_data and "last_object_clicked" in map_data:
+        clicked = map_data["last_object_clicked"]
         if clicked and "popup" in clicked:
             obs_id = clicked["popup"]
             for o in filtered:
@@ -525,8 +559,26 @@ def main():
         show_main_app()
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
 
 
     
