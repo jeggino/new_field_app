@@ -39,7 +39,7 @@ defaults = {
     "project": None,
     "changing_project": False,
     "observations": [],
-    "map_center": [52.0, 5.0],      # default NL center
+    "map_center": [52.0, 5.0],
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
@@ -75,7 +75,6 @@ def logout():
 
 # ----------------- DATA HELPERS -----------------
 def load_projects():
-    """Only load projects belonging to the current user."""
     user = st.session_state.user
     if not user:
         return []
@@ -100,7 +99,6 @@ def load_observations(project_name: str):
     )
     st.session_state.observations = res.data or []
 
-    # Center map on last observation if exists
     if st.session_state.observations:
         last = st.session_state.observations[-1]
         st.session_state.map_center = [last["lat"], last["lon"]]
@@ -213,16 +211,13 @@ def _get_center_from_map_data(map_data, fallback_center):
 def new_observation_dialog():
     st.write("Use the map center as the observation position.")
 
-    # Always start at highest zoom for new observation
     base_center = st.session_state.map_input_center
-    zoom = 18
+    zoom = 18  # highest zoom
 
     m = folium.Map(location=base_center, zoom_start=zoom)
 
-    # GPS locate control
     LocateControl(auto_start=False).add_to(m)
 
-    # Crosshair overlay
     crosshair_html = f"""
     <div style="
         position: fixed;
@@ -248,6 +243,13 @@ def new_observation_dialog():
 
     species = st.text_input("Species")
     behavior = st.text_input("Behavior")
+
+    # NEW FIELD HERE
+    function = st.selectbox(
+        "Function",
+        ["nest/roost", "single observation", "group observation"]
+    )
+
     username = st.text_input("Observer", value=st.session_state.user.email)
     obs_date = st.date_input("Date", value=datetime.utcnow().date())
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
@@ -262,6 +264,7 @@ def new_observation_dialog():
         data = {
             "species": species,
             "behavior": behavior,
+            "function": function,   # NEW FIELD SAVED HERE
             "username": username,
             "date": str(obs_date),
             "project": st.session_state.project,
@@ -272,7 +275,6 @@ def new_observation_dialog():
 
         supabase.table(OBS_TABLE).insert(data).execute()
 
-        # Update map center to this new observation
         st.session_state.map_center = [float(lat), float(lon)]
         st.session_state.map_input_center = [float(lat), float(lon)]
 
@@ -293,7 +295,6 @@ def show_main_app():
     if st.sidebar.button("Logout"):
         logout()
 
-    # -------- FILTERS --------
     st.sidebar.header("Filters")
 
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
@@ -339,7 +340,6 @@ def show_main_app():
                     pass
         filtered = tmp
 
-    # -------- MAP --------
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
 
     LocateControl(auto_start=False).add_to(m)
@@ -347,6 +347,7 @@ def show_main_app():
     for obs in filtered:
         popup = f"""
         <b>Species:</b> {obs.get('species', '')}<br>
+        <b>Function:</b> {obs.get('function', '')}<br>
         <b>Observer:</b> {obs.get('username', '')}<br>
         <b>Date:</b> {obs.get('date', '')}<br>
         """
@@ -363,7 +364,6 @@ def show_main_app():
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
-    # -------- SIDEBAR LIST --------
     st.sidebar.header("Observations")
     if st.sidebar.button("New observation"):
         new_observation_dialog()
@@ -371,7 +371,7 @@ def show_main_app():
     for obs in filtered:
         label = f"{obs['id']} - {obs.get('species', '')[:30]}"
         if st.sidebar.button(label):
-            st.write("Edit dialog coming next update.")  # placeholder
+            st.write("Edit dialog coming next update.")
 
 
 # ----------------- RESTORE SESSION -----------------
@@ -410,6 +410,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
