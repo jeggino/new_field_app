@@ -5,6 +5,7 @@ from folium.plugins import LocateControl, BeautifyIcon
 from supabase import create_client, Client
 from datetime import datetime
 import uuid
+import json
 
 # ----------------- CONFIG -----------------
 st.set_page_config(
@@ -152,6 +153,25 @@ def load_observations(project_name: str):
         last = st.session_state.observations[-1]
         st.session_state.map_center = [last["lat"], last["lon"]]
         st.session_state.map_input_center = [last["lat"], last["lon"]]
+
+def load_project_boundary(project_name):
+    """Load a GeoJSON boundary file from the Supabase bucket.
+       The file must be named <project>.geojson
+    """
+    filename = f"{project_name}.geojson"
+
+    try:
+        response = supabase.storage.from_(BUCKET).download(filename)
+        if not response:
+            return None
+
+        geojson_bytes = response
+        geojson_str = geojson_bytes.decode("utf-8")
+        return json.loads(geojson_str)
+
+    except Exception as e:
+        st.warning(f"Boundary file not found for project: {project_name}")
+        return None
 
 
 # ----------------- STORAGE HELPERS -----------------
@@ -485,6 +505,22 @@ def show_main_app():
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
     LocateControl(auto_start=False).add_to(m)
+
+    # Add project boundary polygon
+    boundary = load_project_boundary(st.session_state.project)
+    
+    if boundary:
+        folium.GeoJson(
+            boundary,
+            name="Boundary",
+            style_function=lambda x: {
+                "fillColor": "#ffcc00",
+                "color": "#ff8800",
+                "weight": 2,
+                "fillOpacity": 0.15,
+            }
+        ).add_to(m)
+
 
     for obs in filtered:
         animal_type = obs.get("animal_type", "bat")
