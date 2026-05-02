@@ -24,6 +24,7 @@ CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/74
 OPACITY = 1
 WIDTH = 30
 
+# ----------------- SPECIES LISTS -----------------
 BAT_SPECIES = [
     'Gewone dwergvleermuis','Ruige dwergvleermuis','Laatvlieger','Rosse vleermuis',
     'Baardvleermuis','Meervleermuis','Watervleermuis','Kleine dwergvleermuis',
@@ -35,20 +36,42 @@ BIRD_SPECIES = [
     'Boomkruiper','Kauw','..ander'
 ]
 
+# ----------------- FUNCTION LISTS -----------------
+BAT_FUNCTIONS = [
+    'vleermuis waarneming','zomerverblijfplaats','kraamverblijfplaats',
+    'paarverblijfplaats','winterverblijfplaats','vleermuiskast','zender'
+]
+
+BIRD_FUNCTIONS = [
+    'vogel waarneming','nestlocatie','mogelijke nestlocatie'
+]
+
+# ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
-    "nest/roost": "home",
-    "single observation": "info-sign",
-    "group observation": "users"
+    "vleermuis waarneming": "info-sign",
+    "zomerverblijfplaats": "sun",
+    "kraamverblijfplaats": "heart",
+    "paarverblijfplaats": "star",
+    "winterverblijfplaats": "snowflake",
+    "vleermuiskast": "home",
+    "zender": "signal",
+
+    "vogel waarneming": "info-sign",
+    "nestlocatie": "home",
+    "mogelijke nestlocatie": "question-sign",
 }
 
-# Assign a unique color per species
+# ----------------- COLORS FOR SPECIES -----------------
 ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
 COLOR_PALETTE = [
     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
     "darkgreen","cadetblue","darkpurple","white","pink","lightblue","lightgreen",
     "gray","black"
 ]
-SPECIES_COLORS = {species: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, species in enumerate(ALL_SPECIES)}
+SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
+
+# ----------------- SHAPE SETTINGS -----------------
+BAT_BORDER = True  # set False if you don't want a border around bat markers
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -155,7 +178,7 @@ def upload_photo(file):
         return None
 
 
-# ----------------- LEGEND DIALOG -----------------
+# ----------------- LEGEND -----------------
 @st.dialog("Legend")
 def show_legend():
     st.subheader("Animal Type (shape)")
@@ -167,88 +190,69 @@ def show_legend():
         st.write(f"● <span style='color:{col}'>{sp}</span>", unsafe_allow_html=True)
 
     st.subheader("Function Icons")
-    st.write("🏠 nest/roost")
-    st.write("ℹ️ single observation")
-    st.write("👥 group observation")
+    for func, icon in FUNCTION_ICONS.items():
+        st.write(f"🔹 {func} → {icon}")
 
 
-# ----------------- UI: LOGIN -----------------
-def show_login():
-    st.sidebar.title("Login")
+# ----------------- EDIT OBSERVATION -----------------
+@st.dialog("Edit Observation")
+def edit_observation_dialog(obs):
+    st.write("Edit the observation.")
 
-    with st.sidebar.form("login_form"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
+    # Show existing photo
+    if obs.get("photo_url"):
+        st.image(obs["photo_url"], width=250, caption="Current photo")
 
-        if submitted:
-            res = login(email, password)
-            if res and res.user:
-                st.session_state.logged_in = True
-                st.session_state.user = res.user
-                st.session_state.session = res.session
-                st.rerun()
-            else:
-                st.sidebar.error("Invalid email or password")
+    animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if obs.get("animal_type")=="bat" else 1)
 
-    if st.sidebar.button("Create Account"):
-        st.session_state.show_signup = True
+    if animal_type == "bat":
+        species = st.selectbox("Species", BAT_SPECIES, index=BAT_SPECIES.index(obs["species"]))
+        function = st.selectbox("Function", BAT_FUNCTIONS, index=BAT_FUNCTIONS.index(obs["function"]))
+    else:
+        species = st.selectbox("Species", BIRD_SPECIES, index=BIRD_SPECIES.index(obs["species"]))
+        function = st.selectbox("Function", BIRD_FUNCTIONS, index=BIRD_FUNCTIONS.index(obs["function"]))
+
+    behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
+    username = st.text_input("Observer", value=obs.get("username", ""))
+
+    try:
+        d = datetime.fromisoformat(obs["date"]).date()
+    except:
+        d = datetime.utcnow().date()
+
+    obs_date = st.date_input("Date", value=d)
+    new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
+
+    lat = st.number_input("Latitude", value=obs["lat"])
+    lon = st.number_input("Longitude", value=obs["lon"])
+
+    if st.button("Update"):
+        photo_url = obs.get("photo_url")
+        if new_photo:
+            photo_url = upload_photo(new_photo)
+
+        supabase.table(OBS_TABLE).update({
+            "animal_type": animal_type,
+            "species": species,
+            "function": function,
+            "behavior": behavior,
+            "username": username,
+            "date": str(obs_date),
+            "lat": lat,
+            "lon": lon,
+            "photo_url": photo_url,
+        }).eq("id", obs["id"]).execute()
+
+        load_observations(st.session_state.project)
+        st.rerun()
+
+    if st.button("Delete", type="secondary"):
+        supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
+        load_observations(st.session_state.project)
         st.rerun()
 
 
-# ----------------- UI: SIGNUP -----------------
-def show_signup():
-    st.sidebar.title("Create Account")
-
-    with st.sidebar.form("signup_form"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Sign Up")
-
-        if submitted:
-            res = signup(email, password)
-            if res and res.user:
-                st.sidebar.success("Account created. Please log in.")
-                st.session_state.show_signup = False
-                st.rerun()
-            else:
-                st.sidebar.error("Sign-up failed")
-
-    if st.sidebar.button("Back to Login"):
-        st.session_state.show_signup = False
-        st.rerun()
-
-
-# ----------------- UI: PROJECT SELECT -----------------
-def show_project_selection():
-    st.sidebar.title("Select Project")
-
-    projects = load_projects()
-    if not projects:
-        st.sidebar.warning("No projects found for this user.")
-        return
-
-    project_names = [p["name"] for p in projects]
-    selected = st.sidebar.selectbox("Project", project_names)
-
-    if st.sidebar.button("Confirm project"):
-        st.session_state.project = selected
-        supabase.auth.update_user({"data": {"project": selected}})
-        load_observations(selected)
-        st.session_state.changing_project = False
-        st.rerun()
-
-
-# ----------------- MAP HELPERS -----------------
-def _get_center_from_map_data(map_data, fallback_center):
-    if not map_data:
-        return fallback_center
-    if "center" not in map_data:
-        return fallback_center
-    return [map_data["center"]["lat"], map_data["center"]["lng"]]
-
-
-# ----------------- DIALOG: NEW OBSERVATION -----------------
+# ----------------- NEW OBSERVATION -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
     st.write("Use the map center as the observation position.")
@@ -286,16 +290,12 @@ def new_observation_dialog():
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
+        function = st.selectbox("Function", BAT_FUNCTIONS)
     else:
         species = st.selectbox("Species", BIRD_SPECIES)
+        function = st.selectbox("Function", BIRD_FUNCTIONS)
 
     behavior = st.text_input("Behavior")
-
-    function = st.selectbox(
-        "Function",
-        ["nest/roost", "single observation", "group observation"]
-    )
-
     username = st.text_input("Observer", value=st.session_state.user.email)
     obs_date = st.date_input("Date", value=datetime.utcnow().date())
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
@@ -304,10 +304,10 @@ def new_observation_dialog():
         photo_url = upload_photo(photo)
 
         data = {
-            "species": species,
-            "behavior": behavior,
-            "function": function,
             "animal_type": animal_type,
+            "species": species,
+            "function": function,
+            "behavior": behavior,
             "username": username,
             "date": str(obs_date),
             "project": st.session_state.project,
@@ -395,8 +395,15 @@ def show_main_app():
         color = SPECIES_COLORS.get(species, "blue")
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
 
-        # SHAPE: circle for bat, square for bird
         shape = "circle" if animal_type == "bat" else "rectangle"
+
+        marker_icon = BeautifyIcon(
+            icon=icon,
+            icon_shape=shape,
+            background_color=color,
+            border_color="black" if (animal_type=="bat" and BAT_BORDER) else color,
+            text_color="white"
+        )
 
         popup = f"""
         <b>Species:</b> {species}<br>
@@ -406,13 +413,6 @@ def show_main_app():
         """
         if obs.get("photo_url"):
             popup += f'<img src="{obs["photo_url"]}" width="150"><br>'
-
-        marker_icon = BeautifyIcon(
-            icon=icon,
-            icon_shape=shape,
-            background_color=color,
-            text_color="white"
-        )
 
         folium.Marker(
             [obs["lat"], obs["lon"]],
@@ -431,7 +431,7 @@ def show_main_app():
     for obs in filtered:
         label = f"{obs['id']} - {obs.get('species', '')[:30]}"
         if st.sidebar.button(label):
-            st.write("Edit dialog coming next update.")
+            edit_observation_dialog(obs)
 
 
 # ----------------- RESTORE SESSION -----------------
@@ -470,6 +470,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
