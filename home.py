@@ -83,13 +83,17 @@ def upload_photo(file):
     if not file:
         return None
 
+    file_bytes = file.read()
+    if not file_bytes:
+        return None
+
     ext = file.name.split(".")[-1]
     file_id = f"{uuid.uuid4()}.{ext}"
 
-    supabase.storage.from_(BUCKET).upload(file_id, file.getvalue())
+    supabase.storage.from_(BUCKET).upload(file_id, file_bytes)
 
-    public_url = supabase.storage.from_(BUCKET).get_public_url(file_id)
-    return public_url
+    return supabase.storage.from_(BUCKET).get_public_url(file_id)
+
 
 
 # ----------------- UI: LOGIN -----------------
