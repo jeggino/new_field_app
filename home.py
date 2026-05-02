@@ -566,7 +566,13 @@ def show_main_app():
             icon=marker_icon,
         ).add_to(m)
 
-    map_data = st_folium(m, height=550, width="100%")
+    with st.container():
+        st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
+        map_data = st_folium(m, height=350, width="100%")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+    # map_data = st_folium(m, height=550, width="100%")
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
