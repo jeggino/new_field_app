@@ -36,11 +36,24 @@ defaults = {
     "map_center": [0.0, 0.0],
     "map_input_center": [0.0, 0.0],
     "map_input_zoom": 2,
+    "show_signup": False,
 }
 
 for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
+
+
+# ----------------- AUTH SESSION RESTORE -----------------
+def restore_session():
+    sess = supabase.auth.get_session()
+    if sess and sess.user:
+        st.session_state.logged_in = True
+        st.session_state.user = sess.user
+        st.session_state.session = sess
+
+
+restore_session()
 
 
 # ----------------- SUPABASE AUTH -----------------
@@ -49,6 +62,14 @@ def login(email: str, password: str):
         res = supabase.auth.sign_in_with_password(
             {"email": email, "password": password}
         )
+        return res
+    except Exception:
+        return None
+
+
+def signup(email: str, password: str):
+    try:
+        res = supabase.auth.sign_up({"email": email, "password": password})
         return res
     except Exception:
         return None
@@ -93,7 +114,7 @@ def delete_observation(obs_id: int):
     load_observations(st.session_state.project)
 
 
-# ----------------- UI: LOGIN & PROJECT SELECT -----------------
+# ----------------- UI: LOGIN & SIGNUP -----------------
 def show_login():
     st.title("Login")
 
@@ -112,7 +133,35 @@ def show_login():
             else:
                 st.error("Invalid email or password")
 
+    st.info("Don't have an account?")
+    if st.button("Go to Sign Up"):
+        st.session_state.show_signup = True
+        st.rerun()
 
+
+def show_signup():
+    st.title("Create Account")
+
+    with st.form("signup_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Sign Up")
+
+        if submitted:
+            res = signup(email, password)
+            if res and res.user:
+                st.success("Account created. Please log in.")
+                st.session_state.show_signup = False
+                st.rerun()
+            else:
+                st.error("Sign-up failed")
+
+    if st.button("Back to Login"):
+        st.session_state.show_signup = False
+        st.rerun()
+
+
+# ----------------- UI: PROJECT SELECT -----------------
 def show_project_selection():
     st.title("Select Project")
 
@@ -216,7 +265,6 @@ def edit_observation_dialog(obs):
 def show_main_app():
     st.title(f"Observations for project: {st.session_state.project}")
 
-    # Top bar
     col1, col2 = st.columns([3, 1])
     with col1:
         st.write(f"Logged in as: {st.session_state.user.email}")
@@ -224,7 +272,6 @@ def show_main_app():
         if st.button("Logout"):
             logout()
 
-    # Map
     m = folium.Map(location=st.session_state.map_center, zoom_start=4)
 
     for obs in st.session_state.observations:
@@ -240,7 +287,6 @@ def show_main_app():
     if map_data and "zoom" in map_data:
         st.session_state.map_input_zoom = map_data["zoom"]
 
-    # Sidebar: observations list and actions
     st.sidebar.header("Observations")
     if st.sidebar.button("New observation"):
         new_observation_dialog()
@@ -253,7 +299,10 @@ def show_main_app():
 
 def main():
     if not st.session_state.logged_in:
-        show_login()
+        if st.session_state.show_signup:
+            show_signup()
+        else:
+            show_login()
     elif not st.session_state.project:
         show_project_selection()
     else:
