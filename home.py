@@ -178,6 +178,15 @@ def upload_photo(file):
         return None
 
 
+# ----------------- MAP HELPERS -----------------
+def _get_center_from_map_data(map_data, fallback_center):
+    if not map_data:
+        return fallback_center
+    if "center" not in map_data:
+        return fallback_center
+    return [map_data["center"]["lat"], map_data["center"]["lng"]]
+
+
 # ----------------- LEGEND -----------------
 @st.dialog("Legend")
 def show_legend():
@@ -199,18 +208,29 @@ def show_legend():
 def edit_observation_dialog(obs):
     st.write("Edit the observation.")
 
-    # Show existing photo
     if obs.get("photo_url"):
         st.image(obs["photo_url"], width=250, caption="Current photo")
 
-    animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if obs.get("animal_type")=="bat" else 1)
+    animal_type = obs.get("animal_type", "bat")
+    animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if animal_type == "bat" else 1)
 
     if animal_type == "bat":
-        species = st.selectbox("Species", BAT_SPECIES, index=BAT_SPECIES.index(obs["species"]))
-        function = st.selectbox("Function", BAT_FUNCTIONS, index=BAT_FUNCTIONS.index(obs["function"]))
+        species_list = BAT_SPECIES
+        func_list = BAT_FUNCTIONS
     else:
-        species = st.selectbox("Species", BIRD_SPECIES, index=BIRD_SPECIES.index(obs["species"]))
-        function = st.selectbox("Function", BIRD_FUNCTIONS, index=BIRD_FUNCTIONS.index(obs["function"]))
+        species_list = BIRD_SPECIES
+        func_list = BIRD_FUNCTIONS
+
+    species_value = obs.get("species", species_list[0])
+    if species_value not in species_list:
+        species_value = species_list[0]
+
+    function_value = obs.get("function", func_list[0])
+    if function_value not in func_list:
+        function_value = func_list[0]
+
+    species = st.selectbox("Species", species_list, index=species_list.index(species_value))
+    function = st.selectbox("Function", func_list, index=func_list.index(function_value))
 
     behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
@@ -223,8 +243,8 @@ def edit_observation_dialog(obs):
     obs_date = st.date_input("Date", value=d)
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
-    lat = st.number_input("Latitude", value=obs["lat"])
-    lon = st.number_input("Longitude", value=obs["lon"])
+    lat = st.number_input("Latitude", value=float(obs["lat"]))
+    lon = st.number_input("Longitude", value=float(obs["lon"]))
 
     if st.button("Update"):
         photo_url = obs.get("photo_url")
@@ -325,6 +345,73 @@ def new_observation_dialog():
         st.rerun()
 
 
+# ----------------- UI: LOGIN -----------------
+def show_login():
+    st.sidebar.title("Login")
+
+    with st.sidebar.form("login_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login")
+
+        if submitted:
+            res = login(email, password)
+            if res and res.user:
+                st.session_state.logged_in = True
+                st.session_state.user = res.user
+                st.session_state.session = res.session
+                st.rerun()
+            else:
+                st.sidebar.error("Invalid email or password")
+
+    if st.sidebar.button("Create Account"):
+        st.session_state.show_signup = True
+        st.rerun()
+
+
+# ----------------- UI: SIGNUP -----------------
+def show_signup():
+    st.sidebar.title("Create Account")
+
+    with st.sidebar.form("signup_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Sign Up")
+
+        if submitted:
+            res = signup(email, password)
+            if res and res.user:
+                st.sidebar.success("Account created. Please log in.")
+                st.session_state.show_signup = False
+                st.rerun()
+            else:
+                st.sidebar.error("Sign-up failed")
+
+    if st.sidebar.button("Back to Login"):
+        st.session_state.show_signup = False
+        st.rerun()
+
+
+# ----------------- UI: PROJECT SELECT -----------------
+def show_project_selection():
+    st.sidebar.title("Select Project")
+
+    projects = load_projects()
+    if not projects:
+        st.sidebar.warning("No projects found for this user.")
+        return
+
+    project_names = [p["name"] for p in projects]
+    selected = st.sidebar.selectbox("Project", project_names)
+
+    if st.sidebar.button("Confirm project"):
+        st.session_state.project = selected
+        supabase.auth.update_user({"data": {"project": selected}})
+        load_observations(selected)
+        st.session_state.changing_project = False
+        st.rerun()
+
+
 # ----------------- MAIN APP -----------------
 def show_main_app():
     st.sidebar.title("Menu")
@@ -401,7 +488,7 @@ def show_main_app():
             icon=icon,
             icon_shape=shape,
             background_color=color,
-            border_color="black" if (animal_type=="bat" and BAT_BORDER) else color,
+            border_color="black" if (animal_type == "bat" and BAT_BORDER) else color,
             text_color="white"
         )
 
@@ -470,6 +557,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
