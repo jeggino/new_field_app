@@ -91,6 +91,7 @@ defaults = {
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
+    "selected_obs_id": None,   # ⭐ NEW
 }
 
 for k, v in defaults.items():
@@ -502,7 +503,7 @@ def show_main_app():
             text_color="white"
         )
 
-        # IMPORTANT: popup now contains ONLY the observation ID
+        # popup contains ONLY the observation ID
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=str(obs["id"]),
@@ -514,16 +515,28 @@ def show_main_app():
     # Update map center
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
-    # CLICK HANDLER — open edit dialog when marker is clicked
+    # CLICK HANDLER — store selected observation ID
     if map_data and "last_object_clicked" in map_data:
         clicked = map_data["last_object_clicked"]
         if clicked and "popup" in clicked:
-            obs_id = clicked["popup"]
-            for o in filtered:
-                if str(o["id"]) == str(obs_id):
-                    edit_observation_dialog(o)
-                    break
+            st.session_state.selected_obs_id = clicked["popup"]
 
+    # ----------------- SIDEBAR OBSERVATION LIST -----------------
+    st.sidebar.header("Observations")
+
+    if st.sidebar.button("New observation"):
+        new_observation_dialog()
+
+    for obs in filtered:
+        obs_id = str(obs["id"])
+        label = f"{obs['species']} – {obs.get('function','')}"
+
+        # Highlight if selected
+        if st.session_state.selected_obs_id == obs_id:
+            label = f"**{label}**"
+
+        if st.sidebar.button(label):
+            edit_observation_dialog(obs)
 
 # ----------------- RESTORE SESSION -----------------
 def restore_session_after_functions():
@@ -544,23 +557,7 @@ def restore_session_after_functions():
 restore_session_after_functions()
 
 
-# ----------------- MAIN -----------------
-def main():
-    if not st.session_state.logged_in:
-        if st.session_state.show_signup:
-            show_signup()
-        else:
-            show_login()
-    elif st.session_state.changing_project:
-        show_project_selection()
-    elif not st.session_state.project:
-        show_project_selection()
-    else:
-        show_main_app()
-
-
-if __name__ == "__main__":
-    main()
+# ----------------- MAIN ----------------
 
 
 
