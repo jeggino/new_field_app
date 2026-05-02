@@ -160,26 +160,6 @@ def load_observations(project_name: str):
         st.session_state.map_center = [last["lat"], last["lon"]]
         st.session_state.map_input_center = [last["lat"], last["lon"]]
 
-# def load_project_boundary(project_name):
-#     """Load a GeoJSON boundary file from the Supabase bucket.
-#        The file must be named <project>.geojson
-#     """
-#     filename = f"{project_name}.geojson"
-
-#     try:
-#         response = supabase.storage.from_(BUCKET).download(filename)
-#         if not response:
-#             return None
-
-#         geojson_bytes = response
-#         geojson_str = geojson_bytes.decode("utf-8")
-#         return json.loads(geojson_str)
-
-#     except Exception as e:
-#         st.warning(f"Boundary file not found for project: {project_name}")
-#         return None
-
-import json
 
 def load_project_boundary(project_name):
     """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
@@ -285,6 +265,36 @@ def show_legend():
 
 
 # ----------------- EDIT OBSERVATION -----------------
+@st.dialog("Daily Report")
+def daily_report_dialog():
+    st.write("Fill in the daily report.")
+
+    kind = st.selectbox("Kind", ["survey", "maintenance", "inspection", "other"])
+    date = st.date_input("Date", value=datetime.utcnow().date())
+    operator = st.text_input("Operator", value=st.session_state.user.email)
+    extra_operator = st.text_input("Extra Operator")
+    temperature = st.number_input("Temperature (°C)", step=0.1)
+    wind = st.text_input("Wind")
+    rain = st.text_input("Rain")
+    comment = st.text_area("Comment")
+
+    if st.button("Submit Report"):
+        supabase.table("report").insert({
+            "kind": kind,
+            "date": str(date),
+            "operator": operator,
+            "extra_operator": extra_operator,
+            "temperature": temperature,
+            "wind": wind,
+            "rain": rain,
+            "comment": comment,
+            "project": st.session_state.project
+        }).execute()
+
+        st.success("Report submitted.")
+        st.rerun()
+
+
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
     st.write("Edit the observation.")
@@ -492,6 +502,36 @@ def show_project_selection():
         st.session_state.changing_project = False
         st.rerun()
 
+# ----------------- SHOW REPORT --------------
+def show_reports_page():
+    st.subheader("Daily Reports")
+
+    res = (
+        supabase.table("report")
+        .select("*")
+        .eq("project", st.session_state.project)
+        .order("date", desc=True)
+        .execute()
+    )
+
+    reports = res.data or []
+
+    if not reports:
+        st.info("No reports yet.")
+        return
+
+    st.dataframe(reports)
+
+    # CSV download
+    import pandas as pd
+    df = pd.DataFrame(reports)
+
+    st.download_button(
+        "Download CSV",
+        df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{st.session_state.project}_reports.csv",
+        mime="text/csv"
+    )
 
 # ----------------- MAIN APP -----------------
 def show_main_app():
@@ -561,6 +601,13 @@ def show_main_app():
                 except:
                     pass
         filtered = tmp
+
+    if st.sidebar.button("Daily Report"):
+        daily_report_dialog()
+    
+    if st.sidebar.button("View Reports"):
+        show_reports_page()
+
 
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
