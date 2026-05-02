@@ -1,12 +1,17 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
+from folium.plugins import LocateControl
 from supabase import create_client, Client
 from datetime import datetime, date
 import uuid
 
 # ----------------- CONFIG -----------------
-st.set_page_config(page_title="Observations Map", layout="wide")
+st.set_page_config(
+    page_title="",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
@@ -25,7 +30,6 @@ WIDTH = 30
 def get_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
 supabase = get_supabase()
 
 defaults = {
@@ -35,11 +39,10 @@ defaults = {
     "project": None,
     "changing_project": False,
     "observations": [],
-    "map_center": [0.0, 0.0],
-    "map_input_center": [0.0, 0.0],
-    "map_input_zoom": 2,
+    "map_center": [52.0, 5.0],  # NL center
+    "map_input_center": [52.0, 5.0],
+    "map_input_zoom": 6,
     "show_signup": False,
-    "gps_location": None,
 }
 
 for k, v in defaults.items():
@@ -94,33 +97,23 @@ def upload_photo(file):
         ext = file.name.split(".")[-1]
         file_id = f"{uuid.uuid4()}.{ext}"
 
-        # IMPORTANT: Python client expects raw bytes, not {"file": ...}
-        res = supabase.storage.from_(BUCKET).upload(
+        supabase.storage.from_(BUCKET).upload(
             file_id,
-            file_bytes,
-            {"content-type": file.type}
+            {"file": file_bytes},
         )
 
-        if res.get("error"):
-            st.error(res["error"]["message"])
-            return None
-
-        # Get public URL
-        url = supabase.storage.from_(BUCKET).get_public_url(file_id)
-        return url
+        return supabase.storage.from_(BUCKET).get_public_url(file_id)
 
     except Exception as e:
         st.error(f"Upload failed: {e}")
         return None
 
 
-
-
 # ----------------- UI: LOGIN -----------------
 def show_login():
-    st.title("Login")
+    st.sidebar.title("Login")
 
-    with st.form("login_form"):
+    with st.sidebar.form("login_form"):
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Login")
@@ -133,19 +126,18 @@ def show_login():
                 st.session_state.session = res.session
                 st.rerun()
             else:
-                st.error("Invalid email or password")
+                st.sidebar.error("Invalid email or password")
 
-    st.info("Don't have an account?")
-    if st.button("Go to Sign Up"):
+    if st.sidebar.button("Create Account"):
         st.session_state.show_signup = True
         st.rerun()
 
 
 # ----------------- UI: SIGNUP -----------------
 def show_signup():
-    st.title("Create Account")
+    st.sidebar.title("Create Account")
 
-    with st.form("signup_form"):
+    with st.sidebar.form("signup_form"):
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Sign Up")
@@ -153,30 +145,30 @@ def show_signup():
         if submitted:
             res = signup(email, password)
             if res and res.user:
-                st.success("Account created. Please log in.")
+                st.sidebar.success("Account created. Please log in.")
                 st.session_state.show_signup = False
                 st.rerun()
             else:
-                st.error("Sign-up failed")
+                st.sidebar.error("Sign-up failed")
 
-    if st.button("Back to Login"):
+    if st.sidebar.button("Back to Login"):
         st.session_state.show_signup = False
         st.rerun()
 
 
 # ----------------- UI: PROJECT SELECT -----------------
 def show_project_selection():
-    st.title("Select Project")
+    st.sidebar.title("Select Project")
 
     projects = load_projects()
     if not projects:
-        st.warning("No projects found.")
+        st.sidebar.warning("No projects found.")
         return
 
     project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Project", project_names)
+    selected = st.sidebar.selectbox("Project", project_names)
 
-    if st.button("Confirm project"):
+    if st.sidebar.button("Confirm project"):
         st.session_state.project = selected
         supabase.auth.update_user({"data": {"project": selected}})
         load_observations(selected)
@@ -188,14 +180,9 @@ def show_project_selection():
 def _get_center_from_map_data(map_data, fallback_center):
     if not map_data:
         return fallback_center
-    bounds = map_data.get("bounds")
-    if not bounds:
+    if "center" not in map_data:
         return fallback_center
-    sw = bounds.get("_southWest")
-    ne = bounds.get("_northEast")
-    if not sw or not ne:
-        return fallback_center
-    return [(sw["lat"] + ne["lat"]) / 2, (sw["lng"] + ne["lng"]) / 2]
+    return [map_data["center"]["lat"], map_data["center"]["lng"]]
 
 
 # ----------------- DIALOG: NEW OBSERVATION -----------------
@@ -208,6 +195,10 @@ def new_observation_dialog():
 
     m = folium.Map(location=base_center, zoom_start=zoom)
 
+    # Add GPS locate control
+    LocateControl(auto_start=False).add_to(m)
+
+    # Crosshair overlay
     crosshair_html = f"""
     <div style="
         position: fixed;
@@ -223,7 +214,7 @@ def new_observation_dialog():
     """
     m.get_root().html.add_child(folium.Element(crosshair_html))
 
-    map_data = st_folium(m, width="100%", height=400)
+    map_data = st_folium(m, width="100%", height=350)
 
     try:
         lat = map_data["center"]["lat"]
@@ -231,16 +222,11 @@ def new_observation_dialog():
     except Exception:
         lat, lon = base_center
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        species = st.text_input("Species")
-        behavior = st.text_input("Behavior")
-        username = st.text_input("Observer", value=st.session_state.user.email)
-
-    with col2:
-        obs_date = st.date_input("Date", value=datetime.utcnow().date())
-        photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
+    species = st.text_input("Species")
+    behavior = st.text_input("Behavior")
+    username = st.text_input("Observer", value=st.session_state.user.email)
+    obs_date = st.date_input("Date", value=datetime.utcnow().date())
+    photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
     if st.button("Save observation"):
         if not species:
@@ -265,115 +251,49 @@ def new_observation_dialog():
         st.rerun()
 
 
-# ----------------- DIALOG: EDIT OBSERVATION -----------------
-@st.dialog("Edit Observation")
-def edit_observation_dialog(obs):
-    st.write("Edit the observation.")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        species = st.text_input("Species", value=obs.get("species", ""))
-        behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
-        username = st.text_input("Observer", value=obs.get("username", ""))
-
-    with col2:
-        try:
-            d = datetime.fromisoformat(obs["date"]).date()
-        except Exception:
-            d = datetime.utcnow().date()
-        obs_date = st.date_input("Date", value=d)
-        new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
-
-    lat = st.number_input("Latitude", value=obs["lat"])
-    lon = st.number_input("Longitude", value=obs["lon"])
-
-    if st.button("Update"):
-        photo_url = obs.get("photo_url")
-        if new_photo:
-            photo_url = upload_photo(new_photo)
-
-        supabase.table(OBS_TABLE).update({
-            "species": species,
-            "behavior": behavior,
-            "username": username,
-            "date": str(obs_date),
-            "lat": lat,
-            "lon": lon,
-            "photo_url": photo_url,
-        }).eq("id", obs["id"]).execute()
-
-        load_observations(st.session_state.project)
-        st.rerun()
-
-    if st.button("Delete", type="secondary"):
-        supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
-        load_observations(st.session_state.project)
-        st.rerun()
-
-
-# ----------------- RESTORE SESSION (AFTER FUNCTIONS) -----------------
-def restore_session_after_functions():
-    sess = supabase.auth.get_session()
-    if sess and sess.user:
-        st.session_state.logged_in = True
-        st.session_state.user = sess.user
-        st.session_state.session = sess
-
-        metadata = sess.user.user_metadata or {}
-        saved_project = metadata.get("project")
-
-        if saved_project:
-            st.session_state.project = saved_project
-            load_observations(saved_project)
-
-
-restore_session_after_functions()
-
-
 # ----------------- MAIN APP -----------------
 def show_main_app():
-    st.title(f"Observations for project: {st.session_state.project}")
+    st.sidebar.title("Menu")
 
-    col1, col2, col3 = st.columns([3, 1, 1])
-    with col1:
-        st.write(f"Logged in as: {st.session_state.user.email}")
-    with col2:
-        if st.button("Change Project"):
-            st.session_state.changing_project = True
-            st.rerun()
-    with col3:
-        if st.button("Logout"):
-            logout()
+    st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
+
+    if st.sidebar.button("Change Project"):
+        st.session_state.changing_project = True
+        st.rerun()
+
+    if st.sidebar.button("Logout"):
+        logout()
 
     # -------- FILTERS --------
     st.sidebar.header("Filters")
 
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
-    selected_species = st.sidebar.multiselect("Filter by species", species_values)
+    selected_species = st.sidebar.multiselect("Species", species_values)
 
+    # Date slider
     dates = []
     for o in st.session_state.observations:
         if o.get("date"):
             try:
                 dates.append(datetime.fromisoformat(o["date"]).date())
-            except Exception:
+            except:
                 pass
 
-    date_range = None
     if dates:
         min_d, max_d = min(dates), max(dates)
         if min_d == max_d:
             date_range = (min_d, max_d)
-            st.sidebar.write(f"All observations on: {min_d}")
         else:
             date_range = st.sidebar.slider(
-                "Filter by date range",
+                "Date range",
                 min_value=min_d,
                 max_value=max_d,
                 value=(min_d, max_d),
             )
+    else:
+        date_range = None
 
+    # Apply filters
     filtered = st.session_state.observations
 
     if selected_species:
@@ -381,19 +301,16 @@ def show_main_app():
 
     if date_range:
         start_d, end_d = date_range
-        tmp = []
-        for o in filtered:
-            if o.get("date"):
-                try:
-                    d = datetime.fromisoformat(o["date"]).date()
-                    if start_d <= d <= end_d:
-                        tmp.append(o)
-                except Exception:
-                    pass
-        filtered = tmp
+        filtered = [
+            o for o in filtered
+            if "date" in o and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
+        ]
 
     # -------- MAP --------
-    m = folium.Map(location=st.session_state.map_center, zoom_start=4)
+    m = folium.Map(location=st.session_state.map_center, zoom_start=6)
+
+    # Add GPS locate control
+    LocateControl(auto_start=False).add_to(m)
 
     # Observations as blue markers
     for obs in filtered:
@@ -411,23 +328,9 @@ def show_main_app():
             icon=folium.Icon(color="blue"),
         ).add_to(m)
 
-    # GPS marker from last click (if stored)
-    if st.session_state.gps_location:
-        folium.Marker(
-            st.session_state.gps_location,
-            icon=folium.Icon(color="blue", icon="info-sign"),
-        ).add_to(m)
-
-    map_data = st_folium(m, height=500, width=900)
+    map_data = st_folium(m, height=550, width="100%")
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
-    if map_data and "zoom" in map_data:
-        st.session_state.map_input_zoom = map_data["zoom"]
-
-    if map_data and map_data.get("last_clicked"):
-        lc = map_data["last_clicked"]
-        st.session_state.gps_location = [lc["lat"], lc["lng"]]
-        st.rerun()
 
     # -------- SIDEBAR LIST --------
     st.sidebar.header("Observations")
@@ -437,7 +340,7 @@ def show_main_app():
     for obs in filtered:
         label = f"{obs['id']} - {obs.get('species', '')[:30]}"
         if st.sidebar.button(label):
-            edit_observation_dialog(obs)
+            st.write("Edit dialog coming next update.")
 
 
 # ----------------- MAIN -----------------
@@ -457,6 +360,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
