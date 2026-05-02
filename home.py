@@ -43,25 +43,6 @@ for k, v in defaults.items():
         st.session_state[k] = v
 
 
-# ----------------- RESTORE AUTH SESSION -----------------
-def restore_session():
-    sess = supabase.auth.get_session()
-    if sess and sess.user:
-        st.session_state.logged_in = True
-        st.session_state.user = sess.user
-        st.session_state.session = sess
-
-        # Restore project from user metadata
-        metadata = sess.user.user_metadata or {}
-        saved_project = metadata.get("project")
-
-        if saved_project and not st.session_state.project:
-            st.session_state.project = saved_project
-            load_observations(saved_project)
-
-restore_session()
-
-
 # ----------------- AUTH -----------------
 def login(email: str, password: str):
     try:
@@ -270,6 +251,25 @@ def show_main_app():
             edit_observation_dialog(obs)
 
 
+# ----------------- RESTORE SESSION (AFTER FUNCTIONS ARE DEFINED) -----------------
+def restore_session_after_functions():
+    sess = supabase.auth.get_session()
+    if sess and sess.user:
+        st.session_state.logged_in = True
+        st.session_state.user = sess.user
+        st.session_state.session = sess
+
+        metadata = sess.user.user_metadata or {}
+        saved_project = metadata.get("project")
+
+        if saved_project:
+            st.session_state.project = saved_project
+            load_observations(saved_project)
+
+restore_session_after_functions()
+
+
+# ----------------- MAIN -----------------
 def main():
     if not st.session_state.logged_in:
         if st.session_state.show_signup:
@@ -286,6 +286,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
     
