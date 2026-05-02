@@ -32,6 +32,11 @@ CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/74
 OPACITY = 1
 WIDTH = 30
 
+# ----------------- REPORT KINDS ------------------
+REPORT_KINDS = [
+    'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend','Winterverblijf','Paarverblijf (1/2)',
+    'Paarverblijf (2/2)', 'Huismus (1/2)','Huismus (2/2)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)'
+]
 # ----------------- SPECIES LISTS -----------------
 BAT_SPECIES = [
     'Gewone dwergvleermuis','Ruige dwergvleermuis','Laatvlieger','Rosse vleermuis',
@@ -281,7 +286,7 @@ def show_legend():
 def daily_report_dialog():
     st.write("Fill in the daily report.")
 
-    kind = st.selectbox("Kind", ["survey", "maintenance", "inspection", "other"])
+    kind = st.selectbox("Kind", REPORT_KINDS)
     date = st.date_input("Date", value=datetime.utcnow().date())
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
