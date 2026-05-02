@@ -557,7 +557,24 @@ def restore_session_after_functions():
 restore_session_after_functions()
 
 
-# ----------------- MAIN ----------------
+# ----------------- MAIN -----------------
+def main():
+    if not st.session_state.logged_in:
+        if st.session_state.show_signup:
+            show_signup()
+        else:
+            show_login()
+    elif st.session_state.changing_project:
+        show_project_selection()
+    elif not st.session_state.project:
+        show_project_selection()
+    else:
+        show_main_app()
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 
