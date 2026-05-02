@@ -7,6 +7,27 @@ from datetime import datetime
 import uuid
 import json
 
+
+st.markdown("""
+<style>
+/* Fix the map container */
+.fixed-map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 50vh !important;   /* adjust for mobile */
+    z-index: 999;
+}
+
+/* Push the rest of the content down */
+.page-content {
+    margin-top: 52vh;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # ----------------- CONFIG -----------------
 st.set_page_config(
     page_title="",
@@ -14,13 +35,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""
-<style>
-.leaflet-container {
-    touch-action: none !important;  /* prevents page scroll when dragging map */
-}
-</style>
-""", unsafe_allow_html=True)
 
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
