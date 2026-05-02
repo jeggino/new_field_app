@@ -643,7 +643,6 @@ def show_main_app():
     else:
         st.sidebar.write("No observations to download.")
 
-    st.sidebar.divider()
 
 
     # MAP
