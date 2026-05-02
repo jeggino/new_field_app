@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, date as date_cls
+from datetime import datetime, date
 
 import streamlit as st
 import pandas as pd
@@ -8,20 +8,18 @@ from streamlit_folium import st_folium
 from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
 
-
 # ---------------------------------------------------------
-# Constants from secrets (as requested)
+# Constants (from your secrets)
 # ---------------------------------------------------------
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
-
 USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-REPORT = "daily_report"
+REPORT_TABLE = "daily_report"
 
-MEDIA_BUCKET = "observations-media"  # adjust if needed
+MEDIA_BUCKET = "observations-media"  # change if your bucket is named differently
 COOKIE_NAME = "fieldapp_session_v1"
 
 # ---------------------------------------------------------
@@ -34,6 +32,7 @@ cookies = EncryptedCookieManager(
     password=SECRET_PASSWORD,
 )
 
+# This is required for the cookie manager to initialize
 if not cookies.ready():
     st.stop()
 
@@ -54,17 +53,20 @@ def restore_session_from_cookie():
     if not username:
         return None
     resp = supabase.table(USERS_TABLE).select("*").eq("username", username).limit(1).execute()
-    if resp.error or not resp.data:
+    if getattr(resp, "error", None) or not resp.data:
         return None
     user = resp.data[0]
-    return {"username": username, "license": user.get("license")}
+    return {
+        "username": username,
+        "license": user.get("license", "guest"),
+    }
 
 # ---------------------------------------------------------
-# Auth helpers (custom users table)
+# Auth helpers
 # ---------------------------------------------------------
 def supabase_sign_in(username: str, password: str):
     resp = supabase.table(USERS_TABLE).select("*").eq("username", username).limit(1).execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         return None, "Error querying users table"
     rows = resp.data
     if not rows:
@@ -75,22 +77,20 @@ def supabase_sign_in(username: str, password: str):
         return None, "Invalid password"
     session = {
         "username": username,
-        "license": user.get("license"),
+        "license": user.get("license", "guest"),
         "created_at": datetime.utcnow().isoformat()
     }
     return session, None
 
-def require_login():
-    if "user" not in st.session_state or not st.session_state["user"]:
-        st.session_state["page"] = "login"
-        st.rerun()
+def is_guest() -> bool:
+    return st.session_state.get("user", {}).get("license", "guest") == "guest"
 
 # ---------------------------------------------------------
 # Data helpers
 # ---------------------------------------------------------
 def load_projects_for_user(username: str):
     resp = supabase.table(PROJECTS_TABLE).select("*").execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error("Failed to load projects")
         return []
     projects = resp.data
@@ -98,45 +98,57 @@ def load_projects_for_user(username: str):
 
 def load_observations(project_name: str):
     resp = supabase.table(OBS_TABLE).select("*").eq("project", project_name).execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error("Failed to load observations")
         return []
     return resp.data
 
-def load_daily_reports(project_name: str, day: date_cls | None = None):
-    query = supabase.table(REPORT).select("*").eq("project", project_name)
+def load_daily_reports(project_name: str, day: date | None = None):
+    query = supabase.table(REPORT_TABLE).select("*").eq("project", project_name)
     if day is not None:
         query = query.eq("date", day.isoformat())
     resp = query.execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error("Failed to load daily reports")
         return []
     return resp.data
 
-def create_observation(obs: dict):
+def create_observation(obs: dict) -> bool:
+    if is_guest():
+        st.warning("Guests cannot create observations.")
+        return False
     resp = supabase.table(OBS_TABLE).insert(obs).execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error(f"Failed to create observation: {resp.error.message}")
         return False
     return True
 
-def update_observation(obs_id: str, updates: dict):
+def update_observation(obs_id: str, updates: dict) -> bool:
+    if is_guest():
+        st.warning("Guests cannot modify observations.")
+        return False
     resp = supabase.table(OBS_TABLE).update(updates).eq("id", obs_id).execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error(f"Failed to update observation: {resp.error.message}")
         return False
     return True
 
-def delete_observation(obs_id: str):
+def delete_observation(obs_id: str) -> bool:
+    if is_guest():
+        st.warning("Guests cannot delete observations.")
+        return False
     resp = supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
-    if resp.error:
+    if getattr(resp, "error", None):
         st.error(f"Failed to delete observation: {resp.error.message}")
         return False
     return True
 
-def create_daily_report(report: dict):
-    resp = supabase.table(REPORT).insert(report).execute()
-    if resp.error:
+def create_daily_report(report: dict) -> bool:
+    if is_guest():
+        st.warning("Guests cannot create daily reports.")
+        return False
+    resp = supabase.table(REPORT_TABLE).insert(report).execute()
+    if getattr(resp, "error", None):
         st.error(f"Failed to create daily report: {resp.error.message}")
         return False
     return True
@@ -201,7 +213,8 @@ user = st.session_state["user"]
 # ---------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------
-st.sidebar.write(f"**User:** {user.get('username')}")
+st.sidebar.write(f"**User:** {user.get('username')} ({user.get('license', 'guest')})")
+
 if st.sidebar.button("Switch project"):
     if "project" in st.session_state:
         del st.session_state["project"]
@@ -229,13 +242,24 @@ selected_project = st.sidebar.selectbox(
 )
 st.session_state["project"] = selected_project
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Create observation", disabled=is_guest()):
+    st.session_state["action"] = "create_obs"
+    st.rerun()
+if st.sidebar.button("View / Edit observation"):
+    st.session_state["action"] = "view_obs"
+    st.rerun()
+if st.sidebar.button("Delete observation", disabled=is_guest()):
+    st.session_state["action"] = "delete_obs"
+    st.rerun()
+if st.sidebar.button("Generate daily report", disabled=is_guest()):
+    st.session_state["action"] = "daily_report"
+    st.rerun()
+
 # ---------------------------------------------------------
 # Main layout
 # ---------------------------------------------------------
 st.header(f"Project: {st.session_state['project']}")
-
-cols = st.columns([3, 1])
-map_col, ctrl_col = cols[0], cols[1]
 
 observations = load_observations(st.session_state["project"])
 df_obs = pd.DataFrame(observations) if observations else pd.DataFrame(
@@ -246,73 +270,54 @@ df_obs = pd.DataFrame(observations) if observations else pd.DataFrame(
 )
 
 # ---------------------------------------------------------
-# Map
+# Map with legend
 # ---------------------------------------------------------
-with map_col:
-    st.subheader("Map")
-    if not df_obs.empty and df_obs["latitude"].notnull().any() and df_obs["longitude"].notnull().any():
-        center_lat = float(df_obs["latitude"].dropna().iloc[0])
-        center_lon = float(df_obs["longitude"].dropna().iloc[0])
-    else:
-        center_lat, center_lon = 52.4, 4.8  # default center
+st.subheader("Map")
+if not df_obs.empty and df_obs["latitude"].notnull().any() and df_obs["longitude"].notnull().any():
+    center_lat = float(df_obs["latitude"].dropna().iloc[0])
+    center_lon = float(df_obs["longitude"].dropna().iloc[0])
+else:
+    center_lat, center_lon = 52.4, 4.8  # default center
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
+m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
 
-    for _, row in df_obs.iterrows():
-        lat, lon = row.get("latitude"), row.get("longitude")
-        if pd.isna(lat) or pd.isna(lon):
-            continue
-        media_url = get_media_public_url(row.get("media_id"))
-        media_html = f'<br><img src="{media_url}" width="150">' if media_url else ""
-        popup_html = f"""
-        <b>{row.get('species','')}</b><br>
-        {row.get('date','')}<br>
-        <i>{row.get('description','')}</i><br>
-        <small>By: {row.get('username')}</small>
-        {media_html}
-        """
-        folium.Marker(
-            location=[lat, lon],
-            popup=folium.Popup(popup_html, max_width=300),
-            tooltip=row.get("species", "")
-        ).add_to(m)
-
-    legend_html = """
-     <div style="
-     position: fixed;
-     bottom: 50px;
-     left: 50px;
-     width: 220px;
-     z-index:9999;
-     background-color:white;
-     padding:10px;
-     border:2px solid grey;
-     ">
-     <b>Legend</b><br>
-     Marker: Observation point<br>
-     Click marker for details
-     </div>
+for _, row in df_obs.iterrows():
+    lat, lon = row.get("latitude"), row.get("longitude")
+    if pd.isna(lat) or pd.isna(lon):
+        continue
+    media_url = get_media_public_url(row.get("media_id"))
+    media_html = f'<br><img src="{media_url}" width="150">' if media_url else ""
+    popup_html = f"""
+    <b>{row.get('species','')}</b><br>
+    {row.get('date','')}<br>
+    <i>{row.get('description','')}</i><br>
+    <small>By: {row.get('username')}</small>
+    {media_html}
     """
-    m.get_root().html.add_child(folium.Element(legend_html))
-    st_folium(m, width=700, height=500)
+    folium.Marker(
+        location=[lat, lon],
+        popup=folium.Popup(popup_html, max_width=300),
+        tooltip=row.get("species", "")
+    ).add_to(m)
 
-# ---------------------------------------------------------
-# Controls
-# ---------------------------------------------------------
-with ctrl_col:
-    st.subheader("Actions")
-    if st.button("Create observation"):
-        st.session_state["action"] = "create_obs"
-        st.rerun()
-    if st.button("View / Edit observation"):
-        st.session_state["action"] = "view_obs"
-        st.rerun()
-    if st.button("Delete observation"):
-        st.session_state["action"] = "delete_obs"
-        st.rerun()
-    if st.button("Generate daily report"):
-        st.session_state["action"] = "daily_report"
-        st.rerun()
+legend_html = """
+ <div style="
+ position: fixed;
+ bottom: 50px;
+ left: 50px;
+ width: 220px;
+ z-index:9999;
+ background-color:white;
+ padding:10px;
+ border:2px solid grey;
+ ">
+ <b>Legend</b><br>
+ Marker: Observation point<br>
+ Click marker for details
+ </div>
+"""
+m.get_root().html.add_child(folium.Element(legend_html))
+st_folium(m, width=900, height=500)
 
 action = st.session_state.get("action")
 
@@ -390,7 +395,7 @@ elif action == "view_obs":
                 format="%.6f"
             )
             new_media_file = st.file_uploader("Replace picture (optional)", type=["jpg", "jpeg", "png"])
-            save = st.form_submit_button("Save changes")
+            save = st.form_submit_button("Save changes", disabled=is_guest())
 
         if save:
             media_id = obs_row.get("media_id")
@@ -424,7 +429,7 @@ elif action == "delete_obs":
         ).tolist()
         selected_label = st.selectbox("Observation to delete", options)
         selected_id = selected_label.split(" | ")[0]
-        if st.button("Confirm delete"):
+        if st.button("Confirm delete", disabled=is_guest()):
             if delete_observation(selected_id):
                 st.success("Observation deleted")
                 del st.session_state["action"]
@@ -440,9 +445,9 @@ elif action == "daily_report":
         date_val = st.date_input("Date", value=datetime.utcnow().date())
         temperature = st.number_input("Temperature (°C)", format="%.1f")
         rainfall = st.number_input("Rainfall (mm)", format="%.1f")
-        wind = st.text_input("Wind")
+        wind = st.number_input("Wind speed (m/s)", format="%.1f")
         description = st.text_area("Description")
-        submitted = st.form_submit_button("Save daily report")
+        submitted = st.form_submit_button("Save daily report", disabled=is_guest())
 
     if submitted:
         report = {
@@ -452,7 +457,7 @@ elif action == "daily_report":
             "date": date_val.isoformat(),
             "temperature": float(temperature),
             "rainfall": float(rainfall),
-            "wind": wind,
+            "wind": float(wind),
             "description": description,
         }
         if create_daily_report(report):
@@ -488,6 +493,7 @@ if not df_obs.empty:
     )
 else:
     st.info("No observations to display")
+
 
 
 
