@@ -22,7 +22,7 @@ st.markdown("""
 
 /* Push the rest of the content down */
 .page-content {
-    margin-top: 52vh;
+    margin-top: 12vh;
 }
 </style>
 """, unsafe_allow_html=True)
