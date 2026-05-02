@@ -1,23 +1,5 @@
-import streamlit as st
-from streamlit_folium import st_folium
-import folium
-from supabase import create_client, Client
-from streamlit_cookies_manager import EncryptedCookieManager
-from datetime import datetime
-
-# ----------------- CONFIG -----------------
-st.set_page_config(page_title="Observations Map", layout="wide")
-
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
-USERS_TABLE = "users"
-PROJECTS_TABLE = "projects"
-OBS_TABLE = "observations"
-CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png" 
-
 import os
-from datetime import datetime
+from datetime import datetime, date as date_cls
 
 import streamlit as st
 import pandas as pd
@@ -27,25 +9,35 @@ from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
 
 # ---------------------------------------------------------
-# Configuration
+# Constants from secrets (as requested)
 # ---------------------------------------------------------
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://your-project.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "public-anon-or-service-role-key")
-MEDIA_BUCKET = os.getenv("MEDIA_BUCKET", "observations-media")
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
+
+USERS_TABLE = "users"
+PROJECTS_TABLE = "projects"
+OBS_TABLE = "observations"
+REPORT = "daily_report"
+
+MEDIA_BUCKET = "observations-media"  # adjust if needed
 COOKIE_NAME = "fieldapp_session_v1"
 
+# ---------------------------------------------------------
+# Supabase + cookies
+# ---------------------------------------------------------
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookies = EncryptedCookieManager(
     prefix="fieldapp_",
-    password=os.getenv("COOKIE_ENCRYPTION_PASSWORD", "change_this_to_a_strong_password"),
+    password=SECRET_PASSWORD,
 )
 
 if not cookies.ready():
     st.stop()
 
 # ---------------------------------------------------------
-# Helpers: session persistence
+# Session persistence helpers
 # ---------------------------------------------------------
 def save_session_to_cookie(username: str):
     cookies[COOKIE_NAME] = username
@@ -60,7 +52,7 @@ def restore_session_from_cookie():
     username = cookies.get(COOKIE_NAME)
     if not username:
         return None
-    resp = supabase.table("users").select("*").eq("username", username).limit(1).execute()
+    resp = supabase.table(USERS_TABLE).select("*").eq("username", username).limit(1).execute()
     if resp.error or not resp.data:
         return None
     user = resp.data[0]
@@ -70,14 +62,14 @@ def restore_session_from_cookie():
 # Auth helpers (custom users table)
 # ---------------------------------------------------------
 def supabase_sign_in(username: str, password: str):
-    resp = supabase.table("users").select("*").eq("username", username).limit(1).execute()
+    resp = supabase.table(USERS_TABLE).select("*").eq("username", username).limit(1).execute()
     if resp.error:
         return None, "Error querying users table"
     rows = resp.data
     if not rows:
         return None, "User not found"
     user = rows[0]
-    # NOTE: plaintext for demo only; use hashing in real apps
+    # NOTE: plaintext for demo only; use hashing in production
     if user.get("password") != password:
         return None, "Invalid password"
     session = {
@@ -96,7 +88,7 @@ def require_login():
 # Data helpers
 # ---------------------------------------------------------
 def load_projects_for_user(username: str):
-    resp = supabase.table("projects").select("*").execute()
+    resp = supabase.table(PROJECTS_TABLE).select("*").execute()
     if resp.error:
         st.error("Failed to load projects")
         return []
@@ -104,30 +96,47 @@ def load_projects_for_user(username: str):
     return [p for p in projects if username in (p.get("users") or [])]
 
 def load_observations(project_name: str):
-    resp = supabase.table("observations").select("*").eq("project", project_name).execute()
+    resp = supabase.table(OBS_TABLE).select("*").eq("project", project_name).execute()
     if resp.error:
         st.error("Failed to load observations")
         return []
     return resp.data
 
+def load_daily_reports(project_name: str, day: date_cls | None = None):
+    query = supabase.table(REPORT).select("*").eq("project", project_name)
+    if day is not None:
+        query = query.eq("date", day.isoformat())
+    resp = query.execute()
+    if resp.error:
+        st.error("Failed to load daily reports")
+        return []
+    return resp.data
+
 def create_observation(obs: dict):
-    resp = supabase.table("observations").insert(obs).execute()
+    resp = supabase.table(OBS_TABLE).insert(obs).execute()
     if resp.error:
         st.error(f"Failed to create observation: {resp.error.message}")
         return False
     return True
 
 def update_observation(obs_id: str, updates: dict):
-    resp = supabase.table("observations").update(updates).eq("id", obs_id).execute()
+    resp = supabase.table(OBS_TABLE).update(updates).eq("id", obs_id).execute()
     if resp.error:
         st.error(f"Failed to update observation: {resp.error.message}")
         return False
     return True
 
 def delete_observation(obs_id: str):
-    resp = supabase.table("observations").delete().eq("id", obs_id).execute()
+    resp = supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
     if resp.error:
         st.error(f"Failed to delete observation: {resp.error.message}")
+        return False
+    return True
+
+def create_daily_report(report: dict):
+    resp = supabase.table(REPORT).insert(report).execute()
+    if resp.error:
+        st.error(f"Failed to create daily report: {resp.error.message}")
         return False
     return True
 
@@ -141,7 +150,7 @@ def upload_media(file, username: str, project: str):
     if res.get("error"):
         st.error(f"Failed to upload media: {res['error']['message']}")
         return None
-    return key  # store as media_id
+    return key
 
 def get_media_public_url(media_id: str | None):
     if not media_id:
@@ -192,7 +201,7 @@ user = st.session_state["user"]
 # Sidebar
 # ---------------------------------------------------------
 st.sidebar.write(f"**User:** {user.get('username')}")
-if st.sidebar.button("Change project"):
+if st.sidebar.button("Switch project"):
     if "project" in st.session_state:
         del st.session_state["project"]
     st.rerun()
@@ -272,7 +281,7 @@ with map_col:
      position: fixed;
      bottom: 50px;
      left: 50px;
-     width: 200px;
+     width: 220px;
      z-index:9999;
      background-color:white;
      padding:10px;
@@ -291,14 +300,17 @@ with map_col:
 # ---------------------------------------------------------
 with ctrl_col:
     st.subheader("Actions")
-    if st.button("Create new observation"):
-        st.session_state["action"] = "create"
+    if st.button("Create observation"):
+        st.session_state["action"] = "create_obs"
         st.rerun()
     if st.button("View / Edit observation"):
-        st.session_state["action"] = "view"
+        st.session_state["action"] = "view_obs"
         st.rerun()
     if st.button("Delete observation"):
-        st.session_state["action"] = "delete"
+        st.session_state["action"] = "delete_obs"
+        st.rerun()
+    if st.button("Generate daily report"):
+        st.session_state["action"] = "daily_report"
         st.rerun()
 
 action = st.session_state.get("action")
@@ -306,11 +318,11 @@ action = st.session_state.get("action")
 # ---------------------------------------------------------
 # Create observation
 # ---------------------------------------------------------
-if action == "create":
+if action == "create_obs":
     st.subheader("Create observation")
-    with st.form("create_obs"):
+    with st.form("create_obs_form"):
         assignment = st.text_input("Assignment")
-        date = st.date_input("Date", value=datetime.utcnow().date())
+        date_val = st.date_input("Date", value=datetime.utcnow().date())
         species = st.text_input("Species")
         behavior = st.text_input("Behavior")
         function = st.text_input("Function")
@@ -326,7 +338,7 @@ if action == "create":
             "username": user.get("username"),
             "project": st.session_state["project"],
             "assignment": assignment,
-            "date": datetime.combine(date, datetime.min.time()).isoformat(),
+            "date": datetime.combine(date_val, datetime.min.time()).isoformat(),
             "species": species,
             "behavior": behavior,
             "function": function,
@@ -343,7 +355,7 @@ if action == "create":
 # ---------------------------------------------------------
 # View / edit observation
 # ---------------------------------------------------------
-elif action == "view":
+elif action == "view_obs":
     st.subheader("View / Edit observation")
     if df_obs.empty:
         st.info("No observations for this project")
@@ -361,7 +373,7 @@ elif action == "view":
             st.markdown("Current picture:")
             st.image(media_url, width=200)
 
-        with st.form("edit_obs"):
+        with st.form("edit_obs_form"):
             species = st.text_input("Species", value=obs_row.get("species", ""))
             behavior = st.text_input("Behavior", value=obs_row.get("behavior", ""))
             function = st.text_input("Function", value=obs_row.get("function", ""))
@@ -400,7 +412,7 @@ elif action == "view":
 # ---------------------------------------------------------
 # Delete observation
 # ---------------------------------------------------------
-elif action == "delete":
+elif action == "delete_obs":
     st.subheader("Delete observation")
     if df_obs.empty:
         st.info("No observations to delete")
@@ -416,6 +428,47 @@ elif action == "delete":
                 st.success("Observation deleted")
                 del st.session_state["action"]
                 st.rerun()
+
+# ---------------------------------------------------------
+# Daily report
+# ---------------------------------------------------------
+elif action == "daily_report":
+    st.subheader("Daily report")
+    with st.form("daily_report_form"):
+        assignment = st.text_input("Assignment")
+        date_val = st.date_input("Date", value=datetime.utcnow().date())
+        temperature = st.number_input("Temperature (°C)", format="%.1f")
+        rainfall = st.number_input("Rainfall (mm)", format="%.1f")
+        wind = st.text_input("Wind")
+        description = st.text_area("Description")
+        submitted = st.form_submit_button("Save daily report")
+
+    if submitted:
+        report = {
+            "username": user.get("username"),
+            "project": st.session_state["project"],
+            "assignment": assignment,
+            "date": date_val.isoformat(),
+            "temperature": float(temperature),
+            "rainfall": float(rainfall),
+            "wind": wind,
+            "description": description,
+        }
+        if create_daily_report(report):
+            st.success("Daily report saved")
+            del st.session_state["action"]
+            st.rerun()
+
+    st.markdown("### Daily reports for selected date")
+    reports = load_daily_reports(st.session_state["project"], day=date_val)
+    df_reports = pd.DataFrame(reports) if reports else pd.DataFrame(
+        columns=["id", "username", "project", "assignment", "date",
+                 "temperature", "rainfall", "wind", "description"]
+    )
+    if not df_reports.empty:
+        st.dataframe(df_reports)
+    else:
+        st.info("No daily reports for this date")
 
 # ---------------------------------------------------------
 # Observations table
@@ -434,5 +487,7 @@ if not df_obs.empty:
     )
 else:
     st.info("No observations to display")
+
+
 
 
