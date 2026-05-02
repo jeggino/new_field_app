@@ -71,7 +71,7 @@ COLOR_PALETTE = [
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
 
 # ----------------- SHAPE SETTINGS -----------------
-BAT_BORDER = True  # border around bat markers
+BAT_BORDER = True
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -91,7 +91,7 @@ defaults = {
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
-    "selected_obs_id": None,  # for marker/side list selection
+    "selected_obs_id": None,   # ⭐ highlight target
 }
 
 for k, v in defaults.items():
@@ -344,87 +344,18 @@ def new_observation_dialog():
 
         load_observations(st.session_state.project)
         st.rerun()
-
-
-# ----------------- UI: LOGIN -----------------
-def show_login():
-    st.sidebar.title("Login")
-
-    with st.sidebar.form("login_form"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
-
-        if submitted:
-            res = login(email, password)
-            if res and res.user:
-                st.session_state.logged_in = True
-                st.session_state.user = res.user
-                st.session_state.session = res.session
-                st.rerun()
-            else:
-                st.sidebar.error("Invalid email or password")
-
-    if st.sidebar.button("Create Account"):
-        st.session_state.show_signup = True
-        st.rerun()
-
-
-# ----------------- UI: SIGNUP -----------------
-def show_signup():
-    st.sidebar.title("Create Account")
-
-    with st.sidebar.form("signup_form"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Sign Up")
-
-        if submitted:
-            res = signup(email, password)
-            if res and res.user:
-                st.sidebar.success("Account created. Please log in.")
-                st.session_state.show_signup = False
-                st.rerun()
-            else:
-                st.sidebar.error("Sign-up failed")
-
-    if st.sidebar.button("Back to Login"):
-        st.session_state.show_signup = False
-        st.rerun()
-
-
-# ----------------- UI: PROJECT SELECT -----------------
-def show_project_selection():
-    st.sidebar.title("Select Project")
-
-    projects = load_projects()
-    if not projects:
-        st.sidebar.warning("No projects found for this user.")
-        return
-
-    project_names = [p["name"] for p in projects]
-    selected = st.sidebar.selectbox("Project", project_names)
-
-    if st.sidebar.button("Confirm project"):
-        st.session_state.project = selected
-        supabase.auth.update_user({"data": {"project": selected}})
-        load_observations(selected)
-        st.session_state.changing_project = False
-        st.rerun()
-
-
 # ----------------- MAIN APP -----------------
 def show_main_app():
 
-    # HEADER WITH NEW OBSERVATION BUTTON
-    col1, col2 = st.columns([0.8, 0.2])
+    # HEADER WITH NEW OBSERVATION BUTTON (mobile-friendly)
+    col1, col2 = st.columns([0.75, 0.25])
     with col1:
-        st.title("Observations")
+        st.markdown("<h2 style='margin-top:0;'>Observations</h2>", unsafe_allow_html=True)
     with col2:
         if st.button("➕ New Observation"):
             new_observation_dialog()
 
-    st.sidebar.title("Menu")
+    # ----------------- SIDEBAR MENU -----------------
     st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
     if st.sidebar.button("Legend"):
@@ -437,8 +368,7 @@ def show_main_app():
     if st.sidebar.button("Logout"):
         logout()
 
-    st.sidebar.header("Filters")
-
+    # ----------------- FILTERS -----------------
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
     selected_species = st.sidebar.multiselect("Species", species_values)
 
@@ -465,6 +395,7 @@ def show_main_app():
     else:
         date_range = None
 
+    # APPLY FILTERS
     filtered = st.session_state.observations
 
     if selected_species:
@@ -483,7 +414,7 @@ def show_main_app():
                     pass
         filtered = tmp
 
-    # MAP
+    # ----------------- MAP -----------------
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
     LocateControl(auto_start=False).add_to(m)
 
@@ -492,7 +423,6 @@ def show_main_app():
         species = obs.get("species", "")
         color = SPECIES_COLORS.get(species, "blue")
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
-
         shape = "circle" if animal_type == "bat" else "rectangle"
 
         marker_icon = BeautifyIcon(
@@ -515,27 +445,26 @@ def show_main_app():
     # Update map center
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
-    # CLICK HANDLER — store selected observation ID
+    # ----------------- MARKER CLICK HANDLER -----------------
     if map_data and "last_object_clicked" in map_data:
         clicked = map_data["last_object_clicked"]
         if clicked and "popup" in clicked:
             st.session_state.selected_obs_id = clicked["popup"]
 
     # ----------------- SIDEBAR OBSERVATION LIST -----------------
-    st.sidebar.header("Observations")
-
-    if st.sidebar.button("New observation"):
-        new_observation_dialog()
+    # (NO TITLE, NO NEW OBSERVATION BUTTON)
 
     for obs in filtered:
         obs_id = str(obs["id"])
         base_label = f"{obs.get('species','')} – {obs.get('function','')}"
-        if st.session_state.selected_obs_id == obs_id:
-            label = f"🟨 {base_label}"
-        else:
-            label = f"   {base_label}"
 
-        # unique key so buttons don't conflict
+        # Highlight only if selected by MARKER
+        if st.session_state.selected_obs_id == obs_id:
+            label = f"🔴 **{base_label}**"
+        else:
+            label = base_label
+
+        # Unique key required
         if st.sidebar.button(label, key=f"obs_{obs_id}"):
             edit_observation_dialog(obs)
 
@@ -576,6 +505,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ----------------- END OF FILE -----------------
 
 
 
