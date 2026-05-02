@@ -1,204 +1,264 @@
 import streamlit as st
-import pandas as pd
-import folium
-from datetime import datetime, date
 from streamlit_folium import st_folium
-from supabase import create_client
-from streamlit_cookies_manager import EncryptedCookieManager
+import folium
+from supabase import create_client, Client
+from datetime import datetime
 
-# ---------------------------------------------------------
-# CONSTANTS (from your secrets)
-# ---------------------------------------------------------
+# ----------------- CONFIG -----------------
+st.set_page_config(page_title="Observations Map", layout="wide")
+
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-SECRET_PASSWORD = st.secrets["COOKIE_PASSWORD"]
 
-USERS_TABLE = "users"
 PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
-REPORT_TABLE = "daily_report"
+CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png"
 
-MEDIA_BUCKET = "observations-media"
-COOKIE_NAME = "fieldapp_session"
+OPACITY = 1
+WIDTH = 30
 
-# ---------------------------------------------------------
-# INIT SUPABASE + COOKIES
-# ---------------------------------------------------------
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-cookies = EncryptedCookieManager(prefix="fieldapp_", password=SECRET_PASSWORD)
-if not cookies.ready():
-    st.stop()
+# ----------------- INIT -----------------
+@st.cache_resource
+def get_supabase() -> Client:
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---------------------------------------------------------
-# SESSION HELPERS
-# ---------------------------------------------------------
-def save_session(username: str):
-    cookies[COOKIE_NAME] = username
-    cookies.save()
 
-def clear_session():
-    if COOKIE_NAME in cookies:
-        del cookies[COOKIE_NAME]
-        cookies.save()
-    st.session_state.clear()
+supabase = get_supabase()
 
-def restore_session():
-    username = cookies.get(COOKIE_NAME)
-    if not username:
-        return None
+defaults = {
+    "logged_in": False,
+    "user": None,
+    "session": None,
+    "project": None,
+    "observations": [],
+    "selected_obs_id": None,
+    "map_center": [0.0, 0.0],
+    "map_input_center": [0.0, 0.0],
+    "map_input_zoom": 2,
+}
+
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+
+# ----------------- SUPABASE AUTH -----------------
+def login(email: str, password: str):
     try:
-        user = supabase.table(USERS_TABLE).select("*").eq("username", username).single().execute().data
-        return {"username": username, "license": user["license"]}
+        res = supabase.auth.sign_in_with_password(
+            {"email": email, "password": password}
+        )
+        return res
     except Exception:
         return None
 
-# ---------------------------------------------------------
-# AUTH
-# ---------------------------------------------------------
-def login_page():
-    st.title("Field Data App – Login")
+
+def logout():
+    supabase.auth.sign_out()
+    st.session_state.clear()
+    for k, v in defaults.items():
+        st.session_state[k] = v
+    st.rerun()
+
+
+# ----------------- SUPABASE DATA HELPERS -----------------
+def load_projects():
+    res = supabase.table(PROJECTS_TABLE).select("*").execute()
+    return res.data or []
+
+
+def load_observations(project_name: str):
+    res = (
+        supabase.table(OBS_TABLE)
+        .select("*")
+        .eq("project", project_name)
+        .execute()
+    )
+    st.session_state.observations = res.data or []
+
+
+def insert_observation(data: dict):
+    supabase.table(OBS_TABLE).insert(data).execute()
+    load_observations(st.session_state.project)
+
+
+def update_observation(obs_id: int, data: dict):
+    supabase.table(OBS_TABLE).update(data).eq("id", obs_id).execute()
+    load_observations(st.session_state.project)
+
+
+def delete_observation(obs_id: int):
+    supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
+    load_observations(st.session_state.project)
+
+
+# ----------------- UI: LOGIN & PROJECT SELECT -----------------
+def show_login():
+    st.title("Login")
 
     with st.form("login_form"):
-        username = st.text_input("Username")
+        email = st.text_input("Email")
         password = st.text_input("Password", type="password")
-        submit = st.form_submit_button("Log in")
+        submitted = st.form_submit_button("Login")
 
-    if submit:
-        try:
-            user = supabase.table(USERS_TABLE).select("*").eq("username", username).single().execute().data
-        except Exception:
-            st.error("Invalid username or password")
-            return
+        if submitted:
+            res = login(email, password)
+            if res and res.user:
+                st.session_state.logged_in = True
+                st.session_state.user = res.user
+                st.session_state.session = res.session
+                st.rerun()
+            else:
+                st.error("Invalid email or password")
 
-        if user["password"] != password:
-            st.error("Invalid username or password")
-            return
 
-        st.session_state["user"] = {"username": username, "license": user["license"]}
-        save_session(username)
+def show_project_selection():
+    st.title("Select Project")
+
+    projects = load_projects()
+    if not projects:
+        st.warning("No projects found in Supabase.")
+        return
+
+    project_names = [p["name"] for p in projects]
+    selected = st.selectbox("Project", project_names)
+
+    if st.button("Confirm project"):
+        st.session_state.project = selected
+        load_observations(selected)
         st.rerun()
 
-# ---------------------------------------------------------
-# RESTORE SESSION
-# ---------------------------------------------------------
-if "user" not in st.session_state:
-    restored = restore_session()
-    if restored:
-        st.session_state["user"] = restored
 
-if "user" not in st.session_state:
-    login_page()
-    st.stop()
+# ----------------- MAP HELPERS -----------------
+def _get_center_from_map_data(map_data, fallback_center):
+    if not map_data:
+        return fallback_center
+    bounds = map_data.get("bounds")
+    if not bounds:
+        return fallback_center
+    sw = bounds.get("_southWest")
+    ne = bounds.get("_northEast")
+    if not sw or not ne:
+        return fallback_center
+    center_lat = (sw["lat"] + ne["lat"]) / 2
+    center_lon = (sw["lng"] + ne["lng"]) / 2
+    return [center_lat, center_lon]
 
-user = st.session_state["user"]
 
-# ---------------------------------------------------------
-# SIDEBAR
-# ---------------------------------------------------------
-st.sidebar.title("Menu")
-st.sidebar.write(f"Logged in as **{user['username']}** ({user['license']})")
+# ----------------- DIALOGS -----------------
+@st.dialog("New Observation")
+def new_observation_dialog():
+    st.write("Fill in the details and use the map center as position if you want.")
 
-# Project selection
-projects = supabase.table(PROJECTS_TABLE).select("*").execute().data
-user_projects = [p["name"] for p in projects if user["username"] in p["users"]]
+    base_center = st.session_state.map_input_center
+    zoom = st.session_state.map_input_zoom
 
-if "project" not in st.session_state:
-    st.session_state["project"] = user_projects[0]
+    m = folium.Map(location=base_center, zoom_start=zoom)
 
-project = st.sidebar.selectbox("Select project", user_projects)
-st.session_state["project"] = project
+    html = f"""
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    ">
+        <img src="{CROSS_IMAGE_PATH}" style="width:{WIDTH}px; opacity:{OPACITY};" />
+    </div>
+    """
 
-# Action buttons
-is_guest = user["license"] == "guest"
+    folium.Marker(
+        location=base_center,
+        popup="Map center",
+        icon=folium.DivIcon(html=html),
+    ).add_to(m)
 
-if st.sidebar.button("Create Observation", disabled=is_guest):
-    st.session_state["action"] = "create_obs"
-    st.rerun()
+    map_data = st_folium(m, height=400, width=700)
+    center = _get_center_from_map_data(map_data, base_center)
 
-if st.sidebar.button("View / Edit Observation"):
-    st.session_state["action"] = "view_obs"
-    st.rerun()
+    description = st.text_area("Description")
+    if st.button("Save observation"):
+        data = {
+            "project": st.session_state.project,
+            "lat": center[0],
+            "lon": center[1],
+            "description": description,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        insert_observation(data)
+        st.rerun()
 
-if st.sidebar.button("Delete Observation", disabled=is_guest):
-    st.session_state["action"] = "delete_obs"
-    st.rerun()
 
-# ⭐ NEW: Daily Report Button
-if st.sidebar.button("Create Daily Report", disabled=is_guest):
-    st.session_state["action"] = "daily_report"
-    st.rerun()
+@st.dialog("Edit Observation")
+def edit_observation_dialog(obs):
+    st.write("Edit the observation details.")
 
-# Logout
-if st.sidebar.button("Log out"):
-    clear_session()
-    st.rerun()
+    lat = st.number_input("Latitude", value=obs["lat"])
+    lon = st.number_input("Longitude", value=obs["lon"])
+    description = st.text_area("Description", value=obs.get("description", ""))
 
-# ---------------------------------------------------------
-# MAIN PAGE
-# ---------------------------------------------------------
-st.title(f"Project: {project}")
+    if st.button("Update"):
+        data = {
+            "lat": lat,
+            "lon": lon,
+            "description": description,
+        }
+        update_observation(obs["id"], data)
+        st.rerun()
 
-# Load observations
-obs = supabase.table(OBS_TABLE).select("*").eq("project", project).execute().data
-df_obs = pd.DataFrame(obs)
+    if st.button("Delete", type="secondary"):
+        delete_observation(obs["id"])
+        st.rerun()
 
-# Map
-st.subheader("Map")
-if not df_obs.empty:
-    lat = df_obs["latitude"].dropna().iloc[0]
-    lon = df_obs["longitude"].dropna().iloc[0]
-else:
-    lat, lon = 52.4, 4.8
 
-m = folium.Map(location=[lat, lon], zoom_start=10)
+# ----------------- MAIN APP -----------------
+def show_main_app():
+    st.title(f"Observations for project: {st.session_state.project}")
 
-for _, row in df_obs.iterrows():
-    if pd.notna(row["latitude"]) and pd.notna(row["longitude"]):
+    # Top bar
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.write(f"Logged in as: {st.session_state.user.email}")
+    with col2:
+        if st.button("Logout"):
+            logout()
+
+    # Map
+    m = folium.Map(location=st.session_state.map_center, zoom_start=4)
+
+    for obs in st.session_state.observations:
         folium.Marker(
-            [row["latitude"], row["longitude"]],
-            tooltip=row["species"],
-            popup=row["description"]
+            location=[obs["lat"], obs["lon"]],
+            popup=obs.get("description", ""),
         ).add_to(m)
 
-st_folium(m, width=900, height=500)
+    map_data = st_folium(m, height=500, width=900)
+    st.session_state.map_input_center = _get_center_from_map_data(
+        map_data, st.session_state.map_center
+    )
+    if map_data and "zoom" in map_data:
+        st.session_state.map_input_zoom = map_data["zoom"]
 
-# ---------------------------------------------------------
-# ACTION HANDLING
-# ---------------------------------------------------------
-action = st.session_state.get("action")
+    # Sidebar: observations list and actions
+    st.sidebar.header("Observations")
+    if st.sidebar.button("New observation"):
+        new_observation_dialog()
 
-if action == "daily_report":
-    st.subheader("Create Daily Report")
-
-    with st.form("daily_report_form"):
-        assignment = st.text_input("Assignment")
-        date_val = st.date_input("Date", value=datetime.utcnow().date())
-        temperature = st.number_input("Temperature (°C)")
-        rainfall = st.number_input("Rainfall (mm)")
-        wind = st.number_input("Wind speed (m/s)")
-        description = st.text_area("Description")
-        submit = st.form_submit_button("Save")
-
-    if submit:
-        supabase.table(REPORT_TABLE).insert({
-            "username": user["username"],
-            "project": project,
-            "assignment": assignment,
-            "date": date_val.isoformat(),
-            "temperature": temperature,
-            "rainfall": rainfall,
-            "wind": wind,
-            "description": description
-        }).execute()
-
-        st.success("Daily report saved!")
-        del st.session_state["action"]
-        st.rerun()
+    for obs in st.session_state.observations:
+        label = f"{obs['id']} - {obs.get('description', '')[:30]}"
+        if st.sidebar.button(label):
+            edit_observation_dialog(obs)
 
 
+def main():
+    if not st.session_state.logged_in:
+        show_login()
+    elif not st.session_state.project:
+        show_project_selection()
+    else:
+        show_main_app()
 
 
-
-
-
+if __name__ == "__main__":
+    main()
