@@ -39,7 +39,7 @@ defaults = {
     "project": None,
     "changing_project": False,
     "observations": [],
-    "map_center": [52.0, 5.0],  # NL center
+    "map_center": [52.0, 5.0],      # default NL center
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
     "show_signup": False,
@@ -75,13 +75,36 @@ def logout():
 
 # ----------------- DATA HELPERS -----------------
 def load_projects():
-    res = supabase.table(PROJECTS_TABLE).select("*").execute()
+    """Only load projects belonging to the current user."""
+    user = st.session_state.user
+    if not user:
+        return []
+    res = (
+        supabase
+        .table(PROJECTS_TABLE)
+        .select("*")
+        .eq("user_id", user.id)
+        .execute()
+    )
     return res.data or []
 
 
 def load_observations(project_name: str):
-    res = supabase.table(OBS_TABLE).select("*").eq("project", project_name).execute()
+    res = (
+        supabase
+        .table(OBS_TABLE)
+        .select("*")
+        .eq("project", project_name)
+        .order("date", desc=False)
+        .execute()
+    )
     st.session_state.observations = res.data or []
+
+    # Center map on last observation if exists
+    if st.session_state.observations:
+        last = st.session_state.observations[-1]
+        st.session_state.map_center = [last["lat"], last["lon"]]
+        st.session_state.map_input_center = [last["lat"], last["lon"]]
 
 
 # ----------------- STORAGE HELPERS -----------------
@@ -162,7 +185,7 @@ def show_project_selection():
 
     projects = load_projects()
     if not projects:
-        st.sidebar.warning("No projects found.")
+        st.sidebar.warning("No projects found for this user.")
         return
 
     project_names = [p["name"] for p in projects]
@@ -190,12 +213,13 @@ def _get_center_from_map_data(map_data, fallback_center):
 def new_observation_dialog():
     st.write("Use the map center as the observation position.")
 
+    # Always start at highest zoom for new observation
     base_center = st.session_state.map_input_center
-    zoom = st.session_state.map_input_zoom
+    zoom = 18
 
     m = folium.Map(location=base_center, zoom_start=zoom)
 
-    # Add GPS locate control
+    # GPS locate control
     LocateControl(auto_start=False).add_to(m)
 
     # Crosshair overlay
@@ -247,6 +271,11 @@ def new_observation_dialog():
         }
 
         supabase.table(OBS_TABLE).insert(data).execute()
+
+        # Update map center to this new observation
+        st.session_state.map_center = [float(lat), float(lon)]
+        st.session_state.map_input_center = [float(lat), float(lon)]
+
         load_observations(st.session_state.project)
         st.rerun()
 
@@ -270,7 +299,6 @@ def show_main_app():
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
     selected_species = st.sidebar.multiselect("Species", species_values)
 
-    # Date slider
     dates = []
     for o in st.session_state.observations:
         if o.get("date"):
@@ -293,7 +321,6 @@ def show_main_app():
     else:
         date_range = None
 
-    # Apply filters
     filtered = st.session_state.observations
 
     if selected_species:
@@ -301,18 +328,22 @@ def show_main_app():
 
     if date_range:
         start_d, end_d = date_range
-        filtered = [
-            o for o in filtered
-            if "date" in o and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
-        ]
+        tmp = []
+        for o in filtered:
+            if o.get("date"):
+                try:
+                    d = datetime.fromisoformat(o["date"]).date()
+                    if start_d <= d <= end_d:
+                        tmp.append(o)
+                except:
+                    pass
+        filtered = tmp
 
     # -------- MAP --------
-    m = folium.Map(location=st.session_state.map_center, zoom_start=6)
+    m = folium.Map(location=st.session_state.map_center, zoom_start=12)
 
-    # Add GPS locate control
     LocateControl(auto_start=False).add_to(m)
 
-    # Observations as blue markers
     for obs in filtered:
         popup = f"""
         <b>Species:</b> {obs.get('species', '')}<br>
@@ -340,7 +371,26 @@ def show_main_app():
     for obs in filtered:
         label = f"{obs['id']} - {obs.get('species', '')[:30]}"
         if st.sidebar.button(label):
-            st.write("Edit dialog coming next update.")
+            st.write("Edit dialog coming next update.")  # placeholder
+
+
+# ----------------- RESTORE SESSION -----------------
+def restore_session_after_functions():
+    sess = supabase.auth.get_session()
+    if sess and sess.user:
+        st.session_state.logged_in = True
+        st.session_state.user = sess.user
+        st.session_state.session = sess
+
+        metadata = sess.user.user_metadata or {}
+        saved_project = metadata.get("project")
+
+        if saved_project:
+            st.session_state.project = saved_project
+            load_observations(saved_project)
+
+
+restore_session_after_functions()
 
 
 # ----------------- MAIN -----------------
@@ -360,6 +410,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
