@@ -559,7 +559,8 @@ def main():
         show_main_app()
 
 
-if __name__ == "__
+if __name__ == "__main__":
+    main()
 
 
 
