@@ -85,16 +85,26 @@ def load_observations(project_name: str):
 def upload_photo(file):
     if not file:
         return None
+
     try:
         file_bytes = file.read()
         if not file_bytes:
             return None
+
         ext = file.name.split(".")[-1]
         file_id = f"{uuid.uuid4()}.{ext}"
-        supabase.storage.from_(BUCKET).upload(file_id, file_bytes)
+
+        supabase.storage.from_(BUCKET).upload(
+            file_id,
+            {"file": file_bytes},   # <-- REQUIRED for your client version
+        )
+
         return supabase.storage.from_(BUCKET).get_public_url(file_id)
-    except Exception:
+
+    except Exception as e:
+        st.error(f"Upload failed: {e}")
         return None
+
 
 
 # ----------------- UI: LOGIN -----------------
