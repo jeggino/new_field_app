@@ -24,6 +24,27 @@ CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/74
 OPACITY = 1
 WIDTH = 30
 
+BAT_SPECIES = [
+    'Gewone dwergvleermuis','Ruige dwergvleermuis','Laatvlieger','Rosse vleermuis',
+    'Baardvleermuis','Meervleermuis','Watervleermuis','Kleine dwergvleermuis',
+    'Tweekleurige vleermuis','Gewone grootoorvleermuis','onbekend'
+]
+
+BIRD_SPECIES = [
+    'Gierzwaluw','Huiszwaluw','Boerenzwaluw','Huismus','Spreeuw',
+    'Boomkruiper','Kauw','..ander'
+]
+
+FUNCTION_ICONS = {
+    "nest/roost": "home",
+    "single observation": "info-sign",
+    "group observation": "users"
+}
+
+SPECIES_COLORS = {
+    "bat": "purple",
+    "bird": "green"
+}
 
 # ----------------- INIT -----------------
 @st.cache_resource
@@ -212,10 +233,9 @@ def new_observation_dialog():
     st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
-    zoom = 18  # highest zoom
+    zoom = 18
 
     m = folium.Map(location=base_center, zoom_start=zoom)
-
     LocateControl(auto_start=False).add_to(m)
 
     crosshair_html = f"""
@@ -241,10 +261,17 @@ def new_observation_dialog():
     except Exception:
         lat, lon = base_center
 
-    species = st.text_input("Species")
+    # STEP 1 — Ask if bat or bird
+    animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
+
+    # STEP 2 — Show correct species list
+    if animal_type == "bat":
+        species = st.selectbox("Species", BAT_SPECIES)
+    else:
+        species = st.selectbox("Species", BIRD_SPECIES)
+
     behavior = st.text_input("Behavior")
 
-    # NEW FIELD HERE
     function = st.selectbox(
         "Function",
         ["nest/roost", "single observation", "group observation"]
@@ -255,16 +282,13 @@ def new_observation_dialog():
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
     if st.button("Save observation"):
-        if not species:
-            st.warning("Species is required.")
-            st.stop()
-
         photo_url = upload_photo(photo)
 
         data = {
             "species": species,
             "behavior": behavior,
-            "function": function,   # NEW FIELD SAVED HERE
+            "function": function,
+            "animal_type": animal_type,  # NEW FIELD
             "username": username,
             "date": str(obs_date),
             "project": st.session_state.project,
@@ -341,10 +365,13 @@ def show_main_app():
         filtered = tmp
 
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
-
     LocateControl(auto_start=False).add_to(m)
 
     for obs in filtered:
+        animal_type = obs.get("animal_type", "bat")
+        color = SPECIES_COLORS.get(animal_type, "blue")
+        icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
+
         popup = f"""
         <b>Species:</b> {obs.get('species', '')}<br>
         <b>Function:</b> {obs.get('function', '')}<br>
@@ -357,7 +384,7 @@ def show_main_app():
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=popup,
-            icon=folium.Icon(color="blue"),
+            icon=folium.Icon(color=color, icon=icon),
         ).add_to(m)
 
     map_data = st_folium(m, height=550, width="100%")
@@ -410,6 +437,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
