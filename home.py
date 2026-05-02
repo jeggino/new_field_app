@@ -8,24 +8,7 @@ import uuid
 import json
 
 
-st.markdown("""
-<style>
-/* Fix the map container */
-.fixed-map {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw !important;
-    height: 50vh !important;   /* adjust for mobile */
-    z-index: 999;
-}
 
-/* Push the rest of the content down */
-.page-content {
-    margin-top: 12vh;
-}
-</style>
-""", unsafe_allow_html=True)
 
 
 # ----------------- CONFIG -----------------
