@@ -33,7 +33,7 @@ OPACITY = 1
 WIDTH = 30
 
 # ----------------- LOGO --------------------------
-IMAGE = "image/logo.png"
+IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
