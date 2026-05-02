@@ -213,6 +213,17 @@ def load_project_boundary(project_name):
         return None, None
 
 
+def download_observations_csv():
+    """Return a CSV bytes object for all observations of the current project."""
+    obs = st.session_state.observations
+
+    if not obs:
+        return None
+
+    df = pd.DataFrame(obs)
+
+    return df.to_csv(index=False).encode("utf-8")
+
 
 # ----------------- STORAGE HELPERS -----------------
 def upload_photo(file):
@@ -616,6 +627,22 @@ def show_main_app():
     
     if st.sidebar.button("View Reports"):
         show_reports_dialog()
+
+    st.sidebar.divider()
+
+    # Download observations as CSV
+    csv_data = download_observations_csv()
+    if csv_data:
+        st.sidebar.download_button(
+            label="Download Observations CSV",
+            data=csv_data,
+            file_name=f"{st.session_state.project}_observations.csv",
+            mime="text/csv"
+        )
+    else:
+        st.sidebar.write("No observations to download.")
+
+    st.sidebar.divider()
 
 
     # MAP
