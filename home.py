@@ -31,6 +31,7 @@ defaults = {
     "user": None,
     "session": None,
     "project": None,
+    "saved_project": None,   # <-- NEW: persistent project
     "observations": [],
     "selected_obs_id": None,
     "map_center": [0.0, 0.0],
@@ -52,6 +53,11 @@ def restore_session():
         st.session_state.logged_in = True
         st.session_state.user = sess.user
         st.session_state.session = sess
+
+        # Restore project if saved
+        if st.session_state.saved_project and not st.session_state.project:
+            st.session_state.project = st.session_state.saved_project
+            load_observations(st.session_state.project)
 
 
 restore_session()
@@ -176,6 +182,7 @@ def show_project_selection():
 
     if st.button("Confirm project"):
         st.session_state.project = selected
+        st.session_state.saved_project = selected  # <-- NEW: persist project
         load_observations(selected)
         st.session_state.changing_project = False
         st.rerun()
@@ -309,7 +316,9 @@ def main():
             show_signup()
         else:
             show_login()
-    elif st.session_state.changing_project or not st.session_state.project:
+    elif st.session_state.changing_project:
+        show_project_selection()
+    elif not st.session_state.project:
         show_project_selection()
     else:
         show_main_app()
@@ -317,3 +326,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
