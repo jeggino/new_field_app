@@ -294,6 +294,36 @@ def daily_report_dialog():
         st.success("Report submitted.")
         st.rerun()
 
+@st.dialog("Daily Reports")
+def show_reports_dialog():
+    st.subheader("Reports for this project")
+
+    res = (
+        supabase.table("report")
+        .select("*")
+        .eq("project", st.session_state.project)
+        .order("date", desc=True)
+        .execute()
+    )
+
+    reports = res.data or []
+
+    if not reports:
+        st.info("No reports yet.")
+        return
+
+    import pandas as pd
+    df = pd.DataFrame(reports)
+
+    st.dataframe(df, use_container_width=True)
+
+    st.download_button(
+        "Download CSV",
+        df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{st.session_state.project}_reports.csv",
+        mime="text/csv"
+    )
+
 
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
@@ -502,36 +532,7 @@ def show_project_selection():
         st.session_state.changing_project = False
         st.rerun()
 
-# ----------------- SHOW REPORT --------------
-def show_reports_page():
-    st.subheader("Daily Reports")
 
-    res = (
-        supabase.table("report")
-        .select("*")
-        .eq("project", st.session_state.project)
-        .order("date", desc=True)
-        .execute()
-    )
-
-    reports = res.data or []
-
-    if not reports:
-        st.info("No reports yet.")
-        return
-
-    st.dataframe(reports)
-
-    # CSV download
-    import pandas as pd
-    df = pd.DataFrame(reports)
-
-    st.download_button(
-        "Download CSV",
-        df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{st.session_state.project}_reports.csv",
-        mime="text/csv"
-    )
 
 # ----------------- MAIN APP -----------------
 def show_main_app():
@@ -614,7 +615,7 @@ def show_main_app():
         daily_report_dialog()
     
     if st.sidebar.button("View Reports"):
-        show_reports_page()
+        show_reports_dialog()
 
 
     # MAP
