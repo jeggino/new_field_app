@@ -160,24 +160,59 @@ def load_observations(project_name: str):
         st.session_state.map_center = [last["lat"], last["lon"]]
         st.session_state.map_input_center = [last["lat"], last["lon"]]
 
+# def load_project_boundary(project_name):
+#     """Load a GeoJSON boundary file from the Supabase bucket.
+#        The file must be named <project>.geojson
+#     """
+#     filename = f"{project_name}.geojson"
+
+#     try:
+#         response = supabase.storage.from_(BUCKET).download(filename)
+#         if not response:
+#             return None
+
+#         geojson_bytes = response
+#         geojson_str = geojson_bytes.decode("utf-8")
+#         return json.loads(geojson_str)
+
+#     except Exception as e:
+#         st.warning(f"Boundary file not found for project: {project_name}")
+#         return None
+
 def load_project_boundary(project_name):
-    """Load a GeoJSON boundary file from the Supabase bucket.
-       The file must be named <project>.geojson
-    """
     filename = f"{project_name}.geojson"
 
     try:
         response = supabase.storage.from_(BUCKET).download(filename)
         if not response:
-            return None
+            return None, None
 
-        geojson_bytes = response
-        geojson_str = geojson_bytes.decode("utf-8")
-        return json.loads(geojson_str)
+        geojson_str = response.decode("utf-8")
+        data = json.loads(geojson_str)
 
-    except Exception as e:
-        st.warning(f"Boundary file not found for project: {project_name}")
-        return None
+        # Compute bounds
+        coords = []
+
+        def extract_coords(geom):
+            if geom["type"] == "Polygon":
+                for ring in geom["coordinates"]:
+                    coords.extend(ring)
+            elif geom["type"] == "MultiPolygon":
+                for poly in geom["coordinates"]:
+                    for ring in poly:
+                        coords.extend(ring)
+
+        extract_coords(data["geometry"])
+
+        lats = [c[1] for c in coords]
+        lngs = [c[0] for c in coords]
+
+        bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
+
+        return data, bounds
+
+    except Exception:
+        return None, None
 
 
 # ----------------- STORAGE HELPERS -----------------
@@ -512,8 +547,23 @@ def show_main_app():
     m = folium.Map(location=st.session_state.map_center, zoom_start=12)
     LocateControl(auto_start=False).add_to(m)
 
-    # Add project boundary polygon
-    boundary = load_project_boundary(st.session_state.project)
+    # # Add project boundary polygon
+    # boundary = load_project_boundary(st.session_state.project)
+    
+    # if boundary:
+    #     folium.GeoJson(
+    #         boundary,
+    #         name="Boundary",
+    #         style_function=lambda x: {
+    #             "fillColor": "#ffcc00",
+    #             "color": "#ff8800",
+    #             "weight": 3,
+    #             "fillOpacity": 0.05,
+    #         }
+    #     ).add_to(m)
+
+    # Load boundary + bounds
+    boundary, bounds = load_project_boundary(st.session_state.project)
     
     if boundary:
         folium.GeoJson(
@@ -522,10 +572,13 @@ def show_main_app():
             style_function=lambda x: {
                 "fillColor": "#ffcc00",
                 "color": "#ff8800",
-                "weight": 3,
-                "fillOpacity": 0.05,
+                "weight": 2,
+                "fillOpacity": 0.15,
             }
         ).add_to(m)
+    
+        # Auto-zoom to polygon
+        m.fit_bounds(bounds)
 
 
     for obs in filtered:
