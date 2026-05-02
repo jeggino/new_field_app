@@ -39,8 +39,7 @@ defaults = {
     "map_input_center": [0.0, 0.0],
     "map_input_zoom": 2,
     "show_signup": False,
-    "filter_species": [],
-    "filter_date_range": None,
+    "gps_location": None,
 }
 
 for k, v in defaults.items():
@@ -95,7 +94,6 @@ def upload_photo(file):
         supabase.storage.from_(BUCKET).upload(file_id, file_bytes)
         return supabase.storage.from_(BUCKET).get_public_url(file_id)
     except Exception:
-        # If upload fails, just skip photo instead of crashing
         return None
 
 
@@ -333,7 +331,7 @@ def show_main_app():
     st.sidebar.header("Filters")
 
     species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
-    st.session_state.filter_species = st.sidebar.multiselect("Filter by species", species_values)
+    selected_species = st.sidebar.multiselect("Filter by species", species_values)
 
     dates = []
     for o in st.session_state.observations:
@@ -343,26 +341,27 @@ def show_main_app():
             except Exception:
                 pass
 
+    date_range = None
     if dates:
         min_d, max_d = min(dates), max(dates)
-        if st.session_state.filter_date_range is None:
-            st.session_state.filter_date_range = (min_d, max_d)
-        st.session_state.filter_date_range = st.sidebar.slider(
-            "Filter by date range",
-            min_value=min_d,
-            max_value=max_d,
-            value=st.session_state.filter_date_range,
-        )
-    else:
-        st.session_state.filter_date_range = None
+        if min_d == max_d:
+            date_range = (min_d, max_d)
+            st.sidebar.write(f"All observations on: {min_d}")
+        else:
+            date_range = st.sidebar.slider(
+                "Filter by date range",
+                min_value=min_d,
+                max_value=max_d,
+                value=(min_d, max_d),
+            )
 
     filtered = st.session_state.observations
 
-    if st.session_state.filter_species:
-        filtered = [o for o in filtered if o.get("species") in st.session_state.filter_species]
+    if selected_species:
+        filtered = [o for o in filtered if o.get("species") in selected_species]
 
-    if st.session_state.filter_date_range:
-        start_d, end_d = st.session_state.filter_date_range
+    if date_range:
+        start_d, end_d = date_range
         tmp = []
         for o in filtered:
             if o.get("date"):
@@ -393,23 +392,23 @@ def show_main_app():
             icon=folium.Icon(color="blue"),
         ).add_to(m)
 
+    # GPS marker from last click (if stored)
+    if st.session_state.gps_location:
+        folium.Marker(
+            st.session_state.gps_location,
+            icon=folium.Icon(color="blue", icon="info-sign"),
+        ).add_to(m)
+
     map_data = st_folium(m, height=500, width=900)
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     if map_data and "zoom" in map_data:
         st.session_state.map_input_zoom = map_data["zoom"]
 
-    # "GPS" blue marker at last clicked location if available
     if map_data and map_data.get("last_clicked"):
         lc = map_data["last_clicked"]
-        folium.Marker(
-            [lc["lat"], lc["lng"]],
-            icon=folium.Icon(color="blue", icon="info-sign"),
-        ).add_to(m)
-
-    # Re-render map with GPS marker (optional second render)
-    # (If you prefer single render, remove this block and the above GPS marker)
-    # st_folium(m, height=500, width=900)
+        st.session_state.gps_location = [lc["lat"], lc["lng"]]
+        st.rerun()
 
     # -------- SIDEBAR LIST --------
     st.sidebar.header("Observations")
@@ -439,6 +438,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
