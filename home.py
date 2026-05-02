@@ -8,6 +8,7 @@ from streamlit_folium import st_folium
 from supabase import create_client, Client
 from streamlit_cookies_manager import EncryptedCookieManager
 
+
 # ---------------------------------------------------------
 # Constants from secrets (as requested)
 # ---------------------------------------------------------
@@ -26,7 +27,7 @@ COOKIE_NAME = "fieldapp_session_v1"
 # ---------------------------------------------------------
 # Supabase + cookies
 # ---------------------------------------------------------
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookies = EncryptedCookieManager(
     prefix="fieldapp_",
@@ -487,6 +488,7 @@ if not df_obs.empty:
     )
 else:
     st.info("No observations to display")
+
 
 
 
