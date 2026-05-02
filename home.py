@@ -16,450 +16,423 @@ PROJECTS_TABLE = "projects"
 OBS_TABLE = "observations"
 CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png" 
 
-# add point mark
-OPACITY = 1
-WIDTH = 30
+import os
+from datetime import datetime
 
+import streamlit as st
+import pandas as pd
+import folium
+from streamlit_folium import st_folium
+from supabase import create_client, Client
+from streamlit_cookies_manager import EncryptedCookieManager
 
-# "https://www.bookmarkseparators.com/img/fav/dot-black.png"
-# ----------------- INIT -----------------
-@st.cache_resource
-def get_supabase() -> Client:
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+# ---------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://your-project.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "public-anon-or-service-role-key")
+MEDIA_BUCKET = os.getenv("MEDIA_BUCKET", "observations-media")
+COOKIE_NAME = "fieldapp_session_v1"
 
-supabase = get_supabase()
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 cookies = EncryptedCookieManager(
-    prefix="obs_app_",
-    password=st.secrets["COOKIE_PASSWORD"],
+    prefix="fieldapp_",
+    password=os.getenv("COOKIE_ENCRYPTION_PASSWORD", "change_this_to_a_strong_password"),
 )
+
 if not cookies.ready():
     st.stop()
 
-defaults = {
-    "logged_in": False,
-    "logged_in_project": False,
-    "username": None,
-    "project": None,
-    "observations": [],
-    "selected_obs_id": None,
-    "map_center": [0.0, 0.0],
-    "map_input_center": None,
-    "map_input_zoom": None,
-    
-}
-for k, v in defaults.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
+# ---------------------------------------------------------
+# Helpers: session persistence
+# ---------------------------------------------------------
+def save_session_to_cookie(username: str):
+    cookies[COOKIE_NAME] = username
+    cookies.save()
 
+def clear_session_cookie():
+    if COOKIE_NAME in cookies:
+        del cookies[COOKIE_NAME]
+        cookies.save()
 
-# ----------------- SUPABASE HELPERS -----------------
-def login(username: str, password: str) -> bool:
-    res = (
-        supabase.table(USERS_TABLE)
-        .select("*")
-        .eq("username", username)
-        .eq("password", password)
-        .execute()
-    )
-    return len(res.data) == 1
+def restore_session_from_cookie():
+    username = cookies.get(COOKIE_NAME)
+    if not username:
+        return None
+    resp = supabase.table("users").select("*").eq("username", username).limit(1).execute()
+    if resp.error or not resp.data:
+        return None
+    user = resp.data[0]
+    return {"username": username, "license": user.get("license")}
 
+# ---------------------------------------------------------
+# Auth helpers (custom users table)
+# ---------------------------------------------------------
+def supabase_sign_in(username: str, password: str):
+    resp = supabase.table("users").select("*").eq("username", username).limit(1).execute()
+    if resp.error:
+        return None, "Error querying users table"
+    rows = resp.data
+    if not rows:
+        return None, "User not found"
+    user = rows[0]
+    # NOTE: plaintext for demo only; use hashing in real apps
+    if user.get("password") != password:
+        return None, "Invalid password"
+    session = {
+        "username": username,
+        "license": user.get("license"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return session, None
 
-def load_projects():
-    res = supabase.table(PROJECTS_TABLE).select("*").execute()
-    return res.data or []
+def require_login():
+    if "user" not in st.session_state or not st.session_state["user"]:
+        st.session_state["page"] = "login"
+        st.rerun()
 
+# ---------------------------------------------------------
+# Data helpers
+# ---------------------------------------------------------
+def load_projects_for_user(username: str):
+    resp = supabase.table("projects").select("*").execute()
+    if resp.error:
+        st.error("Failed to load projects")
+        return []
+    projects = resp.data
+    return [p for p in projects if username in (p.get("users") or [])]
 
 def load_observations(project_name: str):
-    res = (
-        supabase.table(OBS_TABLE)
-        .select("*")
-        .eq("project", project_name)
-        .execute()
-    )
-    st.session_state.observations = res.data or []
+    resp = supabase.table("observations").select("*").eq("project", project_name).execute()
+    if resp.error:
+        st.error("Failed to load observations")
+        return []
+    return resp.data
 
+def create_observation(obs: dict):
+    resp = supabase.table("observations").insert(obs).execute()
+    if resp.error:
+        st.error(f"Failed to create observation: {resp.error.message}")
+        return False
+    return True
 
-def insert_observation(data: dict):
-    supabase.table(OBS_TABLE).insert(data).execute()
-    load_observations(st.session_state.project)
+def update_observation(obs_id: str, updates: dict):
+    resp = supabase.table("observations").update(updates).eq("id", obs_id).execute()
+    if resp.error:
+        st.error(f"Failed to update observation: {resp.error.message}")
+        return False
+    return True
 
+def delete_observation(obs_id: str):
+    resp = supabase.table("observations").delete().eq("id", obs_id).execute()
+    if resp.error:
+        st.error(f"Failed to delete observation: {resp.error.message}")
+        return False
+    return True
 
-def update_observation(obs_id: int, data: dict):
-    supabase.table(OBS_TABLE).update(data).eq("id", obs_id).execute()
-    load_observations(st.session_state.project)
+def upload_media(file, username: str, project: str):
+    if file is None:
+        return None
+    ext = os.path.splitext(file.name)[1] or ".bin"
+    key = f"{project}/{username}/{datetime.utcnow().isoformat().replace(':','-')}{ext}"
+    data = file.read()
+    res = supabase.storage.from_(MEDIA_BUCKET).upload(key, data)
+    if res.get("error"):
+        st.error(f"Failed to upload media: {res['error']['message']}")
+        return None
+    return key  # store as media_id
 
+def get_media_public_url(media_id: str | None):
+    if not media_id:
+        return None
+    return supabase.storage.from_(MEDIA_BUCKET).get_public_url(media_id)
 
-def delete_observation(obs_id: int):
-    supabase.table(OBS_TABLE).delete().eq("id", obs_id).execute()
-    load_observations(st.session_state.project)
-
-
-# ----------------- COOKIES -----------------
-def set_login_cookies(username: str):
-    cookies["logged_in"] = "1"
-    cookies["username"] = username
-    cookies.save()
-
-
-def set_project_cookies(selected: str):
-    cookies["logged_in_project"] = "1"
-    cookies["project"] = selected
-    cookies.save()
-
-def clear_login_cookies():
-    for k in list(cookies.keys()):
-        del cookies[k]
-    cookies.save()
-    
-
-
-def restore_login_from_cookies():
-    if cookies.get("logged_in") == "1" and not st.session_state.logged_in and cookies.get("logged_in_project") == "1":
-        st.session_state.logged_in = True
-        st.session_state.logged_in_project = True
-        st.session_state.username = cookies.get("username")
-        st.session_state.project = cookies.get("project")
-
-
-restore_login_from_cookies()
-
-
-# ----------------- UI: LOGIN & PROJECT SELECT -----------------
-def show_login():
-    st.title("Login")
+# ---------------------------------------------------------
+# UI: login
+# ---------------------------------------------------------
+def login_page():
+    st.title("Field Data App - Login")
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
-        if submitted:
-            if login(username, password):
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                set_login_cookies(username)
-                st.rerun()
-            else:
-                st.error("Invalid credentials")
-
-
-def show_project_selection():
-    st.title("Select Project")
-    projects = load_projects()
-    if not projects:
-        st.warning("No projects found in Supabase.")
-        return
-
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Project", project_names)
-    if st.button("Confirm project"):
-        st.session_state.project = selected
-        load_observations(selected)
-        set_project_cookies(selected)
+        submitted = st.form_submit_button("Log in")
+    if submitted:
+        session, err = supabase_sign_in(username.strip(), password)
+        if err:
+            st.error(err)
+            return
+        st.session_state["user"] = session
+        save_session_to_cookie(username.strip())
         st.rerun()
 
+def logout():
+    clear_session_cookie()
+    st.session_state.clear()
+    st.rerun()
 
-# ----------------- DIALOGS -----------------
-def _get_center_from_map_data(map_data, fallback_center):
-    if not map_data:
-        return fallback_center
-    bounds = map_data.get("bounds")
-    if not bounds:
-        return fallback_center
-    sw = bounds.get("_southWest")
-    ne = bounds.get("_northEast")
-    if not sw or not ne:
-        return fallback_center
-    center_lat = (sw["lat"] + ne["lat"]) / 2
-    center_lon = (sw["lng"] + ne["lng"]) / 2
-    return [center_lat, center_lon]
+# ---------------------------------------------------------
+# Initial session restore
+# ---------------------------------------------------------
+if "user" not in st.session_state:
+    restored = restore_session_from_cookie()
+    if restored:
+        st.session_state["user"] = restored
 
+if "page" not in st.session_state:
+    st.session_state["page"] = "main"
 
-@st.dialog("New Observation")
-def new_observation_dialog():
-    st.write("Fill in the details and use the map center as position if you want.")
+if "user" not in st.session_state or not st.session_state["user"]:
+    login_page()
+    st.stop()
 
-    base_center = st.session_state.map_input_center
-    zoom = st.session_state.map_input_zoom
+user = st.session_state["user"]
 
-    m = folium.Map(location=base_center, zoom_start=zoom)
+# ---------------------------------------------------------
+# Sidebar
+# ---------------------------------------------------------
+st.sidebar.write(f"**User:** {user.get('username')}")
+if st.sidebar.button("Change project"):
+    if "project" in st.session_state:
+        del st.session_state["project"]
+    st.rerun()
 
-    # Add a fixed image overlay using HTML and CSS
-    html = f"""
-    <div style="
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none; /* Let clicks pass through */
-        z-index: 9999;
-    ">
-        <img src={CROSS_IMAGE_PATH }
-             style="width:{WIDTH}px; height:auto; opacity:{OPACITY}; color:red">
-    </div>
-    """
+if st.sidebar.button("Log out"):
+    logout()
 
-    m.get_root().html.add_child(folium.Element(html))
+projects = load_projects_for_user(user.get("username"))
+project_names = [p["name"] for p in projects]
 
-    # Just a normal map; the cross is shown as an image overlay in Streamlit
-    map_data = st_folium(m, width="100%", height=400)
+if not project_names:
+    st.warning("No projects assigned to this user.")
+    st.stop()
 
-    # lat, lon = current_center
-    lat = map_data['center']['lat']
-    lon = map_data['center']['lng']
-    # st.info(f"Coordinates: lat={lat}, lon={lon}")
+if "project" not in st.session_state:
+    st.session_state["project"] = project_names[0]
 
-    col1, col2 = st.columns(2)
-    with col1:
-        species = st.text_input("Species")
-        username = st.text_input("Username", value=st.session_state.username or "")
-        behavior = st.text_input("Behavior")
-    with col2:
-        date = st.date_input("Date", value=datetime.utcnow().date())
+st.sidebar.markdown("### Projects")
+selected_project = st.sidebar.selectbox(
+    "Select project",
+    project_names,
+    index=project_names.index(st.session_state["project"])
+    if st.session_state["project"] in project_names else 0
+)
+st.session_state["project"] = selected_project
 
+# ---------------------------------------------------------
+# Main layout
+# ---------------------------------------------------------
+st.header(f"Project: {st.session_state['project']}")
 
-    if st.button("Save observation"):
-        if lat is None or lon is None:
-            st.warning("Please provide latitude and longitude (via button or manual input).")
-            st.stop()
-        if not species:
-            st.warning("Species is required.")
-            st.stop()
+cols = st.columns([3, 1])
+map_col, ctrl_col = cols[0], cols[1]
 
-        data = {
-            "species": species,
-            "project": st.session_state.project,
-            "username": username,
-            "behavior": behavior,
-            "date": str(date),
-            "lat": float(lat),
-            "lon": float(lon),
-        }
-        insert_observation(data)
-        st.rerun()
+observations = load_observations(st.session_state["project"])
+df_obs = pd.DataFrame(observations) if observations else pd.DataFrame(
+    columns=[
+        "id", "username", "project", "assignment", "date", "species",
+        "behavior", "function", "description", "media_id", "latitude", "longitude"
+    ]
+)
 
-
-@st.dialog("Edit Observation")
-def edit_observation_dialog(obs):
-    st.write("Update the details and position.")
-
-    base_center = [obs.get("lat", 0), obs.get("lon", 0)]
-    m = folium.Map(location=base_center, zoom_start=20)
-
-    folium.Marker(
-        location=base_center,
-        icon=folium.Icon(color="blue", icon="pen", prefix="fa")
-    ).add_to(m)
-
-    # Add a fixed image overlay using HTML and CSS
-    html = f"""
-    <div style="
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none; /* Let clicks pass through */
-        z-index: 9999;
-    ">
-        <img src={CROSS_IMAGE_PATH }
-             style="width:{WIDTH}px; height:auto; opacity:{OPACITY}; color:red">
-    </div>
-    """
-
-    m.get_root().html.add_child(folium.Element(html))
-
-    map_data = st_folium(m, width="100%", height=400)
-
-    lat = obs.get("lat", 0)
-    lon = obs.get("lon", 0)    
-    
-    if st.button("Use current map center as coordinates (edit)"):
-        lat = map_data['center']['lat']
-        lon = map_data['center']['lng']
-        st.info(f"New coordinates ({lat},{lon})")
-
-
-    col1, col2 = st.columns(2)
-    with col1:
-        species = st.text_input("Species", value=obs.get("species", ""))
-        username = st.text_input("Username", value=obs.get("username", ""))
-        behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
-    with col2:
-        date = st.date_input(
-            "Date",
-            value=datetime.fromisoformat(obs.get("date")).date()
-            if obs.get("date")
-            else datetime.utcnow().date(),
-        )
-        number = st.number_input(
-            "Insert a number", value=lat, placeholder="Type a number...",format="%0.20f"
-        )
-        number_2 = st.number_input(
-            "Insert a number", value=lon, placeholder="Type a number...",format="%0.20f"
-        )
-
-
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("Save changes"):
-            if lat is None or lon is None:
-                st.warning("Please provide latitude and longitude.")
-                st.stop()
-            data = {
-                "species": species,
-                "username": username,
-                "behavior": behavior,
-                "date": str(date),
-                "lat": float(number),
-                "lon": float(number_2),
-            }
-            update_observation(obs["id"], data)
-            st.rerun()
-
-
-# ----------------- MAIN APP -----------------
-def find_clicked_observation(click_lat, click_lon, observations, tol=1e-5):
-    for o in observations:
-        if abs(o["lat"] - click_lat) < tol and abs(o["lon"] - click_lon) < tol:
-            return o
-    return None
-
-
-def show_main_app():
-
-    with st.sidebar:
-        st.subheader("Controls")
-
-        st.markdown(
-            """
-            <style>
-            .circle-btn button {
-                border-radius: 50% !important;
-                height: 60px !important;
-                width: 160px !important;
-                padding: 0 !important;
-                font-size: 24px !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="circle-btn">', unsafe_allow_html=True)
-
-        # st.markdown("</div>", unsafe_allow_html=True)
-
-        if st.button("Logout", type="secondary", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.session_state.project = None
-            clear_login_cookies()
-            st.rerun()
-
-        st.markdown("---")
-        st.write(f"User: **{st.session_state.username}**")
-        st.write(f"Project: **{st.session_state.project}**")
-
-    # Map center
-    if st.session_state.observations:
-        avg_lat = sum(o["lat"] for o in st.session_state.observations) / len(
-            st.session_state.observations
-        )
-        avg_lon = sum(o["lon"] for o in st.session_state.observations) / len(
-            st.session_state.observations
-        )
-        center = [avg_lat, avg_lon]
+# ---------------------------------------------------------
+# Map
+# ---------------------------------------------------------
+with map_col:
+    st.subheader("Map")
+    if not df_obs.empty and df_obs["latitude"].notnull().any() and df_obs["longitude"].notnull().any():
+        center_lat = float(df_obs["latitude"].dropna().iloc[0])
+        center_lon = float(df_obs["longitude"].dropna().iloc[0])
     else:
-        center = [52.01594052906511, 5.300651216815735]
+        center_lat, center_lon = 52.4, 4.8  # default center
 
-    st.session_state.map_center = center
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
 
-    # Main map (mobile/laptop friendly)
-    m = folium.Map(location=center, zoom_start=13)
-    for obs in st.session_state.observations:
-        popup_text = f"{obs.get('species', '')} ({obs.get('username', '')})"
+    for _, row in df_obs.iterrows():
+        lat, lon = row.get("latitude"), row.get("longitude")
+        if pd.isna(lat) or pd.isna(lon):
+            continue
+        media_url = get_media_public_url(row.get("media_id"))
+        media_html = f'<br><img src="{media_url}" width="150">' if media_url else ""
+        popup_html = f"""
+        <b>{row.get('species','')}</b><br>
+        {row.get('date','')}<br>
+        <i>{row.get('description','')}</i><br>
+        <small>By: {row.get('username')}</small>
+        {media_html}
+        """
         folium.Marker(
-            location=[obs["lat"], obs["lon"]],
-            popup=popup_text,
-            icon=folium.Icon(color="red", icon="tree", prefix="fa")
+            location=[lat, lon],
+            popup=folium.Popup(popup_html, max_width=300),
+            tooltip=row.get("species", "")
         ).add_to(m)
 
-    map_data = st_folium(m, width="100%", height=500)
+    legend_html = """
+     <div style="
+     position: fixed;
+     bottom: 50px;
+     left: 50px;
+     width: 200px;
+     z-index:9999;
+     background-color:white;
+     padding:10px;
+     border:2px solid grey;
+     ">
+     <b>Legend</b><br>
+     Marker: Observation point<br>
+     Click marker for details
+     </div>
+    """
+    m.get_root().html.add_child(folium.Element(legend_html))
+    st_folium(m, width=700, height=500)
 
-    if st.button("＋", key="add_obs_circle",width="stretch"):
-        new_observation_dialog()
+# ---------------------------------------------------------
+# Controls
+# ---------------------------------------------------------
+with ctrl_col:
+    st.subheader("Actions")
+    if st.button("Create new observation"):
+        st.session_state["action"] = "create"
+        st.rerun()
+    if st.button("View / Edit observation"):
+        st.session_state["action"] = "view"
+        st.rerun()
+    if st.button("Delete observation"):
+        st.session_state["action"] = "delete"
+        st.rerun()
 
-    st.session_state.map_input_zoom = map_data["zoom"]
-    st.session_state.map_input_center = [map_data["center"]['lat'],map_data["center"]['lng']]
+action = st.session_state.get("action")
 
-    selected_obs = None
-    if map_data and map_data.get("last_object_clicked"):
-        click_lat = map_data["last_object_clicked"]["lat"]
-        click_lon = map_data["last_object_clicked"]["lng"]
-        selected_obs = find_clicked_observation(
-            click_lat, click_lon, st.session_state.observations
-        )
-        if selected_obs:
-            st.session_state.selected_obs_id = selected_obs["id"]
-        else:
-            st.session_state.selected_obs_id = None
+# ---------------------------------------------------------
+# Create observation
+# ---------------------------------------------------------
+if action == "create":
+    st.subheader("Create observation")
+    with st.form("create_obs"):
+        assignment = st.text_input("Assignment")
+        date = st.date_input("Date", value=datetime.utcnow().date())
+        species = st.text_input("Species")
+        behavior = st.text_input("Behavior")
+        function = st.text_input("Function")
+        description = st.text_area("Description")
+        lat = st.number_input("Latitude", format="%.6f")
+        lon = st.number_input("Longitude", format="%.6f")
+        media_file = st.file_uploader("Picture (optional)", type=["jpg", "jpeg", "png"])
+        submitted = st.form_submit_button("Save")
+
+    if submitted:
+        media_id = upload_media(media_file, user.get("username"), st.session_state["project"])
+        obs = {
+            "username": user.get("username"),
+            "project": st.session_state["project"],
+            "assignment": assignment,
+            "date": datetime.combine(date, datetime.min.time()).isoformat(),
+            "species": species,
+            "behavior": behavior,
+            "function": function,
+            "description": description,
+            "media_id": media_id,
+            "latitude": float(lat),
+            "longitude": float(lon),
+        }
+        if create_observation(obs):
+            st.success("Observation created")
+            del st.session_state["action"]
+            st.rerun()
+
+# ---------------------------------------------------------
+# View / edit observation
+# ---------------------------------------------------------
+elif action == "view":
+    st.subheader("View / Edit observation")
+    if df_obs.empty:
+        st.info("No observations for this project")
     else:
-        selected_obs = None
+        options = df_obs.apply(
+            lambda r: f"{r['id']} | {r.get('species','')} | {r.get('date','')}",
+            axis=1
+        ).tolist()
+        selected_label = st.selectbox("Observation", options)
+        selected_id = selected_label.split(" | ")[0]
+        obs_row = df_obs[df_obs["id"] == selected_id].iloc[0].to_dict()
 
-    st.subheader("Observations")
-    if not st.session_state.observations:
-        st.info("No observations yet. Use the circular button in the sidebar to create one.")
-        return
+        media_url = get_media_public_url(obs_row.get("media_id"))
+        if media_url:
+            st.markdown("Current picture:")
+            st.image(media_url, width=200)
 
-    if st.session_state.selected_obs_id is not None:
-        selected_obs = next(
-            (o for o in st.session_state.observations if o["id"] == st.session_state.selected_obs_id),
-            None,
-        )
+        with st.form("edit_obs"):
+            species = st.text_input("Species", value=obs_row.get("species", ""))
+            behavior = st.text_input("Behavior", value=obs_row.get("behavior", ""))
+            function = st.text_input("Function", value=obs_row.get("function", ""))
+            description = st.text_area("Description", value=obs_row.get("description", ""))
+            lat = st.number_input(
+                "Latitude",
+                value=float(obs_row.get("latitude") or 0.0),
+                format="%.6f"
+            )
+            lon = st.number_input(
+                "Longitude",
+                value=float(obs_row.get("longitude") or 0.0),
+                format="%.6f"
+            )
+            new_media_file = st.file_uploader("Replace picture (optional)", type=["jpg", "jpeg", "png"])
+            save = st.form_submit_button("Save changes")
 
-    if selected_obs:
-        st.table(
-            {
-                "Field": [
-                    "ID",
-                    "Species",
-                    "Project",
-                    "Username",
-                    "Behavior",
-                    "Date",
-                    "Latitude",
-                    "Longitude",
-                ],
-                "Value": [
-                    selected_obs.get("id"),
-                    selected_obs.get("species"),
-                    selected_obs.get("project"),
-                    selected_obs.get("username"),
-                    selected_obs.get("behavior"),
-                    selected_obs.get("date"),
-                    selected_obs.get("lat"),
-                    selected_obs.get("lon"),
-                ],
+        if save:
+            media_id = obs_row.get("media_id")
+            if new_media_file is not None:
+                media_id = upload_media(new_media_file, user.get("username"), st.session_state["project"])
+            updates = {
+                "species": species,
+                "behavior": behavior,
+                "function": function,
+                "description": description,
+                "latitude": float(lat),
+                "longitude": float(lon),
+                "media_id": media_id,
             }
-        )
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Edit observation"):
-                edit_observation_dialog(selected_obs)
-        with col2:
-            if st.button("Delete observation"):
-                delete_observation(selected_obs["id"])
-                st.success("Observation deleted.")
-                st.session_state.selected_obs_id = None
+            if update_observation(selected_id, updates):
+                st.success("Observation updated")
+                del st.session_state["action"]
                 st.rerun()
+
+# ---------------------------------------------------------
+# Delete observation
+# ---------------------------------------------------------
+elif action == "delete":
+    st.subheader("Delete observation")
+    if df_obs.empty:
+        st.info("No observations to delete")
     else:
-        st.info("Click on a marker on the map to see its details.")
+        options = df_obs.apply(
+            lambda r: f"{r['id']} | {r.get('species','')} | {r.get('date','')}",
+            axis=1
+        ).tolist()
+        selected_label = st.selectbox("Observation to delete", options)
+        selected_id = selected_label.split(" | ")[0]
+        if st.button("Confirm delete"):
+            if delete_observation(selected_id):
+                st.success("Observation deleted")
+                del st.session_state["action"]
+                st.rerun()
 
-
-# ----------------- ROUTING -----------------
-if not st.session_state.logged_in:
-    show_login()
-elif not st.session_state.project:
-    show_project_selection()
+# ---------------------------------------------------------
+# Observations table
+# ---------------------------------------------------------
+st.markdown("---")
+st.subheader("Observations table")
+if not df_obs.empty:
+    st.dataframe(
+        df_obs[
+            [
+                "id", "username", "assignment", "date", "species",
+                "behavior", "function", "description", "media_id",
+                "latitude", "longitude"
+            ]
+        ]
+    )
 else:
-    show_main_app()
+    st.info("No observations to display")
+
 
