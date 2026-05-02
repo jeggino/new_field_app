@@ -179,40 +179,59 @@ def load_observations(project_name: str):
 #         st.warning(f"Boundary file not found for project: {project_name}")
 #         return None
 
+import json
+
 def load_project_boundary(project_name):
+    """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
+
     filename = f"{project_name}.geojson"
 
     try:
-        response = supabase.storage.from_(BUCKET).download(filename)
-        if not response:
+        file_bytes = supabase.storage.from_(BUCKET).download(filename)
+        if not file_bytes:
             return None, None
 
-        geojson_str = response.decode("utf-8")
+        geojson_str = file_bytes.decode("utf-8")
         data = json.loads(geojson_str)
 
-        # Compute bounds
+        # Extract coordinates for bounds
         coords = []
 
         def extract_coords(geom):
-            if geom["type"] == "Polygon":
-                for ring in geom["coordinates"]:
+            t = geom["type"]
+            c = geom["coordinates"]
+
+            if t == "Polygon":
+                for ring in c:
                     coords.extend(ring)
-            elif geom["type"] == "MultiPolygon":
-                for poly in geom["coordinates"]:
+
+            elif t == "MultiPolygon":
+                for poly in c:
                     for ring in poly:
                         coords.extend(ring)
 
-        extract_coords(data["geometry"])
+        # GeoJSON may be Feature or FeatureCollection
+        if data.get("type") == "Feature":
+            extract_coords(data["geometry"])
 
-        lats = [c[1] for c in coords]
-        lngs = [c[0] for c in coords]
+        elif data.get("type") == "FeatureCollection":
+            for feature in data["features"]:
+                extract_coords(feature["geometry"])
+
+        if not coords:
+            return data, None
+
+        lats = [p[1] for p in coords]
+        lngs = [p[0] for p in coords]
 
         bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
 
         return data, bounds
 
-    except Exception:
+    except Exception as e:
+        st.warning(f"Could not load boundary for project '{project_name}': {e}")
         return None, None
+
 
 
 # ----------------- STORAGE HELPERS -----------------
@@ -562,7 +581,7 @@ def show_main_app():
     #         }
     #     ).add_to(m)
 
-    # Load boundary + bounds
+    # Load boundary
     boundary, bounds = load_project_boundary(st.session_state.project)
     
     if boundary:
@@ -577,8 +596,13 @@ def show_main_app():
             }
         ).add_to(m)
     
-        # Auto-zoom to polygon
-        m.fit_bounds(bounds)
+        if bounds:
+            m.fit_bounds(bounds)
+
+    st.write("DEBUG boundary:", boundary)
+    st.write("DEBUG bounds:", bounds)
+
+
 
 
     for obs in filtered:
