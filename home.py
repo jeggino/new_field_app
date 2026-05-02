@@ -6,6 +6,7 @@ from supabase import create_client, Client
 from datetime import datetime
 import uuid
 import json
+import pandas as pd
 
 
 
