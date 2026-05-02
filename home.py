@@ -32,6 +32,9 @@ CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/74
 OPACITY = 1
 WIDTH = 30
 
+# ----------------- LOGO --------------------------
+IMAGE = "image/logo.png"
+
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
     'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend','Winterverblijf','Paarverblijf (1/2)',
@@ -758,6 +761,7 @@ def main():
     elif not st.session_state.project:
         show_project_selection()
     else:
+        st.logo(IMAGE,  link=None, size="large", icon_image=IMAGE)
         show_main_app()
 
 
