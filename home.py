@@ -836,16 +836,18 @@ def show_main_app():
         species = obs.get("species", "")
         color = SPECIES_COLORS.get(species, "blue")
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
-        # shape = "circle" if animal_type == "bat" else "rectangle"
-        shape = "marker"
+
 
         marker_icon = BeautifyIcon(
             icon=icon,
-            icon_shape=shape,
+            icon_shape="marker",
             background_color=color,
-            border_color="black" if (animal_type == "bat" and BAT_BORDER) else color,
-            text_color="white"
+            border_color="black",
+            border_width=0.5,
+            text_color="black",
+            icon_size=[50, 50]   # <-- increase size here
         )
+
 
         popup_html = f"""
         <div style="
