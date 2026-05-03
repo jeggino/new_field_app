@@ -557,7 +557,6 @@ def edit_observation_dialog(obs):
 # ----------------- NEW OBSERVATION -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    time.sleep(0.4)  # delay
     st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
@@ -589,7 +588,9 @@ def new_observation_dialog():
     except Exception:
         lat, lon = base_center
 
-    obs_date = st.date_input("Date", value=datetime.utcnow().date())
+    with st.expander("Choose date"):
+         obs_date = st.date_input("Date", value=datetime.utcnow().date())
+   
     animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
 
     if animal_type == "bat":
