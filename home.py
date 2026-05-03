@@ -139,7 +139,6 @@ def logout():
 
 
 # ----------------- DATA HELPERS -----------------
-supabase.table("project_members").select("project").eq("user_id", user.id)
 
 def load_projects():
     user = st.session_state.user
@@ -147,7 +146,7 @@ def load_projects():
         return []
     res = (
         supabase
-        .table("project_members")
+        .table(PROJECTS_TABLE)
         .select("project")
         .eq("user_id", user.id)
         .execute()
