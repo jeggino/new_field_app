@@ -855,6 +855,9 @@ def show_main_app():
             <div style="font-weight: 600; font-size: 14px; color: #333;">
                 {obs.get('species', '')}
             </div>
+            <div style="font-size: 13px; color: #512; margin-top: 4px;">
+                {obs.get('date', '')}
+            </div>
             <div style="font-size: 12px; color: #666; margin-top: 4px;">
                 {obs.get('function', '')}
             </div>
