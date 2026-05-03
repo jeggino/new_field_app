@@ -65,16 +65,6 @@ BIRD_FUNCTIONS = [
     'vogel waarneming','nestlocatie','mogelijke nestlocatie'
 ]
 
-# ----------------- LLOCATION KLISTS --------------------
-BIRD_VERBLIJF = [
-    'geen / onbekend','onder dakpan bij de dakrand', 'op het dak','dakgoot', 'kantpan', 
-    'zonnepaneel', 'nokpan', 'nestkast',
-       'gevelbetimmering', 'openingen in dak', 'regenpijp','luchttoevoer', 'onder balkon',
-        'dakpan', 'spouwmuur', 'onder dakrand',
-       'raamkozijn', 'luik', 'schoorsteen', 'daklijst', 'dakkapel',
-       'in struweel / struiken', 'holte', 'op / bij nest in boom',
-       'scheur', 'vleermuiskast'
-]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
@@ -893,7 +883,7 @@ def show_main_app():
         # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
 
-        if color in ["darkred","darkblue","darkgreen","black","darkpurple","blue","purple"]:
+        if color in ["darkred","darkblue","darkgreen","black","blue","purple"]:
             text_color="lightgrey"
         else:
             text_color="black"
