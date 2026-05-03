@@ -853,15 +853,19 @@ def show_main_app():
         <div>
             <b>{obs.get('species','')}</b><br>
             {obs.get('function','')}
-            <span style="display:none">{obs['id']}</span>
         </div>
         """
+        
+        # Tooltip contains ONLY the ID (not visible on map)
+        tooltip_text = obs["id"]
         
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=popup_html,
+            tooltip=tooltip_text,   # <-- ID stored here
             icon=marker_icon,
         ).add_to(m)
+
 
 
     with st.container():
@@ -876,9 +880,10 @@ def show_main_app():
 
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_object_clicked_popup"):
-        popup_html = map_data["last_object_clicked_popup"]
-        obs_id = extract_id_from_popup(popup_html)
-        st.session_state.selected_obs_id = obs_id
+        obs_id = map_data.get("last_object_clicked_tooltip")
+        if obs_id:
+            st.session_state.selected_obs_id = obs_id
+
 
 
     st.sidebar.divider()
