@@ -838,17 +838,10 @@ def show_main_app():
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
 
 
-        marker_icon = BeautifyIcon(
-            icon=icon,
-            icon_shape="marker",
-            background_color=color,
-            border_color="black",
-            border_width=0.5,
-            text_color="black",
-            icon_size=[30, 30]   # <-- increase size here
-        )
-
-
+        # Create cluster group
+        cluster = MarkerCluster().add_to(m)
+        
+        # Styled popup
         popup_html = f"""
         <div style="
             background-color: white;
@@ -866,19 +859,30 @@ def show_main_app():
             </div>
         </div>
         """
-
-        
-        # Tooltip contains ONLY the ID (not visible on map)
+    
+        # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
-        
-        marker_group = MarkerCluster().add_to(m) 
-
+    
+        # BeautifyIcon marker
+        marker_icon = BeautifyIcon(
+            icon=icon,
+            icon_shape="marker",
+            background_color=color,
+            border_color="black",
+            border_width=0.7,
+            text_color="black",
+            icon_size=[30, 30],                 # marker size
+            inner_icon_style="font-size:18px;" # icon size
+        )
+    
+        # Add marker to cluster (NOT to map)
         folium.Marker(
-            [obs["lat"], obs["lon"]],
+            location=[obs["lat"], obs["lon"]],
             popup=popup_html,
-            tooltip=tooltip_text,   # <-- ID stored here
-            icon=marker_icon,
-        ).add_to(marker_group)
+            tooltip=tooltip_text,
+            icon=marker_icon
+        ).add_to(cluster)
+
 
 
 
