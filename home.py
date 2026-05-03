@@ -20,6 +20,20 @@ st.set_page_config(
 )
 
 
+hide_icons = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+button[title="View source"] {display: none;}
+a[href*="github"] {display: none !important;}
+</style>
+"""
+
+st.markdown(hide_icons, unsafe_allow_html=True)
+
+
+
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
