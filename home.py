@@ -479,9 +479,44 @@ def edit_observation_dialog(obs):
     username = st.text_input("Observer", value=obs.get("username", ""))
     
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
+#---------------------
+    st.write("Move the map to adjust the coordinates")
+    
+    # Start from the current observation location
+    edit_center = [obs["lat"], obs["lon"]]
+    
+    m = folium.Map(location=edit_center, zoom_start=18)
+    LocateControl(auto_start=False).add_to(m)
+    
+    # Crosshair overlay
+    crosshair_html = f"""
+    <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+    ">
+        <img src="{CROSS_IMAGE_PATH}"
+             style="width:{WIDTH}px; opacity:{OPACITY};">
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(crosshair_html))
+    
+    map_data = st_folium(m, width="100%", height=350)
+    
+    # Extract new coordinates from map center
+    try:
+        new_lat = map_data["center"]["lat"]
+        new_lon = map_data["center"]["lng"]
+    except:
+        new_lat, new_lon = obs["lat"], obs["lon"]
+    
+    st.write(f"**Latitude:** {new_lat:.6f}")
+    st.write(f"**Longitude:** {new_lon:.6f}")
 
-    lat = float(obs["lat"])
-    lon = float(obs["lon"])
+#------------
 
     if st.button("Update"):
         photo_url = obs.get("photo_url")
@@ -495,8 +530,8 @@ def edit_observation_dialog(obs):
             "behavior": behavior,
             "username": username,
             "date": str(obs_date),
-            "lat": lat,
-            "lon": lon,
+            "lat": float(new_lat),
+            "lon": float(new_lon),
             "photo_url": photo_url,
         }).eq("id", obs["id"]).execute()
 
