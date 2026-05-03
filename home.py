@@ -62,6 +62,17 @@ BIRD_FUNCTIONS = [
     'vogel waarneming','nestlocatie','mogelijke nestlocatie'
 ]
 
+# ----------------- LLOCATION KLISTS --------------------
+BIRD_VERBLIJF = [
+    'geen / onbekend','onder dakpan bij de dakrand', 'op het dak','dakgoot', 'kantpan', 
+    'zonnepaneel', 'nokpan', 'nestkast',
+       'gevelbetimmering', 'openingen in dak', 'regenpijp','luchttoevoer', 'onder balkon',
+        'dakpan', 'spouwmuur', 'onder dakrand',
+       'raamkozijn', 'luik', 'schoorsteen', 'daklijst', 'dakkapel',
+       'in struweel / struiken', 'holte', 'op / bij nest in boom',
+       'scheur', 'vleermuiskast'
+]
+
 # ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
     "vleermuis waarneming": "info-sign",
@@ -391,6 +402,12 @@ def edit_observation_dialog(obs):
     if obs.get("photo_url"):
         st.image(obs["photo_url"], width=250, caption="Current photo")
 
+    try:
+        d = datetime.fromisoformat(obs["date"]).date()
+    except:
+        d = datetime.utcnow().date()
+        
+    obs_date = st.date_input("Date", value=d)
     animal_type = obs.get("animal_type", "bat")
     animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if animal_type == "bat" else 1)
 
@@ -412,19 +429,13 @@ def edit_observation_dialog(obs):
     species = st.selectbox("Species", species_list, index=species_list.index(species_value))
     function = st.selectbox("Function", func_list, index=func_list.index(function_value))
 
-    behavior = st.text_input("Behavior", value=obs.get("behavior", ""))
+    behavior = st.text_input("Behavior/Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
-
-    try:
-        d = datetime.fromisoformat(obs["date"]).date()
-    except:
-        d = datetime.utcnow().date()
-
-    obs_date = st.date_input("Date", value=d)
+    
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
-    lat = st.number_input("Latitude", value=float(obs["lat"]))
-    lon = st.number_input("Longitude", value=float(obs["lon"]))
+    lat = float(obs["lat"])
+    lon = float(obs["lon"])
 
     if st.button("Update"):
         photo_url = obs.get("photo_url")
@@ -486,18 +497,20 @@ def new_observation_dialog():
     except Exception:
         lat, lon = base_center
 
+    obs_date = st.date_input("Date", value=datetime.utcnow().date())
     animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
         function = st.selectbox("Function", BAT_FUNCTIONS)
+        
     else:
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS)
 
-    behavior = st.text_input("Behavior")
-    username = st.text_input("Observer", value=st.session_state.user.email)
-    obs_date = st.date_input("Date", value=datetime.utcnow().date())
+    behavior = st.text_input("Behavior/Comments")
+    username = st.session_state.user.email
+    
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
     if st.button("Save observation"):
