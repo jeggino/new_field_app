@@ -8,6 +8,7 @@ import uuid
 import json
 import pandas as pd
 import re
+import time
 
 
 
@@ -338,6 +339,7 @@ def show_legend():
 # ----------------- EDIT OBSERVATION -----------------
 @st.dialog("Daily Report")
 def daily_report_dialog():
+    time.sleep(0.1)  # delay
     st.write("Fill in the daily report.")
 
     kind = st.selectbox("Kind", REPORT_KINDS)
@@ -450,6 +452,7 @@ def show_reports_dialog():
 
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
+    time.sleep(0.1)  # delay
     st.write("Move the map to adjust the coordinates")
     
     # Start from the current observation location
@@ -554,6 +557,7 @@ def edit_observation_dialog(obs):
 # ----------------- NEW OBSERVATION -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
+    time.sleep(0.1)  # delay
     st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
