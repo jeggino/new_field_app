@@ -845,7 +845,7 @@ def show_main_app():
             border_color="black",
             border_width=0.5,
             text_color="black",
-            icon_size=[50, 50]   # <-- increase size here
+            icon_size=[30, 30]   # <-- increase size here
         )
 
 
