@@ -303,6 +303,9 @@ def daily_report_dialog():
 
     kind = st.selectbox("Kind", REPORT_KINDS)
     date = st.date_input("Date", value=datetime.utcnow().date())
+    # NEW: start and end time
+    start_time = st.time_input("Start Time")
+    end_time = st.time_input("End Time")
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=0.1)
@@ -316,6 +319,8 @@ def daily_report_dialog():
             "date": str(date),
             "operator": operator,
             "extra_operator": extra_operator,
+            "start_time": str(start_time),
+            "end_time": str(end_time),
             "temperature": temperature,
             "wind": wind,
             "rain": rain,
@@ -330,7 +335,6 @@ def daily_report_dialog():
 def show_reports_dialog():
     st.subheader("Select a report to view or edit")
 
-    # Fetch reports
     res = (
         supabase.table("report")
         .select("*")
@@ -344,18 +348,27 @@ def show_reports_dialog():
         st.info("No reports yet.")
         return
 
-    # Dropdown to choose report
-    report_map = {f"{r['kind']} - {r['date']}": r for r in reports}
+    # Dropdown
+    report_map = {
+        f"{r['kind']} - {r['date']}": r
+        for r in reports
+    }
     selected_label = st.selectbox("Choose report", list(report_map.keys()))
     report = report_map[selected_label]
 
     "---"
-
+    
     # Editable fields
-    kind = st.selectbox("Kind", REPORT_KINDS, index=REPORT_KINDS.index(report["kind"]))
+    kind = st.selectbox("Kind", REPORT_KINDS,
+                        index=REPORT_KINDS.index(report["kind"]))
+
     date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
+    # NEW: start + end time
+    start_time = st.time_input("Start Time", value=datetime.strptime(report.get("start_time", "00:00"), "%H:%M").time())
+    end_time = st.time_input("End Time", value=datetime.strptime(report.get("end_time", "00:00"), "%H:%M").time())
     operator = st.text_input("Operator", value=report["operator"])
     extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
+
     temperature = st.number_input("Temperature (°C)", step=0.1, value=float(report.get("temperature") or 0))
     wind = st.text_input("Wind", value=report.get("wind", ""))
     rain = st.text_input("Rain", value=report.get("rain", ""))
@@ -368,6 +381,8 @@ def show_reports_dialog():
             "date": str(date),
             "operator": operator,
             "extra_operator": extra_operator,
+            "start_time": str(start_time),
+            "end_time": str(end_time),
             "temperature": temperature,
             "wind": wind,
             "rain": rain,
@@ -384,7 +399,6 @@ def show_reports_dialog():
         st.rerun()
 
     # CSV download
-    import pandas as pd
     df = pd.DataFrame(reports)
     st.download_button(
         "Download All Reports (CSV)",
