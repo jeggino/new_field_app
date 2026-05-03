@@ -37,7 +37,8 @@ IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_L
 
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
-    'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend','Winterverblijf','Paarverblijf (1/2)',
+    'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend (1/3)', 'Kraamverblijf Ochtend (2/3)', 'Kraamverblijf Ochtend (3/3)',
+    'Winterverblijf','Paarverblijf (1/2)',
     'Paarverblijf (2/2)', 'Huismus (1/2)','Huismus (2/2)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)'
 ]
 # ----------------- SPECIES LISTS -----------------
