@@ -843,31 +843,9 @@ def show_main_app():
         cluster = MarkerCluster().add_to(m)
         
         # Styled popup
-        # popup_html = f"""
-        # <div style="
-        #     background-color: white;
-        #     padding: 8px 12px;
-        #     border-radius: 8px;
-        #     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-        #     font-family: sans-serif;
-        #     width: 180px;
-        # ">
-        #     <div style="font-weight: 600; font-size: 14px; color: #333;">
-        #         {obs.get('species', '')}
-        #     </div>
-        #     <div style="font-size: 13px; color: #512; margin-top: 4px;">
-        #         {obs.get('date', '')}
-        #     </div>
-        #     <div style="font-size: 12px; color: #666; margin-top: 4px;">
-        #         {obs.get('function', '')}
-        #     </div>
-        #     <div style="font-size: 12px; color: #830; margin-top: 4px;">
-        #         {obs.get('behavior', '')}
-        #     </div>
-        # </div>
-        # """
 
-# Styled popup with colored border matching the marker color
+
+        # Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
@@ -897,7 +875,7 @@ def show_main_app():
             </div>
         
             <div style="
-                font-size: 13px;
+                font-size: 12px;
                 color: #555;
                 margin-bottom: 4px;
             ">
@@ -905,10 +883,10 @@ def show_main_app():
             </div>
         
             <div style="
-                font-size: 13px;
+                font-size: 11px;
                 color: #666;
             ">
-                <b>Behavior:</b> {obs.get('behavior', '')}
+                <b>Comment:</b> {obs.get('behavior', '')}
             </div>
         </div>
         """
