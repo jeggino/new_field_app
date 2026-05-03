@@ -574,20 +574,35 @@ def show_signup():
 def show_project_selection():
     st.sidebar.title("Select Project")
 
-    projects = load_projects()
-    if not projects:
-        st.sidebar.warning("No projects found for this user.")
+    # Fetch projects the user is a member of
+    res = (
+        supabase.table("project_members")
+        .select("project")
+        .eq("user_id", st.session_state.user.id)
+        .execute()
+    )
+
+    rows = res.data or []
+
+    if not rows:
+        st.sidebar.warning("You are not a member of any project.")
         return
 
-    project_names = [p["name"] for p in projects]
+    # Extract project names
+    project_names = [row["project"] for row in rows]
+
     selected = st.sidebar.selectbox("Project", project_names)
 
     if st.sidebar.button("Confirm project"):
         st.session_state.project = selected
+
+        # Save project in user metadata
         supabase.auth.update_user({"data": {"project": selected}})
+
         load_observations(selected)
         st.session_state.changing_project = False
         st.rerun()
+
 
 
 
