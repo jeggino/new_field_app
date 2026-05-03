@@ -821,7 +821,7 @@ def show_main_app():
             name="Boundary",
             style_function=lambda x: {
                 "fillColor": "#ffcc00",
-                "color": "#ff8800",
+                "color": "red",
                 "weight": 2,
                 "fillOpacity": 0.1,
             }
@@ -872,7 +872,7 @@ def show_main_app():
             border_width=0.7,
             text_color="black",
             icon_size=[30, 30],                 # marker size
-            inner_icon_style="font-size:18px;" # icon size
+            inner_icon_style="font-size:12px;" # icon size
         )
     
         # Add marker to cluster (NOT to map)
