@@ -7,6 +7,8 @@ from datetime import datetime, time
 import uuid
 import json
 import pandas as pd
+import re
+
 
 
 
@@ -271,6 +273,12 @@ def upload_photo(file):
         return None
 
 # ----------------- HELPER FUNCTION -------------
+def extract_id_from_popup(popup_html):
+    if not popup_html:
+        return None
+    match = re.search(r"<span style=\"display:none\">(.*?)</span>", popup_html)
+    return match.group(1) if match else None
+
 def parse_time_safe(value):
     """Convert a Supabase time string into a Python time object safely."""
     if not value:
@@ -844,11 +852,20 @@ def show_main_app():
             text_color="white"
         )
 
+        popup_html = f"""
+        <div>
+            <b>{obs.get('species','')}</b><br>
+            {obs.get('function','')}
+            <span style="display:none">{obs['id']}</span>
+        </div>
+        """
+        
         folium.Marker(
             [obs["lat"], obs["lon"]],
-            popup=f"{str(obs["id"])}",
+            popup=popup_html,
             icon=marker_icon,
         ).add_to(m)
+
 
     with st.container():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
@@ -862,7 +879,10 @@ def show_main_app():
 
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_object_clicked_popup"):
-        st.session_state.selected_obs_id = str(map_data["last_object_clicked_popup"])
+        popup_html = map_data["last_object_clicked_popup"]
+        obs_id = extract_id_from_popup(popup_html)
+        st.session_state.selected_obs_id = obs_id
+
 
     st.sidebar.divider()
     
