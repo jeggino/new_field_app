@@ -859,7 +859,7 @@ def show_main_app():
                 {obs.get('function', '')}
             </div>
             <div style="font-size: 12px; color: #830; margin-top: 4px;">
-                {obs.get('behaviour', '')}
+                {obs.get('behavior', '')}
             </div>
         </div>
         """
