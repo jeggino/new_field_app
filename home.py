@@ -3,7 +3,7 @@ from streamlit_folium import st_folium
 import folium
 from folium.plugins import LocateControl, BeautifyIcon
 from supabase import create_client, Client
-from datetime import datetime
+from datetime import datetime, time
 import uuid
 import json
 import pandas as pd
@@ -270,6 +270,38 @@ def upload_photo(file):
         st.error(f"Upload failed: {e}")
         return None
 
+# ----------------- HELPER FUNCTION -------------
+def parse_time_safe(value):
+    """Convert a Supabase time string into a Python time object safely."""
+    if not value:
+        return time(0, 0)
+
+    value = value.strip()
+
+    # If already a time object
+    if isinstance(value, time):
+        return value
+
+    # Try HH:MM
+    try:
+        return datetime.strptime(value, "%H:%M").time()
+    except:
+        pass
+
+    # Try HH:MM:SS
+    try:
+        return datetime.strptime(value, "%H:%M:%S").time()
+    except:
+        pass
+
+    # Try HH:MM:SS.microseconds
+    try:
+        return datetime.strptime(value, "%H:%M:%S.%f").time()
+    except:
+        pass
+
+    # Fallback
+    return time(0, 0)
 
 # ----------------- MAP HELPERS -----------------
 def _get_center_from_map_data(map_data, fallback_center):
@@ -304,8 +336,8 @@ def daily_report_dialog():
     kind = st.selectbox("Kind", REPORT_KINDS)
     date = st.date_input("Date", value=datetime.utcnow().date())
     # NEW: start and end time
-    start_time = st.time_input("Start Time")
-    end_time = st.time_input("End Time")
+    start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
+    end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=0.1)
