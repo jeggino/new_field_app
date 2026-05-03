@@ -1,15 +1,13 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from folium.plugins import LocateControl, BeautifyIcon
+from folium.plugins import LocateControl, BeautifyIcon, MarkerCluster
 from supabase import create_client, Client
 from datetime import datetime, time
 import uuid
 import json
 import pandas as pd
 import re
-
-
 
 
 
@@ -850,21 +848,35 @@ def show_main_app():
         )
 
         popup_html = f"""
-        <div>
-            <b>{obs.get('species','')}</b><br>
-            {obs.get('function','')}
+        <div style="
+            background-color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            font-family: sans-serif;
+            width: 180px;
+        ">
+            <div style="font-weight: 600; font-size: 14px; color: #333;">
+                {obs.get('species', '')}
+            </div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                {obs.get('function', '')}
+            </div>
         </div>
         """
+
         
         # Tooltip contains ONLY the ID (not visible on map)
         tooltip_text = obs["id"]
         
+        marker_group = MarkerCluster().add_to(m) 
+
         folium.Marker(
             [obs["lat"], obs["lon"]],
             popup=popup_html,
             tooltip=tooltip_text,   # <-- ID stored here
             icon=marker_icon,
-        ).add_to(m)
+        ).add_to(marker_group)
 
 
 
