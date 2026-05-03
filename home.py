@@ -255,23 +255,29 @@ def upload_photo(file):
         return None
 
     try:
-        file_bytes = file.read()
+        # Read file bytes safely
+        file_bytes = file.getvalue()
         if not file_bytes:
             return None
 
-        ext = file.name.split(".")[-1]
+        # Build unique filename
+        ext = file.name.split(".")[-1].lower()
         file_id = f"{uuid.uuid4()}.{ext}"
 
+        # Upload to Supabase
         supabase.storage.from_(BUCKET).upload(
             file_id,
-            {"file": file_bytes},
+            file_bytes,
+            file_options={"content-type": f"image/{ext}"}
         )
 
+        # Return public URL
         return supabase.storage.from_(BUCKET).get_public_url(file_id)
 
     except Exception as e:
         st.error(f"Upload failed: {e}")
         return None
+
 
 # ----------------- HELPER FUNCTION -------------
 def extract_id_from_popup(popup_html):
