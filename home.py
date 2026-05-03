@@ -338,6 +338,8 @@ def show_reports_dialog():
     selected_label = st.selectbox("Choose report", list(report_map.keys()))
     report = report_map[selected_label]
 
+    "---"
+
     # Editable fields
     kind = st.selectbox("Kind", REPORT_KINDS, index=REPORT_KINDS.index(report["kind"]))
     date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
