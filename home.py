@@ -336,8 +336,8 @@ def daily_report_dialog():
     kind = st.selectbox("Kind", REPORT_KINDS)
     date = st.date_input("Date", value=datetime.utcnow().date())
     # NEW: start and end time
-    start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
-    end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
+    start_time = st.time_input("Start Time")
+    end_time = st.time_input("End Time")
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=0.1)
@@ -396,8 +396,8 @@ def show_reports_dialog():
 
     date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
     # NEW: start + end time
-    start_time = st.time_input("Start Time", value=datetime.strptime(report.get("start_time", "00:00"), "%H:%M").time())
-    end_time = st.time_input("End Time", value=datetime.strptime(report.get("end_time", "00:00"), "%H:%M").time())
+    start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
+    end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
     operator = st.text_input("Operator", value=report["operator"])
     extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
 
