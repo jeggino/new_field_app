@@ -75,16 +75,16 @@ BIRD_VERBLIJF = [
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
-    "vleermuis waarneming": "info-sign",
+    "vleermuis waarneming": "walkie-talkie",
     "zomerverblijfplaats": "sun",
-    "kraamverblijfplaats": "heart",
-    "paarverblijfplaats": "star",
+    "kraamverblijfplaats": "venus",
+    "paarverblijfplaats": "heart",
     "winterverblijfplaats": "snowflake",
-    "vleermuiskast": "home",
-    "zender": "signal",
+    "vleermuiskast": "box-archive",
+    "zender": "tower-broadcast",
 
-    "vogel waarneming": "info-sign",
-    "nestlocatie": "home",
+    "vogel waarneming": "binoculars",
+    "nestlocatie": "egg",
     "mogelijke nestlocatie": "question-sign",
 }
 
@@ -820,7 +820,7 @@ def show_main_app():
                 "fillColor": "#ffcc00",
                 "color": "#ff8800",
                 "weight": 2,
-                "fillOpacity": 0.15,
+                "fillOpacity": 0.1,
             }
         ).add_to(m)
     
