@@ -843,29 +843,76 @@ def show_main_app():
         cluster = MarkerCluster().add_to(m)
         
         # Styled popup
+        # popup_html = f"""
+        # <div style="
+        #     background-color: white;
+        #     padding: 8px 12px;
+        #     border-radius: 8px;
+        #     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        #     font-family: sans-serif;
+        #     width: 180px;
+        # ">
+        #     <div style="font-weight: 600; font-size: 14px; color: #333;">
+        #         {obs.get('species', '')}
+        #     </div>
+        #     <div style="font-size: 13px; color: #512; margin-top: 4px;">
+        #         {obs.get('date', '')}
+        #     </div>
+        #     <div style="font-size: 12px; color: #666; margin-top: 4px;">
+        #         {obs.get('function', '')}
+        #     </div>
+        #     <div style="font-size: 12px; color: #830; margin-top: 4px;">
+        #         {obs.get('behavior', '')}
+        #     </div>
+        # </div>
+        # """
+
+# Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            font-family: sans-serif;
-            width: 180px;
+            font-family: 'Arial', sans-serif;
+            width: 200px;
+            border: 3px solid {color};   /* MATCH DAY COLOR */
         ">
-            <div style="font-weight: 600; font-size: 14px; color: #333;">
+            <div style="
+                font-weight: 700;
+                font-size: 15px;
+                color: {color};           /* MATCH DAY COLOR */
+                margin-bottom: 6px;
+                text-align: center;
+            ">
                 {obs.get('species', '')}
             </div>
-            <div style="font-size: 13px; color: #512; margin-top: 4px;">
-                {obs.get('date', '')}
+        
+            <div style="
+                font-size: 13px;
+                color: #444;
+                margin-bottom: 4px;
+            ">
+                <b>Date:</b> {obs.get('date', '')}
             </div>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">
-                {obs.get('function', '')}
+        
+            <div style="
+                font-size: 13px;
+                color: #555;
+                margin-bottom: 4px;
+            ">
+                <b>Function:</b> {obs.get('function', '')}
             </div>
-            <div style="font-size: 12px; color: #830; margin-top: 4px;">
-                {obs.get('behavior', '')}
+        
+            <div style="
+                font-size: 13px;
+                color: #666;
+            ">
+                <b>Behavior:</b> {obs.get('behavior', '')}
             </div>
         </div>
         """
+
     
         # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
