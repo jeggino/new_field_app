@@ -24,7 +24,7 @@ st.set_page_config(
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
-PROJECTS_TABLE = "project_members"
+PROJECTS_TABLE = "project"
 OBS_TABLE = "observations"
 BUCKET = "observation_photos"
 
