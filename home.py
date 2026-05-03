@@ -906,7 +906,7 @@ def show_main_app():
             background_color=color,
             border_color="black",
             border_width=0.7,
-            text_color="black",
+            text_color=text_color,
             icon_size=[30, 30],                 # marker size
             inner_icon_style="font-size:15px;" # icon size
         )
