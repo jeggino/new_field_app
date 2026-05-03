@@ -892,7 +892,13 @@ def show_main_app():
     
         # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
-    
+
+        if color in ["darkred","darkblue","darkgreen","black","darkpurple","blue"]:
+            text_color="lightgrey"
+        else:
+            text_color="black"
+            
+        
         # BeautifyIcon marker
         marker_icon = BeautifyIcon(
             icon=icon,
