@@ -490,9 +490,6 @@ def edit_observation_dialog(obs):
         new_lon = map_data["center"]["lng"]
     except:
         new_lat, new_lon = obs["lat"], obs["lon"]
-    
-    st.write(f"**Latitude:** {new_lat:.6f}")
-    st.write(f"**Longitude:** {new_lon:.6f}")
 
     if obs.get("photo_url"):
         st.image(obs["photo_url"], width=250, caption="Current photo")
