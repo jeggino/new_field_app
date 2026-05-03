@@ -334,7 +334,7 @@ def show_reports_dialog():
         return
 
     # Dropdown to choose report
-    report_map = {f"{r['kind'] - {r['date']}}": r for r in reports}
+    report_map = {f"{r['kind']} - {r['date']}": r for r in reports}
     selected_label = st.selectbox("Choose report", list(report_map.keys()))
     report = report_map[selected_label]
 
