@@ -858,6 +858,9 @@ def show_main_app():
             <div style="font-size: 12px; color: #666; margin-top: 4px;">
                 {obs.get('function', '')}
             </div>
+            <div style="font-size: 12px; color: #830; margin-top: 4px;">
+                {obs.get('behaviour', '')}
+            </div>
         </div>
         """
     
