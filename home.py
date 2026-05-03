@@ -557,7 +557,7 @@ def edit_observation_dialog(obs):
 # ----------------- NEW OBSERVATION -----------------
 @st.dialog("New Observation")
 def new_observation_dialog():
-    time.sleep(0.1)  # delay
+    time.sleep(0.4)  # delay
     st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
