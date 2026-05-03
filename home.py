@@ -732,8 +732,8 @@ def show_main_app():
 
     st.sidebar.divider()
 
-    if st.sidebar.button("Legend"):
-        show_legend()
+    # if st.sidebar.button("Legend"):
+    #     show_legend()
     
 
     st.sidebar.header("Filters")
