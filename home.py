@@ -20,17 +20,6 @@ st.set_page_config(
 )
 
 
-hide_icons = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-button[title="View source"] {display: none;}
-a[href*="github"] {display: none !important;}
-</style>
-"""
-
-st.markdown(hide_icons, unsafe_allow_html=True)
-
 
 
 
