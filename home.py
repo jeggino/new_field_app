@@ -24,7 +24,6 @@ hide_icons = """
 <style>
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: hidden;}
 button[title="View source"] {display: none;}
 a[href*="github"] {display: none !important;}
 </style>
