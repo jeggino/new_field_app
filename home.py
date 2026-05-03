@@ -24,7 +24,7 @@ st.set_page_config(
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
-PROJECTS_TABLE = "projects"
+PROJECTS_TABLE = "project_members"
 OBS_TABLE = "observations"
 BUCKET = "observation_photos"
 
@@ -139,14 +139,16 @@ def logout():
 
 
 # ----------------- DATA HELPERS -----------------
+supabase.table("project_members").select("project").eq("user_id", user.id)
+
 def load_projects():
     user = st.session_state.user
     if not user:
         return []
     res = (
         supabase
-        .table(PROJECTS_TABLE)
-        .select("*")
+        .table("project_members")
+        .select("project")
         .eq("user_id", user.id)
         .execute()
     )
@@ -316,8 +318,9 @@ def daily_report_dialog():
 
 @st.dialog("Daily Reports")
 def show_reports_dialog():
-    st.subheader("Reports for this project")
+    st.subheader("Select a report to view or edit")
 
+    # Fetch reports
     res = (
         supabase.table("report")
         .select("*")
@@ -325,24 +328,59 @@ def show_reports_dialog():
         .order("date", desc=True)
         .execute()
     )
-
     reports = res.data or []
 
     if not reports:
         st.info("No reports yet.")
         return
 
+    # Dropdown to choose report
+    report_map = {f"{r['kind'] - {r['date']}}": r for r in reports}
+    selected_label = st.selectbox("Choose report", list(report_map.keys()))
+    report = report_map[selected_label]
+
+    # Editable fields
+    kind = st.selectbox("Kind", REPORT_KINDS, index=REPORT_KINDS.index(report["kind"]))
+    date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
+    operator = st.text_input("Operator", value=report["operator"])
+    extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
+    temperature = st.number_input("Temperature (°C)", step=0.1, value=float(report.get("temperature") or 0))
+    wind = st.text_input("Wind", value=report.get("wind", ""))
+    rain = st.text_input("Rain", value=report.get("rain", ""))
+    comment = st.text_area("Comment", value=report.get("comment", ""))
+
+    # Save changes
+    if st.button("Save Changes"):
+        supabase.table("report").update({
+            "kind": kind,
+            "date": str(date),
+            "operator": operator,
+            "extra_operator": extra_operator,
+            "temperature": temperature,
+            "wind": wind,
+            "rain": rain,
+            "comment": comment
+        }).eq("id", report["id"]).execute()
+
+        st.success("Report updated.")
+        st.rerun()
+
+    # Delete
+    if st.button("Delete Report"):
+        supabase.table("report").delete().eq("id", report["id"]).execute()
+        st.success("Report deleted.")
+        st.rerun()
+
+    # CSV download
     import pandas as pd
     df = pd.DataFrame(reports)
-
-    st.dataframe(df, use_container_width=True)
-
     st.download_button(
-        "Download CSV",
+        "Download All Reports (CSV)",
         df.to_csv(index=False).encode("utf-8"),
         file_name=f"{st.session_state.project}_reports.csv",
         mime="text/csv"
     )
+
 
 
 @st.dialog("Edit Observation")
