@@ -8,7 +8,6 @@ import uuid
 import json
 import pandas as pd
 import re
-import time
 
 
 
@@ -320,30 +319,15 @@ def _get_center_from_map_data(map_data, fallback_center):
     return [map_data["center"]["lat"], map_data["center"]["lng"]]
 
 
-# ----------------- LEGEND -----------------
-@st.dialog("Legend")
-def show_legend():
-    st.subheader("Animal Type (shape)")
-    st.write("🟣 **Circle** = Bat")
-    st.write("🟩 **Square** = Bird")
-
-    st.subheader("Species Colors")
-    for sp, col in SPECIES_COLORS.items():
-        st.write(f"● <span style='color:{col}'>{sp}</span>", unsafe_allow_html=True)
-
-    st.subheader("Function Icons")
-    for func, icon in FUNCTION_ICONS.items():
-        st.write(f"🔹 {func} → {icon}")
-
 
 # ----------------- EDIT OBSERVATION -----------------
 @st.dialog("Daily Report")
 def daily_report_dialog():
-    time.sleep(0.1)  # delay
     st.write("Fill in the daily report.")
 
     kind = st.selectbox("Kind", REPORT_KINDS)
-    date = st.date_input("Date", value=datetime.utcnow().date())
+    with st.expander("Choose date"):
+        date = st.date_input("Date", value=datetime.utcnow().date())
     # NEW: start and end time
     start_time = st.time_input("Start Time")
     end_time = st.time_input("End Time")
@@ -402,8 +386,8 @@ def show_reports_dialog():
     # Editable fields
     kind = st.selectbox("Kind", REPORT_KINDS,
                         index=REPORT_KINDS.index(report["kind"]))
-
-    date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
+    with st.expander("Edit date"):
+        date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
     # NEW: start + end time
     start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
     end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
@@ -452,7 +436,6 @@ def show_reports_dialog():
 
 @st.dialog("Edit Observation")
 def edit_observation_dialog(obs):
-    time.sleep(0.1)  # delay
     st.write("Move the map to adjust the coordinates")
     
     # Start from the current observation location
@@ -501,7 +484,9 @@ def edit_observation_dialog(obs):
     except:
         d = datetime.utcnow().date()
         
-    obs_date = st.date_input("Date", value=d)
+    with st.expander("Edit date"):
+        obs_date = st.date_input("Date", value=d)
+        
     animal_type = obs.get("animal_type", "bat")
     animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if animal_type == "bat" else 1)
 
