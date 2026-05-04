@@ -22,10 +22,8 @@ page = st.sidebar.radio(
     "Go to:",
     [
         "Create Project",
-        "View Projects",
-        "View Project Members",
+        "Projects",
         "User Project Overview",
-        "Edit Project",
     ],
 )
 
@@ -38,6 +36,27 @@ def load_users():
         return res.data or []
     except Exception:
         return []
+
+
+# ---------------------------------------------------------
+# HELPER: GET BOUNDS FROM GEOJSON
+# ---------------------------------------------------------
+def get_bounds(geojson_obj):
+    geom = geojson_obj.get("geometry", geojson_obj)
+    coords = []
+
+    if geom["type"] == "Polygon":
+        coords = geom["coordinates"][0]
+    elif geom["type"] == "MultiPolygon":
+        for poly in geom["coordinates"]:
+            coords.extend(poly[0])
+
+    if not coords:
+        return None
+
+    lats = [c[1] for c in coords]
+    lons = [c[0] for c in coords]
+    return [[min(lats), min(lons)], [max(lats), max(lons)]]
 
 
 # ---------------------------------------------------------
@@ -115,11 +134,14 @@ When you click *Save Project*:
                 safe_name = project_name.replace(" ", "_")
                 filename = f"{safe_name}.geojson"
 
-                # Upload polygon file
+                # Upload polygon file (overwrite if exists)
                 supabase.storage.from_(BUCKET).upload(
                     filename,
                     geojson_str.encode("utf-8"),
-                    file_options={"content-type": "application/geo+json"},
+                    file_options={
+                        "content-type": "application/geo+json",
+                        "upsert": "true",
+                    },
                 )
 
                 # Insert project with safe_name
@@ -148,76 +170,12 @@ When you click *Save Project*:
         st.info("Draw a polygon, fill in all fields, and select users to save the project.")
 
 # ---------------------------------------------------------
-# PAGE 2 — VIEW PROJECTS
+# PAGE 2 — PROJECTS (VIEW + EDIT)
 # ---------------------------------------------------------
-elif page == "View Projects":
-    st.title("Projects Table")
-    try:
-        res = supabase.table("projects").select("*").execute()
-        st.dataframe(res.data)
-    except Exception as e:
-        st.error(f"Error loading projects: {e}")
+elif page == "Projects":
+    st.title("Projects")
 
-# ---------------------------------------------------------
-# PAGE 3 — VIEW PROJECT MEMBERS
-# ---------------------------------------------------------
-elif page == "View Project Members":
-    st.title("Project Members Table")
-    try:
-        members = supabase.table("project_members").select("*").execute().data
-        users = load_users()
-        user_lookup = {u["id"]: u["email"] for u in users}
-
-        for m in members:
-            m["email"] = user_lookup.get(m["user_id"], "Unknown")
-
-        st.dataframe(members)
-    except Exception as e:
-        st.error(f"Error loading project members: {e}")
-
-# ---------------------------------------------------------
-# PAGE 4 — USER PROJECT OVERVIEW
-# ---------------------------------------------------------
-elif page == "User Project Overview":
-    st.title("User Project Overview")
-
-    try:
-        users = load_users()
-        user_lookup = {u["id"]: u["email"] for u in users}
-
-        members = supabase.table("project_members").select("*").execute().data
-
-        overview = {}
-        for m in members:
-            uid = m["user_id"]
-            pname = m["project"]
-            email = user_lookup.get(uid, "Unknown")
-
-            if email not in overview:
-                overview[email] = []
-            overview[email].append(pname)
-
-        rows = []
-        for email, plist in overview.items():
-            rows.append(
-                {
-                    "email": email,
-                    "number_of_projects": len(plist),
-                    "projects": ", ".join(plist),
-                }
-            )
-
-        st.dataframe(rows)
-
-    except Exception as e:
-        st.error(f"Error loading overview: {e}")
-
-# ---------------------------------------------------------
-# PAGE 5 — EDIT PROJECT (REPLACE MODE)
-# ---------------------------------------------------------
-elif page == "Edit Project":
-    st.title("Edit Project and Polygon")
-
+    # List all projects
     try:
         projects_res = supabase.table("projects").select("*").execute()
         projects = projects_res.data or []
@@ -226,37 +184,50 @@ elif page == "Edit Project":
         projects = []
 
     if not projects:
-        st.info("No projects available to edit.")
+        st.info("No projects available.")
     else:
+        st.subheader("All projects")
+        st.dataframe(projects)
+
+        st.subheader("View and edit a project")
+
         project_names = {p["name"]: p for p in projects}
         selected_project_name = st.selectbox(
-            "Select a project to edit", list(project_names.keys())
+            "Select a project", list(project_names.keys())
         )
 
         project = project_names[selected_project_name]
-        project_name = project["name"]  # immutable because of FK
+        project_name = project["name"]  # fixed (FK)
         current_description = project.get("description", "")
 
-        st.write(f"Project name (fixed due to foreign key): `{project_name}`")
-        st.write(f"Current file name: `{project_name}.geojson`")
-
-        # Try to load existing polygon from bucket
-        existing_geojson = None
+        st.write(f"Project name (fixed): `{project_name}`")
         filename = f"{project_name}.geojson"
+        st.write(f"Related file: `{filename}`")
+
+        # Load existing polygon
+        existing_geojson = None
         try:
             file_bytes = supabase.storage.from_(BUCKET).download(filename)
             existing_geojson = json.loads(file_bytes.decode("utf-8"))
         except Exception:
             st.warning("Could not load existing polygon file. You can create a new one.")
 
-        st.subheader("1. Edit polygon (replace mode)")
+        st.subheader("1. Polygon (old in red, new replaces it)")
 
         # Create map
         m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
-        # Show existing polygon if available
+        # Show existing polygon in red and zoom to it
         if existing_geojson is not None:
-            folium.GeoJson(existing_geojson, name="Existing Polygon").add_to(m)
+            folium.GeoJson(
+                existing_geojson,
+                name="Existing Polygon",
+                style_function=lambda x: {"color": "red"},
+            ).add_to(m)
+
+            bounds = get_bounds(existing_geojson)
+            if bounds:
+                m.fit_bounds(bounds)
 
         draw = Draw(
             draw_options={
@@ -281,6 +252,7 @@ elif page == "Edit Project":
 
         st.markdown(
             """
+- The **red polygon** is the current geometry.  
 - If you **draw a new polygon**, it will **replace** the existing one.  
 - If you **do nothing on the map**, the existing polygon file will be kept.
 """
@@ -299,14 +271,11 @@ elif page == "Edit Project":
 
         if st.button("Save Changes"):
             try:
-                # Decide which source to use for the polygon
                 file_content = None
 
                 if new_file is not None:
-                    # Use uploaded file
                     file_content = new_file.read()
                 elif new_polygon_geojson is not None:
-                    # Use newly drawn polygon
                     file_content = json.dumps(new_polygon_geojson).encode("utf-8")
 
                 # If we have new content, upload and replace existing file
@@ -314,10 +283,13 @@ elif page == "Edit Project":
                     supabase.storage.from_(BUCKET).upload(
                         filename,
                         file_content,
-                        file_options={"content-type": "application/geo+json"},
+                        file_options={
+                            "content-type": "application/geo+json",
+                            "upsert": "true",
+                        },
                     )
 
-                # Update description only (name stays fixed because of FK)
+                # Update description only (name stays fixed)
                 supabase.table("projects").update(
                     {"description": new_description}
                 ).eq("id", project["id"]).execute()
@@ -329,6 +301,58 @@ elif page == "Edit Project":
 
             except Exception as e:
                 st.error(f"Error updating project: {e}")
+
+# ---------------------------------------------------------
+# PAGE 3 — USER PROJECT OVERVIEW
+# ---------------------------------------------------------
+elif page == "User Project Overview":
+    st.title("User Project Overview")
+
+    try:
+        users = load_users()
+        user_lookup = {u["id"]: u["email"] for u in users}
+
+        members = supabase.table("project_members").select("*").execute().data or []
+
+        # Build mapping email -> list of projects
+        overview = {}
+        for m in members:
+            uid = m["user_id"]
+            pname = m["project"]
+            email = user_lookup.get(uid, "Unknown")
+
+            if email not in overview:
+                overview[email] = []
+            overview[email].append(pname)
+
+        if not overview:
+            st.info("No project memberships found.")
+        else:
+            # Build dropdown options with counts
+            options = []
+            for email, plist in overview.items():
+                label = f"{email} ({len(plist)} projects)"
+                options.append((label, email))
+
+            labels = [o[0] for o in options]
+            label_to_email = {o[0]: o[1] for o in options}
+
+            selected_label = st.selectbox("Select a user", labels)
+            selected_email = label_to_email[selected_label]
+
+            user_projects = overview.get(selected_email, [])
+
+            st.subheader(f"Projects for {selected_email}")
+            st.write(f"Number of projects: **{len(user_projects)}**")
+
+            if user_projects:
+                st.write("Projects:")
+                for p in user_projects:
+                    st.write(f"- {p}")
+
+    except Exception as e:
+        st.error(f"Error loading overview: {e}")
+
 
 
 
