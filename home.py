@@ -61,7 +61,7 @@ Choose which users are allowed to work on this project.
 **Step 4 — Save the project**  
 When you click *Save Project*:
 - The polygon is saved as a GeoJSON file in the bucket **observation_photos**
-- The project name (with spaces replaced by `_`) and description are saved in the **projects** table
+- The project name (spaces → `_`) and description are saved in the **projects** table
 - The selected users are added to the **project_members** table
 """
         )
@@ -139,7 +139,7 @@ When you click *Save Project*:
                 for email in selected_users:
                     user_id = user_options[email]
                     supabase.table("project_members").insert(
-                        {"project": project_id, "user_id": user_id}
+                        {"project": safe_name, "user_id": user_id}
                     ).execute()
 
                 st.success(f"Project saved! File uploaded as {filename}")
@@ -189,18 +189,17 @@ elif page == "User Project Overview":
 
         members = supabase.table("project_members").select("*").execute().data
         projects = supabase.table("projects").select("*").execute().data
-        project_lookup = {p["id"]: p["name"] for p in projects}
+        project_lookup = {p["name"]: p["name"] for p in projects}
 
         overview = {}
         for m in members:
             uid = m["user_id"]
-            pid = m["project"]
+            pname = m["project"]
             email = user_lookup.get(uid, "Unknown")
-            project_name = project_lookup.get(pid, "Unknown")
 
             if email not in overview:
                 overview[email] = []
-            overview[email].append(project_name)
+            overview[email].append(pname)
 
         rows = []
         for email, plist in overview.items():
@@ -242,7 +241,7 @@ elif page == "Edit Project":
         current_name = project["name"]
         current_description = project.get("description", "")
 
-        st.write(f"Current file name (by convention): `{current_name}.geojson`")
+        st.write(f"Current file name: `{current_name}.geojson`")
 
         new_name = st.text_input("New project name", value=current_name)
         new_description = st.text_area(
@@ -257,7 +256,7 @@ elif page == "Edit Project":
             try:
                 safe_new_name = new_name.replace(" ", "_")
 
-                # If a new file is uploaded, replace file in bucket using new safe name
+                # If a new file is uploaded, replace file in bucket
                 if new_file is not None:
                     file_content = new_file.read()
                     new_filename = f"{safe_new_name}.geojson"
@@ -267,7 +266,12 @@ elif page == "Edit Project":
                         file_options={"content-type": "application/geo+json"},
                     )
 
-                # Update project record (name + description)
+                # Update project_members to keep FK valid
+                supabase.table("project_members").update(
+                    {"project": safe_new_name}
+                ).eq("project", current_name).execute()
+
+                # Update project record
                 supabase.table("projects").update(
                     {"name": safe_new_name, "description": new_description}
                 ).eq("id", project["id"]).execute()
@@ -278,6 +282,7 @@ elif page == "Edit Project":
 
             except Exception as e:
                 st.error(f"Error updating project: {e}")
+
 
 
 
