@@ -38,7 +38,6 @@ def load_users():
     except Exception:
         return []
 
-
 def get_bounds(geojson_obj):
     if geojson_obj is None:
         return None
@@ -61,7 +60,6 @@ def get_bounds(geojson_obj):
     lats = [c[1] for c in coords]
     lons = [c[0] for c in coords]
     return [[min(lats), min(lons)], [max(lats), max(lons)]]
-
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -137,7 +135,7 @@ if page == "Create Project":
                     geojson_str.encode("utf-8"),
                     file_options={
                         "content-type": "application/geo+json",
-                        "upsert": True,
+                        "x-upsert": "true",
                     },
                 )
 
@@ -152,7 +150,7 @@ if page == "Create Project":
                     st.error("Project insert failed. Check RLS policies.")
                     st.stop()
 
-                # Insert project members (project = project name)
+                # Insert project members
                 for email in selected_users:
                     user_id = user_options[email]
                     supabase.table("project_members").insert(
@@ -194,7 +192,7 @@ elif page == "Projects":
         )
 
         project = project_names[selected_project_name]
-        project_name = project["name"]  # fixed (FK)
+        project_name = project["name"]
         current_description = project.get("description", "")
 
         st.write(f"Project name (fixed): `{project_name}`")
@@ -207,7 +205,7 @@ elif page == "Projects":
             file_bytes = supabase.storage.from_(BUCKET).download(filename)
             existing_geojson = json.loads(file_bytes.decode("utf-8"))
         except Exception:
-            st.warning("Could not load existing polygon file. You can create a new one.")
+            st.warning("Could not load existing polygon file.")
 
         st.subheader("1. Polygon (old in red, new replaces it)")
 
@@ -251,7 +249,7 @@ elif page == "Projects":
             """
 - The **red polygon** is the current geometry.  
 - If you **draw a new polygon**, it will **replace** the existing one.  
-- If you **do nothing on the map**, the existing polygon file will be kept.
+- If you **do nothing**, the existing polygon file will be kept.
 """
         )
 
@@ -260,9 +258,9 @@ elif page == "Projects":
             "Project description", value=current_description
         )
 
-        st.subheader("3. Optional: upload a new GeoJSON file instead of drawing")
+        st.subheader("3. Optional: upload a new GeoJSON file")
         new_file = st.file_uploader(
-            "Upload a new polygon file (optional, overrides map drawing if provided)",
+            "Upload a new polygon file (optional)",
             type=["geojson", "json"],
         )
 
@@ -275,41 +273,38 @@ elif page == "Projects":
                 elif new_polygon_geojson is not None:
                     file_content = json.dumps(new_polygon_geojson).encode("utf-8")
 
-                # If we have new content, upload and replace existing file
                 if file_content is not None:
                     supabase.storage.from_(BUCKET).upload(
                         filename,
                         file_content,
                         file_options={
                             "content-type": "application/geo+json",
-                            "upsert": True,
+                            "x-upsert": "true",
                         },
                     )
 
-                # Update description only (name stays fixed)
                 supabase.table("projects").update(
                     {"description": new_description}
                 ).eq("id", project["id"]).execute()
 
                 st.success(
-                    f"Project updated. Description saved and polygon file "
-                    f"{'replaced' if file_content is not None else 'left unchanged'}."
+                    f"Project updated. Polygon "
+                    f"{'replaced' if file_content else 'unchanged'}."
                 )
 
             except Exception as e:
                 st.error(f"Error updating project: {e}")
 
 # ---------------------------------------------------------
-# PAGE 3 — USER STATISTICS
+# PAGE 3 — USER STATISTICS (MERGED WITH REPORTS ANALYSIS)
 # ---------------------------------------------------------
 elif page == "User Statistics":
-    st.title("User Statistics")
+    st.title("User Statistics & Reports Analysis")
 
     users = load_users()
     if not users:
         st.info("No users found.")
     else:
-        # Build base structures
         emails = [u["email"] for u in users]
         id_by_email = {u["email"]: u["id"] for u in users}
 
@@ -322,7 +317,7 @@ elif page == "User Statistics":
 
         # Load reports
         try:
-            rep_res = supabase.table("report").select("operator").execute()
+            rep_res = supabase.table("report").select("*").execute()
             reports = rep_res.data or []
         except Exception:
             reports = []
@@ -354,34 +349,22 @@ elif page == "User Statistics":
         for row in project_members:
             uid = row.get("user_id")
             project_name = row.get("project")
-            # find email for this uid
-            email = None
-            for e, i in id_by_email.items():
-                if i == uid:
-                    email = e
-                    break
-            if email is not None:
-                proj_count[email] += 1
-                if project_name not in proj_list[email]:
+            for email, id_ in id_by_email.items():
+                if id_ == uid:
+                    proj_count[email] += 1
                     proj_list[email].append(project_name)
 
-        # Build dropdown options with project count
-        options = []
-        for email in emails:
-            label = f"{email} ({proj_count[email]} projects)"
-            options.append((label, email))
+        # Dropdown options
+        options = [
+            f"{email} ({proj_count[email]} projects)" for email in emails
+        ]
+        selected_label = st.selectbox("Select a user", options)
+        selected_email = selected_label.split(" (")[0]
 
-        labels = [o[0] for o in options]
-        label_to_email = {o[0]: o[1] for o in options}
-
-        selected_label = st.selectbox("Select a user", labels)
-        selected_email = label_to_email[selected_label]
-
-        # Stats for selected user
-        n_obs = obs_count.get(selected_email, 0)
-        n_rep = rep_count.get(selected_email, 0)
-        n_proj = proj_count.get(selected_email, 0)
-        user_projects = proj_list.get(selected_email, [])
+        # Metrics
+        n_obs = obs_count[selected_email]
+        n_rep = rep_count[selected_email]
+        n_proj = proj_count[selected_email]
 
         st.subheader(f"Overview for {selected_email}")
         col1, col2, col3 = st.columns(3)
@@ -401,26 +384,64 @@ elif page == "User Statistics":
 
         # Projects list
         st.subheader("Projects")
-        if user_projects:
-            for p in user_projects:
+        if proj_list[selected_email]:
+            for p in proj_list[selected_email]:
                 st.write(f"- {p}")
         else:
             st.write("No projects for this user.")
 
-        # Optional raw counts table
-        st.subheader("Raw counts table")
-        df_counts = pd.DataFrame(
-            [
-                {
-                    "email": email,
-                    "observations": obs_count[email],
-                    "reports": rep_count[email],
-                    "projects": proj_count[email],
-                }
-                for email in emails
-            ]
-        )
-        st.dataframe(df_counts)
+        # -----------------------------
+        # REPORTS ANALYSIS (MERGED)
+        # -----------------------------
+        st.header("Reports Analysis")
+
+        if not reports:
+            st.info("No reports found.")
+        else:
+            df = pd.DataFrame(reports)
+            df["date"] = pd.to_datetime(df["date"], errors="coerce")
+
+            st.subheader("Reports per project")
+            proj_counts = df.groupby("project").size().reset_index(name="count")
+            st.dataframe(proj_counts)
+            st.bar_chart(proj_counts.set_index("project"))
+
+            st.subheader("Reports per kind")
+            kind_counts = df.groupby("kind").size().reset_index(name="count")
+            st.dataframe(kind_counts)
+            st.bar_chart(kind_counts.set_index("kind"))
+
+            st.subheader("Reports per project + kind")
+            proj_kind_counts = df.groupby(["project", "kind"]).size().reset_index(name="count")
+            st.dataframe(proj_kind_counts)
+
+            st.subheader("Time intervals between reports")
+
+            interval_rows = []
+
+            for (project, kind), group in df.groupby(["project", "kind"]):
+                group = group.sort_values("date")
+
+                if len(group) > 1:
+                    group["interval_days"] = group["date"].diff().dt.days
+                    intervals = group["interval_days"].dropna()
+
+                    interval_rows.append({
+                        "project": project,
+                        "kind": kind,
+                        "min_days": intervals.min(),
+                        "max_days": intervals.max(),
+                        "mean_days": intervals.mean(),
+                        "median_days": intervals.median(),
+                        "count_reports": len(group)
+                    })
+
+            if interval_rows:
+                interval_df = pd.DataFrame(interval_rows)
+                st.dataframe(interval_df)
+            else:
+                st.info("Not enough data to compute intervals.")
+
 
 
 
