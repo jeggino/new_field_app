@@ -27,6 +27,8 @@ st.write("Draw a polygon, name it, preview it, edit it, and save it to Supabase.
 # DRAW MAP
 # ---------------------------------------------------------
 st.subheader("1. Draw your area")
+test = supabase.table("projects").insert({"area_file": "test.geojson"}).execute()
+st.write(test)
 
 m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
