@@ -27,12 +27,14 @@ Use the polygon tool to outline your project area.
 **Step 2 — Enter project details**  
 Give your project a name and a short description.
 
-**Step 3 — Save the project**  
+**Step 3 — Select project members**  
+Choose which users are allowed to work on this project.
+
+**Step 4 — Save the project**  
 When you click *Save Project*:
 - The polygon is saved as a GeoJSON file in the bucket **observation_photos**
 - The project name and description are saved in the **projects** table
-
-That's it — your project is stored safely and can be retrieved later.
+- The selected users are added to the **project_members** table
 """)
 
 # ---------------------------------------------------------
@@ -73,9 +75,24 @@ project_name = st.text_input("Project name")
 project_description = st.text_area("Project description")
 
 # ---------------------------------------------------------
+# SELECT USERS
+# ---------------------------------------------------------
+st.subheader("3. Select users who can work on this project")
+
+# Fetch all users from auth.users
+users_res = supabase.rpc("get_all_users").execute()  # You will create this function below
+
+if users_res.data:
+    user_options = {u["email"]: u["id"] for u in users_res.data}
+    selected_users = st.multiselect("Choose users", list(user_options.keys()))
+else:
+    st.warning("No users found.")
+    selected_users = []
+
+# ---------------------------------------------------------
 # SAVE BUTTON
 # ---------------------------------------------------------
-if polygon_geojson and project_name and project_description:
+if polygon_geojson and project_name and project_description and selected_users:
     if st.button("Save Project"):
         try:
             # Convert polygon to GeoJSON string
@@ -85,17 +102,27 @@ if polygon_geojson and project_name and project_description:
             filename = f"{project_name.replace(' ', '_')}.geojson"
 
             # 1. Upload file to bucket
-            upload_res = supabase.storage.from_(BUCKET).upload(
+            supabase.storage.from_(BUCKET).upload(
                 filename,
                 geojson_str.encode("utf-8"),
                 file_options={"content-type": "application/geo+json"}
             )
 
             # 2. Insert into projects table
-            insert_res = supabase.table("projects").insert({
+            project_res = supabase.table("projects").insert({
                 "name": project_name,
                 "description": project_description
             }).execute()
+
+            project_id = project_res.data[0]["id"]
+
+            # 3. Insert project members
+            for email in selected_users:
+                user_id = user_options[email]
+                supabase.table("project_members").insert({
+                    "project_id": project_id,
+                    "user_id": user_id
+                }).execute()
 
             st.success(f"Project saved! File uploaded as {filename}")
 
@@ -103,5 +130,6 @@ if polygon_geojson and project_name and project_description:
             st.error(f"Exception: {e}")
 
 else:
-    st.info("Draw a polygon and fill in all fields to save the project.")
+    st.info("Draw a polygon, fill in all fields, and select users to save the project.")
+
 
