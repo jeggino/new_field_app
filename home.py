@@ -38,4 +38,70 @@ That's it — your project is stored safely and can be retrieved later.
 # ---------------------------------------------------------
 # DRAW MAP
 # ---------------------------------------------------------
-st.subheader("1. Draw your
+st.subheader("1. Draw your project area")
+
+m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+
+draw = Draw(
+    draw_options={
+        "polyline": False,
+        "rectangle": False,
+        "circle": False,
+        "circlemarker": False,
+        "marker": False,
+        "polygon": True,
+    },
+    edit_options={"edit": True, "remove": True},
+)
+
+draw.add_to(m)
+
+map_data = st_folium(m, height=500, width=800)
+
+polygon_geojson = None
+if map_data and "all_drawings" in map_data:
+    drawings = map_data["all_drawings"]
+    if drawings:
+        polygon_geojson = drawings[-1]
+
+# ---------------------------------------------------------
+# PROJECT DETAILS
+# ---------------------------------------------------------
+st.subheader("2. Project details")
+
+project_name = st.text_input("Project name")
+project_description = st.text_area("Project description")
+
+# ---------------------------------------------------------
+# SAVE BUTTON
+# ---------------------------------------------------------
+if polygon_geojson and project_name and project_description:
+    if st.button("Save Project"):
+        try:
+            # Convert polygon to GeoJSON string
+            geojson_str = json.dumps(polygon_geojson)
+
+            # Create filename
+            filename = f"{project_name.replace(' ', '_')}.geojson"
+
+            # 1. Upload file to bucket
+            upload_res = supabase.storage.from_(BUCKET).upload(
+                filename,
+                geojson_str.encode("utf-8"),
+                file_options={"content-type": "application/geo+json"}
+            )
+
+            # 2. Insert into projects table
+            insert_res = supabase.table("projects").insert({
+                "name": project_name,
+                "description": project_description
+            }).execute()
+
+            st.success(f"Project saved! File uploaded as {filename}")
+
+        except Exception as e:
+            st.error(f"Exception: {e}")
+
+else:
+    st.info("Draw a polygon and fill in all fields to save the project.")
+
