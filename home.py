@@ -62,7 +62,7 @@ Choose which users are allowed to work on this project.
 When you click *Save Project*:
 - The polygon is saved as a GeoJSON file in the bucket **observation_photos**
 - The project name (spaces → `_`) and description are saved in the **projects** table
-- The selected users are added to the **project_members** table
+- The selected users are added to the **project_members** table (column `project` = project name)
 """
         )
 
@@ -133,9 +133,7 @@ When you click *Save Project*:
                     st.error("Project insert failed. Check RLS policies.")
                     st.stop()
 
-                project_id = project_res.data[0]["id"]
-
-                # Insert project members
+                # Insert project members (project = project name)
                 for email in selected_users:
                     user_id = user_options[email]
                     supabase.table("project_members").insert(
@@ -188,8 +186,6 @@ elif page == "User Project Overview":
         user_lookup = {u["id"]: u["email"] for u in users}
 
         members = supabase.table("project_members").select("*").execute().data
-        projects = supabase.table("projects").select("*").execute().data
-        project_lookup = {p["name"]: p["name"] for p in projects}
 
         overview = {}
         for m in members:
@@ -217,10 +213,10 @@ elif page == "User Project Overview":
         st.error(f"Error loading overview: {e}")
 
 # ---------------------------------------------------------
-# PAGE 5 — EDIT PROJECT
+# PAGE 5 — EDIT PROJECT (REPLACE MODE)
 # ---------------------------------------------------------
 elif page == "Edit Project":
-    st.title("Edit Project and Related File")
+    st.title("Edit Project and Polygon")
 
     try:
         projects_res = supabase.table("projects").select("*").execute()
@@ -238,50 +234,102 @@ elif page == "Edit Project":
         )
 
         project = project_names[selected_project_name]
-        current_name = project["name"]
+        project_name = project["name"]  # immutable because of FK
         current_description = project.get("description", "")
 
-        st.write(f"Current file name: `{current_name}.geojson`")
+        st.write(f"Project name (fixed due to foreign key): `{project_name}`")
+        st.write(f"Current file name: `{project_name}.geojson`")
 
-        new_name = st.text_input("New project name", value=current_name)
-        new_description = st.text_area(
-            "New project description", value=current_description
+        # Try to load existing polygon from bucket
+        existing_geojson = None
+        filename = f"{project_name}.geojson"
+        try:
+            file_bytes = supabase.storage.from_(BUCKET).download(filename)
+            existing_geojson = json.loads(file_bytes.decode("utf-8"))
+        except Exception:
+            st.warning("Could not load existing polygon file. You can create a new one.")
+
+        st.subheader("1. Edit polygon (replace mode)")
+
+        # Create map
+        m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+
+        # Show existing polygon if available
+        if existing_geojson is not None:
+            folium.GeoJson(existing_geojson, name="Existing Polygon").add_to(m)
+
+        draw = Draw(
+            draw_options={
+                "polyline": False,
+                "rectangle": False,
+                "circle": False,
+                "circlemarker": False,
+                "marker": False,
+                "polygon": True,
+            },
+            edit_options={"edit": True, "remove": True},
         )
+        draw.add_to(m)
+
+        map_data = st_folium(m, height=500, width=800)
+
+        new_polygon_geojson = None
+        if map_data and "all_drawings" in map_data:
+            drawings = map_data["all_drawings"]
+            if drawings:
+                new_polygon_geojson = drawings[-1]
+
+        st.markdown(
+            """
+- If you **draw a new polygon**, it will **replace** the existing one.  
+- If you **do nothing on the map**, the existing polygon file will be kept.
+"""
+        )
+
+        st.subheader("2. Edit project details")
+        new_description = st.text_area(
+            "Project description", value=current_description
+        )
+
+        st.subheader("3. Optional: upload a new GeoJSON file instead of drawing")
         new_file = st.file_uploader(
-            "Upload a new polygon file to replace the existing one (optional)",
+            "Upload a new polygon file (optional, overrides map drawing if provided)",
             type=["geojson", "json"],
         )
 
         if st.button("Save Changes"):
             try:
-                safe_new_name = new_name.replace(" ", "_")
+                # Decide which source to use for the polygon
+                file_content = None
 
-                # If a new file is uploaded, replace file in bucket
                 if new_file is not None:
+                    # Use uploaded file
                     file_content = new_file.read()
-                    new_filename = f"{safe_new_name}.geojson"
+                elif new_polygon_geojson is not None:
+                    # Use newly drawn polygon
+                    file_content = json.dumps(new_polygon_geojson).encode("utf-8")
+
+                # If we have new content, upload and replace existing file
+                if file_content is not None:
                     supabase.storage.from_(BUCKET).upload(
-                        new_filename,
+                        filename,
                         file_content,
                         file_options={"content-type": "application/geo+json"},
                     )
 
-                # Update project_members to keep FK valid
-                supabase.table("project_members").update(
-                    {"project": safe_new_name}
-                ).eq("project", current_name).execute()
-
-                # Update project record
+                # Update description only (name stays fixed because of FK)
                 supabase.table("projects").update(
-                    {"name": safe_new_name, "description": new_description}
+                    {"description": new_description}
                 ).eq("id", project["id"]).execute()
 
                 st.success(
-                    f"Project updated. Name is now '{safe_new_name}' and file (if uploaded) is '{safe_new_name}.geojson'."
+                    f"Project updated. Description saved and polygon file "
+                    f"{'replaced' if file_content is not None else 'left unchanged'}."
                 )
 
             except Exception as e:
                 st.error(f"Error updating project: {e}")
+
 
 
 
