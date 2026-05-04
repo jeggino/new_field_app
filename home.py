@@ -76,7 +76,7 @@ if page == "Create Project":
     Geocoder(
         collapsed=False,
         add_marker=True,
-        position='topleft'
+        position='bottomleft'
     ).add_to(m)
 
     map_data = st_folium(m, height=500, width=800)
