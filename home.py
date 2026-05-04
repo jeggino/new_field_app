@@ -82,23 +82,23 @@ if polygon_geojson and area_name:
 if polygon_geojson and area_name:
     if st.button("💾 Save to Supabase"):
         try:
-            # Convert polygon to GeoJSON string
-            geojson_str = json.dumps(polygon_geojson)
+            # # Convert polygon to GeoJSON string
+            # geojson_str = json.dumps(polygon_geojson)
 
-            # Create filename using the area name
-            safe_name = area_name.replace(" ", "_")
-            file_id = f"{safe_name}.geojson"
+            # # Create filename using the area name
+            # safe_name = area_name.replace(" ", "_")
+            # file_id = f"{safe_name}.geojson"
 
-            # Upload to Supabase bucket
-            upload_res = supabase.storage.from_(BUCKET).upload(
-                file_id,
-                geojson_str.encode("utf-8"),
-                file_options={"content-type": "application/geo+json"}
-            )
+            # # Upload to Supabase bucket
+            # upload_res = supabase.storage.from_(BUCKET).upload(
+            #     file_id,
+            #     geojson_str.encode("utf-8"),
+            #     file_options={"content-type": "application/geo+json"}
+            # )
 
-            if upload_res.get("error"):
-                st.error(f"Upload failed: {upload_res['error']}")
-                st.stop()
+            # if upload_res.get("error"):
+            #     st.error(f"Upload failed: {upload_res['error']}")
+            #     st.stop()
 
             # Insert ONLY the name into the projects table
             insert_res = supabase.table("projects").insert({
