@@ -94,7 +94,7 @@ if polygon_geojson and area_name:
             )
 
             # Save filename to Supabase table "project"
-            supabase.table("project").insert({"area_file": file_id}).execute()
+            supabase.table("projects").insert({"area_file": file_id}).execute()
 
             st.success(f"Saved successfully as {file_id}")
 
