@@ -13,7 +13,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ---------------------------------------------------------
 # UI
 # ---------------------------------------------------------
-st.title("Upload Project File + Save Name & Description")
+st.title("Save Project + Upload File")
 
 project_name = st.text_input("Project name")
 project_description = st.text_area("Project description")
@@ -33,8 +33,9 @@ if project_name and project_description and file:
                 file_options={"content-type": "application/octet-stream"}
             )
 
-            if not upload_res or ("error" in upload_res and upload_res["error"]):
-                st.error(f"Upload failed: {upload_res}")
+            # Correct UploadResponse error handling
+            if upload_res.error is not None:
+                st.error(f"Upload failed: {upload_res.error}")
                 st.stop()
 
             # -----------------------------
@@ -45,7 +46,7 @@ if project_name and project_description and file:
                 "description": project_description
             }).execute()
 
-            if "error" in insert_res:
+            if insert_res.get("error"):
                 st.error(f"Database insert failed: {insert_res['error']}")
                 st.stop()
 
@@ -53,19 +54,3 @@ if project_name and project_description and file:
 
         except Exception as e:
             st.error(f"Exception: {e}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
