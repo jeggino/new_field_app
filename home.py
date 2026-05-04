@@ -52,15 +52,15 @@ if st.button("Save Project"):
     filename = f"{safe_name}.geojson"
 
     try:
-        # Upload polygon file
-        supabase.storage.from_(BUCKET).upload(
-            filename,
-            json.dumps(polygon_geojson).encode("utf-8"),
-            file_options={
-                "content-type": "application/geo+json",
-                "x-upsert": "true"
-            }
-        )
+        # # Upload polygon file
+        # supabase.storage.from_(BUCKET).upload(
+        #     filename,
+        #     json.dumps(polygon_geojson).encode("utf-8"),
+        #     file_options={
+        #         "content-type": "application/geo+json",
+        #         "x-upsert": "true"
+        #     }
+        # )
 
         # Insert into projects table
         supabase.table("projects").insert(
