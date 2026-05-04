@@ -71,6 +71,14 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
+    # ⭐ Add address search bar
+    from folium.plugins import Geocoder
+    Geocoder(
+        collapsed=False,
+        add_marker=True,
+        position='topleft'
+    ).add_to(m)
+
     map_data = st_folium(m, height=500, width=800)
 
     polygon_geojson = None
