@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
+from folium.plugins import Geocoder
 import json
 from supabase import create_client
 
@@ -71,10 +72,16 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
+    # ⭐ Add address search bar
+    Geocoder(
+        collapsed=False,          # keep search bar open
+        add_marker=True,          # drop a marker when searching
+        position='topleft'        # position of the search bar
+    ).add_to(m)
+
     map_data = st_folium(m, height=500, width=800)
 
-    polygon_geojson = None
-    if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
+    "all_drawings"]:
         polygon_geojson = map_data["all_drawings"][-1]
 
     project_name = st.text_input("Project name")
