@@ -46,7 +46,7 @@ def compute_centroid(geojson_obj):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
+page = st.sidebar.radio("Navigation", ["Create Project", "Edit Project", "Delete Project"])
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -118,10 +118,10 @@ if page == "Create Project":
             st.error(f"Exception while saving project: {e}")
 
 # ---------------------------------------------------------
-# PAGE 2 — VIEW PROJECTS
+# PAGE 2 — EDIT PROJECT
 # ---------------------------------------------------------
-elif page == "View Projects":
-    st.title("View Projects")
+elif page == "Edit Project":
+    st.title("Edit Project")
 
     # Load projects
     try:
@@ -141,26 +141,20 @@ elif page == "View Projects":
     project = next(p for p in projects if p["name"] == selected)
 
     st.subheader("Project Info")
-    st.write(f"**Name:** {project['name']}")
-    st.write(f"**Description:** {project['description']}")
+    st.write(f"**Name:** {project['name']} (fixed)")
+    description = st.text_area("Description", value=project["description"])
 
     # Load users
     users = load_users()
     id_to_email = {u["id"]: u["email"] for u in users}
+    email_to_id = {u["email"]: u["id"] for u in users}
 
     # Load members
-    try:
-        pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
-        members = pm_res.data or []
-    except:
-        members = []
+    pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
+    members = pm_res.data or []
+    current_emails = [id_to_email[m["user_id"]] for m in members]
 
-    st.subheader("Users with access")
-    if members:
-        for m in members:
-            st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
-    else:
-        st.write("No users assigned.")
+    selected_emails = st.multiselect("Users", list(email_to_id.keys()), default=current_emails)
 
     # Load GeoJSON
     filename = f"{selected}.geojson"
@@ -171,12 +165,91 @@ elif page == "View Projects":
         st.error(f"Could not load GeoJSON: {e}")
         st.stop()
 
+    st.subheader("Polygon")
     centroid = compute_centroid(geojson_obj)
-
-    st.subheader("Project Area")
     m = folium.Map(location=centroid, zoom_start=14)
     folium.GeoJson(geojson_obj).add_to(m)
-    st_folium(m, height=500, width=800)
+
+    Draw(
+        draw_options={"polygon": True, "marker": False, "circle": False,
+                      "polyline": False, "rectangle": False},
+        edit_options={"edit": True, "remove": True},
+    ).add_to(m)
+
+    map_data = st_folium(m, height=500, width=800)
+
+    new_polygon = None
+    if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
+        new_polygon = map_data["all_drawings"][-1]
+
+    new_file = st.file_uploader("Upload new GeoJSON (optional)", type=["geojson", "json"])
+
+    if st.button("Save Changes"):
+        try:
+            # Update description
+            supabase.table("projects").update(
+                {"description": description}
+            ).eq("name", selected).execute()
+
+            # Update users
+            supabase.table("project_members").delete().eq("project", selected).execute()
+            for email in selected_emails:
+                supabase.table("project_members").insert(
+                    {"project": selected, "user_id": email_to_id[email]}
+                ).execute()
+
+            # Update polygon
+            if new_file:
+                content = new_file.read()
+                supabase.storage.from_(BUCKET).upload(
+                    filename,
+                    content,
+                    file_options={"content-type": "application/geo+json", "x-upsert": "true"}
+                )
+            elif new_polygon:
+                supabase.storage.from_(BUCKET).upload(
+                    filename,
+                    json.dumps(new_polygon).encode("utf-8"),
+                    file_options={"content-type": "application/geo+json", "x-upsert": "true"}
+                )
+
+            st.success("Project updated.")
+
+        except Exception as e:
+            st.error(f"Error updating project: {e}")
+
+# ---------------------------------------------------------
+# PAGE 3 — DELETE PROJECT
+# ---------------------------------------------------------
+elif page == "Delete Project":
+    st.title("Delete Project")
+
+    proj_res = supabase.table("projects").select("*").execute()
+    projects = proj_res.data or []
+
+    if not projects:
+        st.info("No projects found.")
+        st.stop()
+
+    project_names = [p["name"] for p in projects]
+    selected = st.selectbox("Select project to delete", project_names)
+
+    if st.button("DELETE PROJECT", type="primary"):
+        try:
+            # Delete file
+            supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
+
+            # Delete members
+            supabase.table("project_members").delete().eq("project", selected).execute()
+
+            # Delete project
+            supabase.table("projects").delete().eq("name", selected).execute()
+
+            st.success(f"Project '{selected}' deleted.")
+
+        except Exception as e:
+            st.error(f"Error deleting project: {e}")
+
 
 
 
