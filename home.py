@@ -25,10 +25,11 @@ if name and file:
 
         st.write(res)
 
-        if "error" in res:
-            st.error("Upload failed")
+        if not res or ("error" in res and res["error"]):
+            st.error(f"Upload failed: {res}")
         else:
-            st.success(f"Uploaded as {filename}")
+            st.success("Upload succeeded!")
+
 
 
 
