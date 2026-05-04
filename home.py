@@ -54,7 +54,7 @@ polygon_geojson = None
 if map_data and "all_drawings" in map_data:
     drawings = map_data["all_drawings"]
     if drawings:
-        polygon_geojson = drawings[-1]  # last drawn polygon
+        polygon_geojson = drawings[-1]
 
 # ---------------------------------------------------------
 # NAME INPUT
@@ -85,9 +85,9 @@ if polygon_geojson and area_name:
             # Convert polygon to GeoJSON string
             geojson_str = json.dumps(polygon_geojson)
 
-            # Create filename
+            # Create filename using the area name
             safe_name = area_name.replace(" ", "_")
-            file_id = f"{safe_name}_{uuid.uuid4()}.geojson"
+            file_id = f"{safe_name}.geojson"
 
             # Upload to Supabase bucket
             upload_res = supabase.storage.from_(BUCKET).upload(
@@ -100,26 +100,23 @@ if polygon_geojson and area_name:
                 st.error(f"Upload failed: {upload_res['error']}")
                 st.stop()
 
-            # Insert into projects table
+            # Insert ONLY the name into the projects table
             insert_res = supabase.table("projects").insert({
-                "area_file": file_id,
-                "area_name": area_name
+                "name": area_name
             }).execute()
-
-            # Debug output if needed
-            # st.write(insert_res)
 
             if "error" in insert_res:
                 st.error(f"Database insert failed: {insert_res['error']}")
                 st.stop()
 
-            st.success(f"Saved successfully as {file_id}")
+            st.success(f"Saved successfully! File: {file_id}")
 
         except Exception as e:
             st.error(f"Upload failed: {e}")
 
 else:
     st.warning("Draw a polygon and enter a name to continue.")
+
 
 
 
