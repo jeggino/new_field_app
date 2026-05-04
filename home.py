@@ -44,15 +44,17 @@ draw = Draw(
 
 draw.add_to(m)
 
-map_data = st_folium(m, height=500, width=800, key="map_draw")
+map_data = st_folium(m, height=500, width=800)
 
 # ---------------------------------------------------------
 # EXTRACT GEOJSON FROM DRAW TOOL
 # ---------------------------------------------------------
 polygon_geojson = None
 
-if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
-    polygon_geojson = map_data["all_drawings"][-1]  # last drawn polygon
+if map_data and "all_drawings" in map_data:
+    drawings = map_data["all_drawings"]
+    if drawings:
+        polygon_geojson = drawings[-1]  # last drawn polygon
 
 # ---------------------------------------------------------
 # NAME INPUT
@@ -88,17 +90,25 @@ if polygon_geojson and area_name:
             file_id = f"{safe_name}_{uuid.uuid4()}.geojson"
 
             # Upload to Supabase bucket
-            supabase.storage.from_(BUCKET).upload(
+            upload_res = supabase.storage.from_(BUCKET).upload(
                 file_id,
                 geojson_str.encode("utf-8"),
                 file_options={"content-type": "application/geo+json"}
             )
 
-            # Save filename to Supabase table "projects"
-            supabase.table("projects").insert({
+            if upload_res.get("error"):
+                st.error(f"Upload failed: {upload_res['error']}")
+                st.stop()
+
+            # Insert into projects table
+            insert_res = supabase.table("projects").insert({
                 "area_file": file_id,
                 "area_name": area_name
             }).execute()
+
+            if insert_res.get("error"):
+                st.error(f"Database insert failed: {insert_res['error']}")
+                st.stop()
 
             st.success(f"Saved successfully as {file_id}")
 
