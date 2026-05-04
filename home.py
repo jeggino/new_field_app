@@ -184,7 +184,7 @@ elif page == "View Projects":
     centroid = compute_centroid(geojson_obj)
 
     # ⭐ Zoom in to level 17
-    m = folium.Map(location=centroid, zoom_start=17)
+    m = folium.Map(zoom_start=17)
     folium.GeoJson(geojson_obj).add_to(m)
 
     st_folium(m, height=500, width=800)
