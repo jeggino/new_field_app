@@ -5,6 +5,22 @@ import json
 from supabase import create_client
 
 # ---------------------------------------------------------
+# PASSWORD PROTECTION
+# ---------------------------------------------------------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("Login")
+    pwd = st.text_input("Enter password", type="password")
+    if st.button("Login"):
+        if pwd == st.secrets["APP_PASSWORD"]:
+            st.session_state.authenticated = True
+        else:
+            st.error("Incorrect password")
+    st.stop()
+
+# ---------------------------------------------------------
 # SUPABASE SETUP
 # ---------------------------------------------------------
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
@@ -47,7 +63,6 @@ if page == "Create Project":
 
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
-    # Map
     from folium.plugins import Draw
     m = folium.Map(location=[52.37, 4.90], zoom_start=12)
     Draw(
@@ -62,7 +77,6 @@ if page == "Create Project":
     if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
         polygon_geojson = map_data["all_drawings"][-1]
 
-    # Inputs
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
 
@@ -120,7 +134,6 @@ if page == "Create Project":
 elif page == "View Projects":
     st.title("View Projects")
 
-    # Load projects
     proj_res = supabase.table("projects").select("*").execute()
     projects = proj_res.data or []
 
@@ -167,8 +180,11 @@ elif page == "View Projects":
 
     st.subheader("Project Area")
 
+    # ⭐ Compute centroid from file
     centroid = compute_centroid(geojson_obj)
-    m = folium.Map(location=centroid, zoom_start=15)
+
+    # ⭐ Zoom in to level 17
+    m = folium.Map(location=centroid, zoom_start=17)
     folium.GeoJson(geojson_obj).add_to(m)
 
     st_folium(m, height=500, width=800)
@@ -191,19 +207,15 @@ elif page == "Delete Project":
 
     if st.button("DELETE PROJECT", type="primary"):
         try:
-            # Delete file
             supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
-
-            # Delete members
             supabase.table("project_members").delete().eq("project", selected).execute()
-
-            # Delete project
             supabase.table("projects").delete().eq("name", selected).execute()
 
             st.success(f"Project '{selected}' deleted.")
 
         except Exception as e:
             st.error(f"Error deleting project: {e}")
+
 
 
 
