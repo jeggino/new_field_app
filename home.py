@@ -4,6 +4,7 @@ import folium
 from folium.plugins import Draw
 import json
 from supabase import create_client
+import pandas as pd
 
 # ---------------------------------------------------------
 # SUPABASE SETUP
@@ -23,12 +24,12 @@ page = st.sidebar.radio(
     [
         "Create Project",
         "Projects",
-        "User Project Overview",
+        "User Statistics",
     ],
 )
 
 # ---------------------------------------------------------
-# HELPER: LOAD USERS
+# HELPERS
 # ---------------------------------------------------------
 def load_users():
     try:
@@ -38,11 +39,14 @@ def load_users():
         return []
 
 
-# ---------------------------------------------------------
-# HELPER: GET BOUNDS FROM GEOJSON
-# ---------------------------------------------------------
 def get_bounds(geojson_obj):
+    if geojson_obj is None:
+        return None
+
     geom = geojson_obj.get("geometry", geojson_obj)
+    if "type" not in geom or "coordinates" not in geom:
+        return None
+
     coords = []
 
     if geom["type"] == "Polygon":
@@ -65,23 +69,16 @@ def get_bounds(geojson_obj):
 if page == "Create Project":
     st.title("Create Project Area")
 
-    with st.expander("ℹ️ How this application works"):
+    with st.expander("How this works"):
         st.markdown(
             """
-**Step 1 — Draw an area on the map**  
-Use the polygon tool to outline your project area.
-
-**Step 2 — Enter project details**  
-Give your project a name and a short description.
-
-**Step 3 — Select project members**  
-Choose which users are allowed to work on this project.
-
-**Step 4 — Save the project**  
-When you click *Save Project*:
-- The polygon is saved as a GeoJSON file in the bucket **observation_photos**
-- The project name (spaces → `_`) and description are saved in the **projects** table
-- The selected users are added to the **project_members** table (column `project` = project name)
+1. Draw a polygon on the map.  
+2. Enter a project name and description.  
+3. Select users who can work on this project.  
+4. Save — this will:
+   - Store the polygon as `<project_name>.geojson` in the `observation_photos` bucket  
+   - Store the project in the `projects` table  
+   - Store members in `project_members` (`project` = project name)
 """
         )
 
@@ -140,7 +137,7 @@ When you click *Save Project*:
                     geojson_str.encode("utf-8"),
                     file_options={
                         "content-type": "application/geo+json",
-                        "upsert": "true",
+                        "upsert": True,
                     },
                 )
 
@@ -285,7 +282,7 @@ elif page == "Projects":
                         file_content,
                         file_options={
                             "content-type": "application/geo+json",
-                            "upsert": "true",
+                            "upsert": True,
                         },
                     )
 
@@ -303,55 +300,128 @@ elif page == "Projects":
                 st.error(f"Error updating project: {e}")
 
 # ---------------------------------------------------------
-# PAGE 3 — USER PROJECT OVERVIEW
+# PAGE 3 — USER STATISTICS
 # ---------------------------------------------------------
-elif page == "User Project Overview":
-    st.title("User Project Overview")
+elif page == "User Statistics":
+    st.title("User Statistics")
 
-    try:
-        users = load_users()
-        user_lookup = {u["id"]: u["email"] for u in users}
+    users = load_users()
+    if not users:
+        st.info("No users found.")
+    else:
+        # Build base structures
+        emails = [u["email"] for u in users]
+        id_by_email = {u["email"]: u["id"] for u in users}
 
-        members = supabase.table("project_members").select("*").execute().data or []
+        # Load observations
+        try:
+            obs_res = supabase.table("observations").select("username").execute()
+            observations = obs_res.data or []
+        except Exception:
+            observations = []
 
-        # Build mapping email -> list of projects
-        overview = {}
-        for m in members:
-            uid = m["user_id"]
-            pname = m["project"]
-            email = user_lookup.get(uid, "Unknown")
+        # Load reports
+        try:
+            rep_res = supabase.table("report").select("operator").execute()
+            reports = rep_res.data or []
+        except Exception:
+            reports = []
 
-            if email not in overview:
-                overview[email] = []
-            overview[email].append(pname)
+        # Load project_members
+        try:
+            pm_res = supabase.table("project_members").select("user_id, project").execute()
+            project_members = pm_res.data or []
+        except Exception:
+            project_members = []
 
-        if not overview:
-            st.info("No project memberships found.")
+        # Count observations per email
+        obs_count = {email: 0 for email in emails}
+        for row in observations:
+            email = row.get("username")
+            if email in obs_count:
+                obs_count[email] += 1
+
+        # Count reports per email
+        rep_count = {email: 0 for email in emails}
+        for row in reports:
+            email = row.get("operator")
+            if email in rep_count:
+                rep_count[email] += 1
+
+        # Count projects per email + list of projects
+        proj_count = {email: 0 for email in emails}
+        proj_list = {email: [] for email in emails}
+        for row in project_members:
+            uid = row.get("user_id")
+            project_name = row.get("project")
+            # find email for this uid
+            email = None
+            for e, i in id_by_email.items():
+                if i == uid:
+                    email = e
+                    break
+            if email is not None:
+                proj_count[email] += 1
+                if project_name not in proj_list[email]:
+                    proj_list[email].append(project_name)
+
+        # Build dropdown options with project count
+        options = []
+        for email in emails:
+            label = f"{email} ({proj_count[email]} projects)"
+            options.append((label, email))
+
+        labels = [o[0] for o in options]
+        label_to_email = {o[0]: o[1] for o in options}
+
+        selected_label = st.selectbox("Select a user", labels)
+        selected_email = label_to_email[selected_label]
+
+        # Stats for selected user
+        n_obs = obs_count.get(selected_email, 0)
+        n_rep = rep_count.get(selected_email, 0)
+        n_proj = proj_count.get(selected_email, 0)
+        user_projects = proj_list.get(selected_email, [])
+
+        st.subheader(f"Overview for {selected_email}")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Observations", n_obs)
+        col2.metric("Reports", n_rep)
+        col3.metric("Projects", n_proj)
+
+        # Bar chart
+        st.subheader("Activity chart")
+        df_chart = pd.DataFrame(
+            {
+                "metric": ["Observations", "Reports", "Projects"],
+                "value": [n_obs, n_rep, n_proj],
+            }
+        ).set_index("metric")
+        st.bar_chart(df_chart)
+
+        # Projects list
+        st.subheader("Projects")
+        if user_projects:
+            for p in user_projects:
+                st.write(f"- {p}")
         else:
-            # Build dropdown options with counts
-            options = []
-            for email, plist in overview.items():
-                label = f"{email} ({len(plist)} projects)"
-                options.append((label, email))
+            st.write("No projects for this user.")
 
-            labels = [o[0] for o in options]
-            label_to_email = {o[0]: o[1] for o in options}
+        # Optional raw counts table
+        st.subheader("Raw counts table")
+        df_counts = pd.DataFrame(
+            [
+                {
+                    "email": email,
+                    "observations": obs_count[email],
+                    "reports": rep_count[email],
+                    "projects": proj_count[email],
+                }
+                for email in emails
+            ]
+        )
+        st.dataframe(df_counts)
 
-            selected_label = st.selectbox("Select a user", labels)
-            selected_email = label_to_email[selected_label]
-
-            user_projects = overview.get(selected_email, [])
-
-            st.subheader(f"Projects for {selected_email}")
-            st.write(f"Number of projects: **{len(user_projects)}**")
-
-            if user_projects:
-                st.write("Projects:")
-                for p in user_projects:
-                    st.write(f"- {p}")
-
-    except Exception as e:
-        st.error(f"Error loading overview: {e}")
 
 
 
