@@ -87,7 +87,6 @@ When you click *Save Project*:
     # ---------------------------------------------------------
     st.subheader("3. Select users who can work on this project")
 
-    # Fetch users from auth.users via RPC
     users_res = supabase.rpc("get_all_users").execute()
 
     if users_res.data:
@@ -103,28 +102,29 @@ When you click *Save Project*:
     if polygon_geojson and project_name and project_description and selected_users:
         if st.button("Save Project"):
             try:
-                # Convert polygon to GeoJSON string
                 geojson_str = json.dumps(polygon_geojson)
-
-                # Create filename
                 filename = f"{project_name.replace(' ', '_')}.geojson"
 
-                # 1. Upload file to bucket
+                # Upload polygon file
                 supabase.storage.from_(BUCKET).upload(
                     filename,
                     geojson_str.encode("utf-8"),
                     file_options={"content-type": "application/geo+json"}
                 )
 
-                # 2. Insert into projects table
+                # Insert project
                 project_res = supabase.table("projects").insert({
                     "name": project_name,
                     "description": project_description
                 }).execute()
 
+                if project_res.data is None or len(project_res.data) == 0:
+                    st.error("Project insert failed. Check RLS policies.")
+                    st.stop()
+
                 project_id = project_res.data[0]["id"]
 
-                # 3. Insert project members (correct column name: project)
+                # Insert project members
                 for email in selected_users:
                     user_id = user_options[email]
                     supabase.table("project_members").insert({
@@ -159,8 +159,18 @@ elif page == "View Project Members":
     st.title("Project Members Table")
 
     try:
-        res = supabase.table("project_members").select("*").execute()
-        st.dataframe(res.data)
+        members = supabase.table("project_members").select("*").execute().data
+        users = supabase.rpc("get_all_users").execute().data
+
+        # Map user_id → email
+        user_lookup = {u["id"]: u["email"] for u in users}
+
+        # Replace user_id with email
+        for m in members:
+            m["email"] = user_lookup.get(m["user_id"], "Unknown")
+
+        st.dataframe(members)
+
     except Exception as e:
         st.error(f"Error loading project members: {e}")
 
