@@ -15,11 +15,22 @@ BUCKET = "observation_photos"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---------------------------------------------------------
+# HELPERS
+# ---------------------------------------------------------
+def load_users():
+    """Return list of users from get_all_users RPC."""
+    try:
+        res = supabase.rpc("get_all_users").execute()
+        return res.data or []
+    except Exception:
+        return []
+
+# ---------------------------------------------------------
 # PAGE — CREATE PROJECT
 # ---------------------------------------------------------
-st.title("Create Project (Minimal Version)")
+st.title("Create Project (with Users)")
 
-st.write("Draw a polygon, enter a name, and save the project.")
+st.write("Draw a polygon, enter a name, description, and assign users.")
 
 # Map
 m = folium.Map(location=[52.37, 4.90], zoom_start=12)
@@ -38,6 +49,11 @@ if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
 # Inputs
 project_name = st.text_input("Project name")
 description = st.text_area("Description")
+
+# Load users
+users = load_users()
+email_to_id = {u["email"]: u["id"] for u in users}
+selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
 if st.button("Save Project"):
     if not polygon_geojson:
@@ -67,10 +83,17 @@ if st.button("Save Project"):
             {"name": safe_name, "description": description}
         ).execute()
 
-        st.success(f"Project '{safe_name}' saved.")
+        # Insert project members
+        for email in selected_emails:
+            supabase.table("project_members").insert(
+                {"project": safe_name, "user_id": email_to_id[email]}
+            ).execute()
+
+        st.success(f"Project '{safe_name}' saved with {len(selected_emails)} users.")
 
     except Exception as e:
         st.error(f"Exception while saving project: {e}")
+
 
 
 
