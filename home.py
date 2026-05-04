@@ -8,27 +8,31 @@ BUCKET = "observation_photos"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-st.title("Upload Test to Supabase Bucket")
+st.title("Simple Supabase Bucket Upload")
 
 name = st.text_input("Enter file name (without extension)")
-file = st.file_uploader("Choose a file")
+file = st.file_uploader("Choose a file to upload")
 
 if name and file:
     if st.button("Upload"):
-        filename = f"{name}.geojson"  # or any extension you want
+        filename = f"{name}.geojson"
 
-        res = supabase.storage.from_(BUCKET).upload(
-            filename,
-            file.read(),
-            file_options={"content-type": "application/octet-stream"}
-        )
+        try:
+            res = supabase.storage.from_(BUCKET).upload(
+                filename,
+                file.read(),
+                file_options={"content-type": "application/octet-stream"}
+            )
 
-        st.write(res)
+            # Safe error handling
+            if not res or ("error" in res and res["error"]):
+                st.error(f"Upload failed: {res}")
+            else:
+                st.success(f"Uploaded as {filename}")
 
-        if not res or ("error" in res and res["error"]):
-            st.error(f"Upload failed: {res}")
-        else:
-            st.success("Upload succeeded!")
+        except Exception as e:
+            st.error(f"Exception: {e}")
+
 
 
 
