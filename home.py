@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from folium.plugins import Geocoder
 import json
 from supabase import create_client
 
@@ -72,16 +71,10 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    # ⭐ Add address search bar
-    Geocoder(
-        collapsed=False,          # keep search bar open
-        add_marker=True,          # drop a marker when searching
-        position='topleft'        # position of the search bar
-    ).add_to(m)
-
     map_data = st_folium(m, height=500, width=800)
 
-    "all_drawings"]:
+    polygon_geojson = None
+    if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
         polygon_geojson = map_data["all_drawings"][-1]
 
     project_name = st.text_input("Project name")
@@ -190,9 +183,19 @@ elif page == "View Projects":
     # ⭐ Compute centroid from file
     centroid = compute_centroid(geojson_obj)
 
-    # ⭐ Zoom in to level 17
-    m = folium.Map(zoom_start=17)
+    # ⭐ Create map centered on centroid, zoom 17
+    m = folium.Map(location=centroid, zoom_start=17)
+
+    # Add polygon
     folium.GeoJson(geojson_obj).add_to(m)
+
+    # ⭐ Add address search bar
+    from folium.plugins import Geocoder
+    Geocoder(
+        collapsed=False,
+        add_marker=True,
+        position='topleft'
+    ).add_to(m)
 
     st_folium(m, height=500, width=800)
 
@@ -222,6 +225,7 @@ elif page == "Delete Project":
 
         except Exception as e:
             st.error(f"Error deleting project: {e}")
+
 
 
 
