@@ -64,7 +64,7 @@ if page == "Create Project":
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
     from folium.plugins import Draw
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
@@ -192,7 +192,7 @@ elif page == "View Projects":
     centroid = compute_centroid(geojson_obj)
 
     # ⭐ Create map centered on centroid, zoom 17
-    m = folium.Map(location=centroid, zoom_start=17)
+    m = folium.Map(location=centroid, zoom_start=17,zoom_control=False)
 
     # Add polygon
     folium.GeoJson(geojson_obj).add_to(m)
