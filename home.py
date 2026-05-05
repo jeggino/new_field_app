@@ -439,8 +439,20 @@ def edit_observation_dialog(obs):
     # Start from the current observation location
     edit_center = [obs["lat"], obs["lon"]]
     
-    m = folium.Map(location=edit_center, zoom_start=18)
+    m = folium.Map(location=edit_center, zoom_start=18,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
+
+    if boundary:
+        folium.GeoJson(
+            boundary,
+            name="Boundary",
+            style_function=lambda x: {
+                "fillColor": "#ffcc00",
+                "color": "red",
+                "weight": 2.5,
+                "fillOpacity": 0.1,
+            }
+        ).add_to(m)
 
     # Add a blue marker showing the original coordinate
     folium.Marker(
@@ -543,9 +555,9 @@ def new_observation_dialog():
     st.write("Use the map center as the observation position.")
 
     base_center = st.session_state.map_input_center
-    zoom = 18
+    zoom = 20
 
-    m = folium.Map(location=base_center, zoom_start=zoom)
+    m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     crosshair_html = f"""
