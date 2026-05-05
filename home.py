@@ -960,7 +960,7 @@ def show_main_app():
 
     with st.container():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
-        map_data = st_folium(m, height=450, width="100%")
+        map_data = st_folium(m, height=550, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
 
 
