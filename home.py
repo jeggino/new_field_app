@@ -984,7 +984,7 @@ def show_main_app():
     csv_data = download_observations_csv()
     if csv_data:
         st.sidebar.download_button(
-            label="Download Observations CSV",
+            label="Download All Observations (CSV)",
             data=csv_data,
             file_name=f"{st.session_state.project}_observations.csv",
             mime="text/csv",
