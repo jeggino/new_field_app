@@ -475,8 +475,7 @@ def edit_observation_dialog(obs):
         new_lat, new_lon = obs["lat"], obs["lon"]
 
     if obs.get("photo_url"):
-        st.image(obs["photo_url"], width=250, caption="Current photo")
-    st.write(obs["photo_url"])
+        st.image(obs["photo_url"], width=150, caption="Current photo")
 
     try:
         d = datetime.fromisoformat(obs["date"]).date()
@@ -835,6 +834,7 @@ def show_main_app():
 
 
         # Styled popup with colored border matching the marker color
+        # Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
@@ -843,26 +843,37 @@ def show_main_app():
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             font-family: 'Arial', sans-serif;
             width: 200px;
-            border: 3px solid {color};   /* MATCH DAY COLOR */
+            border: 3px solid {color};
         ">
+        
+            <!-- Species Title -->
             <div style="
                 font-weight: 700;
                 font-size: 15px;
-                color: {color};           /* MATCH DAY COLOR */
+                color: {color};
                 margin-bottom: 6px;
                 text-align: center;
             ">
                 {obs.get('species', '')}
             </div>
         
+            <!-- Image (mobile friendly) -->
+            <div style="text-align:center; margin-bottom:8px;">
+                <img src="{obs.get('photo_url', '')}" 
+                     style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
+            </div>
+        
+            <!-- Date (NO 'Date:' label) -->
             <div style="
                 font-size: 13px;
                 color: #444;
                 margin-bottom: 4px;
+                text-align: center;
             ">
-                <b>Date:</b> {obs.get('date', '')}
+                {obs.get('date', '')}
             </div>
         
+            <!-- Function -->
             <div style="
                 font-size: 12px;
                 color: #555;
@@ -871,12 +882,14 @@ def show_main_app():
                 <b>Function:</b> {obs.get('function', '')}
             </div>
         
+            <!-- Comment -->
             <div style="
                 font-size: 11px;
                 color: #666;
             ">
                 <b>Comment:</b> {obs.get('behavior', '')}
             </div>
+        
         </div>
         """
 
