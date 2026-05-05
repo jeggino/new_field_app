@@ -831,9 +831,6 @@ def show_main_app():
         cluster = MarkerCluster().add_to(m)
         
         # Styled popup
-
-
-        # Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
@@ -874,25 +871,28 @@ def show_main_app():
                 {obs.get('date', '')}
             </div>
         
-            <!-- Function -->
+            <!-- Function (italic, capitalized) -->
             <div style="
                 font-size: 12px;
                 color: #555;
                 margin-bottom: 4px;
+                font-style: italic;
             ">
-                <b>Function:</b> {obs.get('function', '')}
+                {obs.get('function', '').capitalize()}
             </div>
         
-            <!-- Comment -->
+            <!-- Comment (bold, same size) -->
             <div style="
-                font-size: 11px;
-                color: #666;
+                font-size: 12px;
+                color: #333;
+                font-weight: bold;
             ">
-                <b>Comment:</b> {obs.get('behavior', '')}
+                {obs.get('behavior', '')}
             </div>
         
         </div>
         """
+
 
     
         # Tooltip contains ONLY the ID (for selection)
