@@ -398,7 +398,7 @@ def show_reports_dialog():
     comment = st.text_area("Comment", value=report.get("comment", ""))
 
     # Save changes
-    if st.button("Save Changes"):
+    if st.button("Save Changes",width="stretch"):
         supabase.table("report").update({
             "kind": kind,
             "date": str(date),
@@ -416,7 +416,7 @@ def show_reports_dialog():
         st.rerun()
 
     # Delete
-    if st.button("Delete Report"):
+    if st.button("Delete Report",width="stretch"):
         supabase.table("report").delete().eq("id", report["id"]).execute()
         st.success("Report deleted.")
         st.rerun()
@@ -427,7 +427,7 @@ def show_reports_dialog():
         "Download All Reports (CSV)",
         df.to_csv(index=False).encode("utf-8"),
         file_name=f"{st.session_state.project}_reports.csv",
-        mime="text/csv"
+        mime="text/csv",width="stretch"
     )
 
 
@@ -531,7 +531,7 @@ def edit_observation_dialog(obs):
         load_observations(st.session_state.project)
         st.rerun()
 
-    if st.button("Delete", type="secondary"):
+    if st.button("Delete", type="secondary",width="stretch"):
         supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
         load_observations(st.session_state.project)
         st.rerun()
@@ -589,7 +589,7 @@ def new_observation_dialog():
     
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
-    if st.button("Save observation"):
+    if st.button("Save observation",width="stretch"):
         photo_url = upload_photo(photo)
 
         data = {
@@ -656,7 +656,7 @@ def show_signup():
             else:
                 st.sidebar.error("Sign-up failed")
 
-    if st.sidebar.button("Back to Login"):
+    if st.sidebar.button("Back to Login",width="stretch"):
         st.session_state.show_signup = False
         st.rerun()
 
@@ -684,7 +684,7 @@ def show_project_selection():
 
     selected = st.sidebar.selectbox("Project", project_names)
 
-    if st.sidebar.button("Confirm project"):
+    if st.sidebar.button("Confirm project",width="stretch"):
         st.session_state.project = selected
 
         # Save project in user metadata
@@ -704,23 +704,23 @@ def show_main_app():
     with col1:
         st.write("")  # empty, no title
     with col2:
-        if st.button("➕ New Observation"):
+        if st.button("➕ New Observation",width="stretch"):
             new_observation_dialog()
 
     # # Sidebar menu (no observations title, no new observation button)
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
 
-    if st.sidebar.button("Change Project"):
+    if st.sidebar.button("Change Project",width="stretch"):
         st.session_state.changing_project = True
         st.rerun()
 
-    if st.sidebar.button("Logout"):
+    if st.sidebar.button("Logout",width="stretch"):
         logout()
 
     st.sidebar.divider()
 
-    # if st.sidebar.button("Legend"):
+    # if st.sidebar.button("Legend",width="stretch"):
     #     show_legend()
     
 
@@ -789,7 +789,8 @@ def show_main_app():
             label="Download Observations CSV",
             data=csv_data,
             file_name=f"{st.session_state.project}_observations.csv",
-            mime="text/csv"
+            mime="text/csv",
+            width="stretch"
         )
     else:
         st.sidebar.write("No observations to download.")
@@ -984,7 +985,7 @@ def show_main_app():
         else:
             label = base_label
 
-        if st.sidebar.button(label, key=f"obs_{obs_id}"):
+        if st.sidebar.button(label, key=f"obs_{obs_id}",width="stretch"):
             edit_observation_dialog(obs)
 
 
