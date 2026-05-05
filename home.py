@@ -843,7 +843,7 @@ def show_main_app():
             """
         else:
             # Choose emoji based on species type
-            if "bat" in obs.get('animal_type', '':
+            if "bat" in obs.get('animal_type', ''):
                 emoji = "🦇"
             else:
                 emoji = "🪶"  # default feather for birds or unknown
