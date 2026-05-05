@@ -711,11 +711,11 @@ def show_main_app():
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
 
-    if st.sidebar.button("Change Project",width="stretch",icon=":material/thumb_up:"):
+    if st.sidebar.button("Change Project",width="stretch",icon=":material/sync_alt:"):
         st.session_state.changing_project = True
         st.rerun()
 
-    if st.sidebar.button("Logout",width="stretch",icon=":material/thumb_up:"):
+    if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
         logout()
 
     st.sidebar.divider()
@@ -774,10 +774,10 @@ def show_main_app():
     
     st.sidebar.header("Daily Report")
     
-    if st.sidebar.button("Fill a Report",width="stretch",icon=":material/thumb_up:"):
+    if st.sidebar.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
         daily_report_dialog()
     
-    if st.sidebar.button("View Reports",width="stretch",icon=":material/thumb_up:"):
+    if st.sidebar.button("View Reports",width="stretch",icon=":material/menu_book:"):
         show_reports_dialog()
 
     st.sidebar.divider()
