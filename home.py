@@ -442,18 +442,6 @@ def edit_observation_dialog(obs):
     m = folium.Map(location=edit_center, zoom_start=18,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
-    if boundary:
-        folium.GeoJson(
-            boundary,
-            name="Boundary",
-            style_function=lambda x: {
-                "fillColor": "#ffcc00",
-                "color": "red",
-                "weight": 2.5,
-                "fillOpacity": 0.1,
-            }
-        ).add_to(m)
-
     # Add a blue marker showing the original coordinate
     folium.Marker(
         location=[obs["lat"], obs["lon"]],
