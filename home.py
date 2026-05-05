@@ -214,18 +214,22 @@ elif page == "View Projects":
     except Exception as e:
         st.error(f"Could not load GeoJSON: {e}")
         st.stop()
-
+    
     st.subheader("Project Area")
-
-    # ⭐ Compute centroid from file
-    centroid = compute_centroid(geojson_obj)
-
+    
+    # ⭐ Compute centroid from geometry
+    centroid = compute_centroid(geojson_obj.get("geometry", geojson_obj))
+    
     # ⭐ Create map centered on centroid, zoom 17
-    m = folium.Map(location=centroid, zoom_start=17,zoom_control=False)
-
-    # Add polygon
-    folium.GeoJson(geojson_obj).add_to(m)
-
+    m = folium.Map(location=centroid, zoom_start=17, zoom_control=False)
+    
+    # ⭐ Add polygon(s) — supports Polygon + MultiPolygon
+    folium.GeoJson(
+        geojson_obj,
+        name="Project Area",
+        zoom_on_click=False
+    ).add_to(m)
+    
     # ⭐ Add address search bar
     from folium.plugins import Geocoder
     Geocoder(
@@ -233,8 +237,9 @@ elif page == "View Projects":
         add_marker=True,
         position='topleft'
     ).add_to(m)
-
+    
     st_folium(m, height=500, width=800)
+
 
 # ---------------------------------------------------------
 # PAGE 3 — DELETE PROJECT
