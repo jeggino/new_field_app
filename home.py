@@ -791,7 +791,7 @@ def show_main_app():
             file_name=f"{st.session_state.project}_observations.csv",
             mime="text/csv",
             width="stretch",
-            icon=":material/thumb_up:"
+            icon=":material/download:"
         )
     else:
         st.sidebar.write("No observations to download.")
