@@ -82,8 +82,37 @@ if page == "Create Project":
     map_data = st_folium(m, height=500, width=800)
 
     polygon_geojson = None
+    
     if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
-        polygon_geojson = map_data["all_drawings"][-1]
+        drawings = map_data["all_drawings"]
+    
+        # Extract all polygon coordinate lists
+        polygons = []
+        for d in drawings:
+            geom = d.get("geometry", {})
+            if geom.get("type") == "Polygon":
+                polygons.append(geom["coordinates"])
+            elif geom.get("type") == "MultiPolygon":
+                polygons.extend(geom["coordinates"])
+    
+        # Build a MultiPolygon GeoJSON if multiple polygons exist
+        if len(polygons) == 1:
+            polygon_geojson = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": polygons[0]
+                }
+            }
+        else:
+            polygon_geojson = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "MultiPolygon",
+                    "coordinates": polygons
+                }
+            }
+
 
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
