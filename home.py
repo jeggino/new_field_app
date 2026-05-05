@@ -771,25 +771,6 @@ def show_main_app():
     if st.sidebar.button("View Reports",width="stretch",icon=":material/menu_book:"):
         show_reports_dialog()
 
-
-      
-
-    st.sidebar.divider()
-
-    # Download observations as CSV
-    csv_data = download_observations_csv()
-    if csv_data:
-        st.sidebar.download_button(
-            label="Download Observations CSV",
-            data=csv_data,
-            file_name=f"{st.session_state.project}_observations.csv",
-            mime="text/csv",
-            width="stretch",
-            icon=":material/download:"
-        )
-    else:
-        st.sidebar.write("No observations to download.")
-
     # CSV download    
     res = (
         supabase.table("report")
@@ -813,6 +794,10 @@ def show_main_app():
         width="stretch",
         icon=":material/sim_card_download:"
     )
+
+
+
+
 
 
 
@@ -994,6 +979,20 @@ def show_main_app():
     st.sidebar.divider()
     
     st.sidebar.header("Observations")
+
+    # Download observations as CSV
+    csv_data = download_observations_csv()
+    if csv_data:
+        st.sidebar.download_button(
+            label="Download Observations CSV",
+            data=csv_data,
+            file_name=f"{st.session_state.project}_observations.csv",
+            mime="text/csv",
+            width="stretch",
+            icon=":material/download:"
+        )
+    else:
+        st.sidebar.write("No observations to download.")
     
     # OBSERVATION LIST IN SIDEBAR (no title, no new button)
     for obs in filtered:
