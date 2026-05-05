@@ -834,7 +834,6 @@ def show_main_app():
 
 
         # Styled popup with colored border matching the marker color
-        # Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
@@ -857,13 +856,15 @@ def show_main_app():
                 {obs.get('species', '')}
             </div>
         
-            <!-- Image (mobile friendly) -->
+            <!-- Clickable Image -->
             <div style="text-align:center; margin-bottom:8px;">
-                <img src="{obs.get('photo_url', '')}" 
-                     style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
+                <a href="{obs.get('photo_url', '')}" target="_blank">
+                    <img src="{obs.get('photo_url', '')}" 
+                         style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
+                </a>
             </div>
         
-            <!-- Date (NO 'Date:' label) -->
+            <!-- Date (NO label) -->
             <div style="
                 font-size: 13px;
                 color: #444;
