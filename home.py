@@ -506,7 +506,7 @@ def edit_observation_dialog(obs):
     species = st.selectbox("Species", species_list, index=species_list.index(species_value))
     function = st.selectbox("Function", func_list, index=func_list.index(function_value))
 
-    behavior = st.text_input("Comments", value=obs.get("behavior", ""))
+    behavior = st.text_area("Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
     
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
@@ -584,7 +584,7 @@ def new_observation_dialog():
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS)
 
-    behavior = st.text_input("Comments")
+    behavior = st.text_area("Comments")
     username = st.session_state.user.email
     
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
