@@ -797,7 +797,7 @@ def show_main_app():
 
 
     # MAP
-    m = folium.Map(location=st.session_state.map_center, zoom_start=12)
+    m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
 
@@ -830,7 +830,6 @@ def show_main_app():
         # Create cluster group
         cluster = MarkerCluster().add_to(m)
         
-        # Styled popup
         popup_html = f"""
         <div style="
             background-color: white;
@@ -871,21 +870,23 @@ def show_main_app():
                 {obs.get('date', '')}
             </div>
         
-            <!-- Function (italic, capitalized) -->
+            <!-- Function (italic, centered, capitalized) -->
             <div style="
                 font-size: 12px;
                 color: #555;
                 margin-bottom: 4px;
                 font-style: italic;
+                text-align: center;
             ">
                 {obs.get('function', '').capitalize()}
             </div>
         
-            <!-- Comment (bold, same size) -->
+            <!-- Comment (bold, justified) -->
             <div style="
                 font-size: 12px;
                 color: #333;
                 font-weight: bold;
+                text-align: justify;
             ">
                 {obs.get('behavior', '')}
             </div>
