@@ -771,27 +771,7 @@ def show_main_app():
     if st.sidebar.button("View Reports",width="stretch",icon=":material/menu_book:"):
         show_reports_dialog()
 
-    # CSV download    
-    res = (
-        supabase.table("report")
-        .select("*")
-        .eq("project", st.session_state.project)
-        .order("date", desc=True)
-        .execute()
-    )
-    reports = res.data or []
 
-    if not reports:
-        st.info("No reports yet.")
-        return
-
-    df = pd.DataFrame(reports)
-    st.download_button(
-        "Download All Reports (CSV)",
-        df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{st.session_state.project}_reports.csv",
-        mime="text/csv",width="stretch"
-    )
       
 
     st.sidebar.divider()
@@ -809,6 +789,30 @@ def show_main_app():
         )
     else:
         st.sidebar.write("No observations to download.")
+
+    # CSV download    
+    res = (
+        supabase.table("report")
+        .select("*")
+        .eq("project", st.session_state.project)
+        .order("date", desc=True)
+        .execute()
+    )
+    reports = res.data or []
+
+    if not reports:
+        st.info("No reports yet.")
+        return
+
+    df = pd.DataFrame(reports)
+    st.sidebar.download_button(
+        "Download All Reports (CSV)",
+        df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{st.session_state.project}_reports.csv",
+        mime="text/csv",
+        width="stretch",
+        icon=":material/sim_card_download:"
+    )
 
 
 
