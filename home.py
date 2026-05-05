@@ -850,7 +850,7 @@ def show_main_app():
         
             image_block = f"""
                 <div style="
-                    font-size: 60px;
+                    font-size: 20px;
                     text-align: center;
                     margin: 10px 0;
                 ">{emoji}</div>
