@@ -774,10 +774,10 @@ def show_main_app():
     
     st.sidebar.header("Daily Report")
     
-    if st.sidebar.button("Fill a Report"):
+    if st.sidebar.button("Fill a Report",width="stretch"):
         daily_report_dialog()
     
-    if st.sidebar.button("View Reports"):
+    if st.sidebar.button("View Reports",width="stretch"):
         show_reports_dialog()
 
     st.sidebar.divider()
