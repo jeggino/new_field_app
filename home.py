@@ -711,11 +711,11 @@ def show_main_app():
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
 
 
-    if st.sidebar.button("Change Project",width="stretch"):
+    if st.sidebar.button("Change Project",width="stretch",icon=":material/thumb_up:"):
         st.session_state.changing_project = True
         st.rerun()
 
-    if st.sidebar.button("Logout",width="stretch"):
+    if st.sidebar.button("Logout",width="stretch",icon=":material/thumb_up:"):
         logout()
 
     st.sidebar.divider()
@@ -774,10 +774,10 @@ def show_main_app():
     
     st.sidebar.header("Daily Report")
     
-    if st.sidebar.button("Fill a Report",width="stretch"):
+    if st.sidebar.button("Fill a Report",width="stretch",icon=":material/thumb_up:"):
         daily_report_dialog()
     
-    if st.sidebar.button("View Reports",width="stretch"):
+    if st.sidebar.button("View Reports",width="stretch",icon=":material/thumb_up:"):
         show_reports_dialog()
 
     st.sidebar.divider()
@@ -790,7 +790,8 @@ def show_main_app():
             data=csv_data,
             file_name=f"{st.session_state.project}_observations.csv",
             mime="text/csv",
-            width="stretch"
+            width="stretch",
+            icon=":material/thumb_up:"
         )
     else:
         st.sidebar.write("No observations to download.")
