@@ -830,6 +830,33 @@ def show_main_app():
         # Create cluster group
         cluster = MarkerCluster().add_to(m)
         
+        # Determine fallback emoji if no photo
+        species_name = obs.get("species", "").lower()
+        
+        if obs.get("photo_url"):
+            # Use real image
+            image_block = f"""
+                <a href="{obs.get('photo_url')}" target="_blank">
+                    <img src="{obs.get('photo_url')}" 
+                         style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
+                </a>
+            """
+        else:
+            # Choose emoji based on species type
+            if "bat" in obs.get('animal_type', '':
+                emoji = "🦇"
+            else:
+                emoji = "🪶"  # default feather for birds or unknown
+        
+            image_block = f"""
+                <div style="
+                    font-size: 60px;
+                    text-align: center;
+                    margin: 10px 0;
+                ">{emoji}</div>
+            """
+        
+        # Styled popup with colored border matching the marker color
         popup_html = f"""
         <div style="
             background-color: white;
@@ -852,12 +879,9 @@ def show_main_app():
                 {obs.get('species', '')}
             </div>
         
-            <!-- Clickable Image -->
+            <!-- Image or Emoji -->
             <div style="text-align:center; margin-bottom:8px;">
-                <a href="{obs.get('photo_url', '')}" target="_blank">
-                    <img src="{obs.get('photo_url', '')}" 
-                         style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
-                </a>
+                {image_block}
             </div>
         
             <!-- Date (NO label) -->
@@ -893,6 +917,7 @@ def show_main_app():
         
         </div>
         """
+
 
 
     
