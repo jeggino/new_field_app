@@ -476,6 +476,7 @@ def edit_observation_dialog(obs):
 
     if obs.get("photo_url"):
         st.image(obs["photo_url"], width=250, caption="Current photo")
+    st.write(obs["photo_url"])
 
     try:
         d = datetime.fromisoformat(obs["date"]).date()
