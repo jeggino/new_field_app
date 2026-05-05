@@ -336,7 +336,7 @@ def daily_report_dialog():
     rain = st.text_input("Rain")
     comment = st.text_area("Comment")
 
-    if st.button("Submit Report"):
+    if st.button("Submit Report",width="stretch"):
         supabase.table("report").insert({
             "kind": kind,
             "date": str(date),
