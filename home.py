@@ -304,29 +304,46 @@ elif page == "View Projects":
 
     st.subheader("Project Area")
 
-    # Bounds helper must exist elsewhere in your file:
-    # def get_bounds(geojson_obj): ...
+# --- SAFE BOUNDS EXTRACTION ---
+try:
+    bounds = get_bounds(geojson_obj)
+    # Validate bounds
+    if not bounds or bounds[0] == bounds[1]:
+        raise ValueError("Invalid bounds")
+except:
+    # Fallback center
+    bounds = [[52.37, 4.90], [52.38, 4.91]]
 
-    
-    # bounds = get_bounds(geojson_obj)
+# --- CREATE MAP ---
+m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # Create map and fit to polygon
-    m = folium.Map(zoom_start=18, zoom_control=True)
+# Basemaps
+folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+folium.TileLayer(
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+    name="Satellite"
+).add_to(m)
 
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite"
-    ).add_to(m)
+# Polygon
+try:
+    folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
+except Exception as e:
+    st.error(f"GeoJSON error: {e}")
 
-    # folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
+# Fit to polygon
+try:
+    m.fit_bounds(bounds)
+except:
+    pass
 
-    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    folium.LayerControl().add_to(m)
+# Plugins
+Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+folium.LayerControl().add_to(m)
 
-    with st.container():
-        st_folium(m, height=500, use_container_width=True)
+# --- RENDER MAP ---
+with st.container():
+    st_folium(m, height=550, use_container_width=True)
 
     # -------- Edit users for this project --------
     st.subheader("Edit Users")
