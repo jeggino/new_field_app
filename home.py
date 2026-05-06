@@ -17,6 +17,7 @@ if not st.session_state.authenticated:
     if st.button("Login"):
         if pwd == st.secrets["APP_PASSWORD"]:
             st.session_state.authenticated = True
+            st.rerun()
         else:
             st.error("Incorrect password")
     st.stop()
@@ -66,14 +67,10 @@ if page == "Create Project":
     from folium.plugins import Draw, Fullscreen, Geocoder
 
     # ---------------------------------------------------------
-    # 1. HANDLE CLEARING BEFORE MAP IS DRAWN
+    # 1. SESSION STATE FOR DRAWINGS
     # ---------------------------------------------------------
     if "last_drawings" not in st.session_state:
         st.session_state["last_drawings"] = None
-
-    if st.session_state.get("clear_drawings"):
-        st.session_state["last_drawings"] = None
-        st.session_state["clear_drawings"] = False
 
     # ---------------------------------------------------------
     # 2. CREATE MAP
@@ -121,7 +118,7 @@ if page == "Create Project":
         position='bottomleft'
     ).add_to(m)
 
-    # ⭐ Add LayerControl (this was missing)
+    # Layer control
     folium.LayerControl(position="topright").add_to(m)
 
     # ---------------------------------------------------------
@@ -161,14 +158,7 @@ if page == "Create Project":
             }
 
     # ---------------------------------------------------------
-    # 5. CLEAR DRAWINGS BUTTON
-    # ---------------------------------------------------------
-    if st.button("Clear drawings"):
-        st.session_state["clear_drawings"] = True
-        st.rerun()
-
-    # ---------------------------------------------------------
-    # 6. PROJECT FORM
+    # 5. PROJECT FORM
     # ---------------------------------------------------------
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
@@ -182,7 +172,7 @@ if page == "Create Project":
     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
     # ---------------------------------------------------------
-    # 7. SAVE PROJECT
+    # 6. SAVE PROJECT
     # ---------------------------------------------------------
     if st.button("Save Project"):
     
@@ -230,8 +220,8 @@ if page == "Create Project":
             # ⭐ SUCCESS MESSAGE
             st.success(f"Project '{safe_name}' has been successfully created.")
     
-            # Clear drawings after saving
-            st.session_state["clear_drawings"] = True
+            # Clear drawings and rerun
+            st.session_state["last_drawings"] = None
             st.rerun()
     
         except Exception as e:
@@ -289,26 +279,55 @@ elif page == "View Projects":
     
     st.subheader("Project Area")
     
-    # ⭐ Compute centroid from geometry
+    # Compute centroid
     centroid = compute_centroid(geojson_obj.get("geometry", geojson_obj))
     
-    # ⭐ Create map centered on centroid, zoom 17
+    # Map centered on centroid
     m = folium.Map(location=centroid, zoom_start=17, zoom_control=False)
     
-    # ⭐ Add polygon(s) — supports Polygon + MultiPolygon
     folium.GeoJson(
         geojson_obj,
         name="Project Area",
         zoom_on_click=False
     ).add_to(m)
     
-    # ⭐ Add address search bar
-    from folium.plugins import Geocoder
     Geocoder(
         collapsed=False,
         add_marker=True,
         position='topleft'
     ).add_to(m)
+    
+    st_folium(m, height=500, width=800)
+
+# ---------------------------------------------------------
+# PAGE 3 — DELETE PROJECT
+# ---------------------------------------------------------
+elif page == "Delete Project":
+    st.title("Delete Project")
+
+    proj_res = supabase.table("projects").select("*").execute()
+    projects = proj_res.data or []
+
+    if not projects:
+        st.info("No projects found.")
+        st.stop()
+
+    project_names = [p["name"] for p in projects]
+    selected = st.selectbox("Select project to delete", project_names)
+
+    if st.button("DELETE PROJECT", type="primary"):
+        try:
+            supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
+            supabase.table("project_members").delete().eq("project", selected).execute()
+            supabase.table("projects").delete().eq("name", selected).execute()
+
+            st.success(f"Project '{selected}' deleted.")
+
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"Error deleting project: {e}")
+
     
     st_folium(m, height=500, width=800)
 
