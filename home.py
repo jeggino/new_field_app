@@ -4,6 +4,7 @@ import folium
 import json
 from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
+import geopandas as gpd
 
 # ---------------------------------------------------------
 # USERNAME + PASSWORD LOGIN (from st.secrets)
@@ -306,11 +307,12 @@ elif page == "View Projects":
 
     # Bounds helper must exist elsewhere in your file:
     # def get_bounds(geojson_obj): ...
-    st.write(geojson_obj)
+    gdf_area = gpd.read_file(geojson_obj)
+    
     bounds = get_bounds(geojson_obj)
 
     # Create map and fit to polygon
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+    m = folium.Map(zoom_start=18, zoom_control=True)
 
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
     folium.TileLayer(
@@ -318,10 +320,9 @@ elif page == "View Projects":
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite"
     ).add_to(m)
+    gdf_area.explore(m=m)
 
     folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-
-    m.fit_bounds(bounds)
 
     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
     folium.LayerControl().add_to(m)
