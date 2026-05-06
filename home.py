@@ -523,5 +523,3 @@ elif page == "View Projects":
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-    # Render map
-    st_folium(m, height=500, use_container_width=True)
