@@ -88,13 +88,20 @@ if page == "Create Project":
     folium.TileLayer("OpenStreetMap", name="Street").add_to(m)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        name="Satellite"
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
     ).add_to(m)
+    
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        attr="Labels © Esri — Boundaries & Places",
         name="Hybrid Labels",
-        overlay=True
+        overlay=True,
+        control=True
     ).add_to(m)
+
 
     Fullscreen().add_to(m)
 
