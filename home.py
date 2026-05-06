@@ -496,6 +496,10 @@ lats = [c[1] for c in coords]
 lngs = [c[0] for c in coords]
 bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
 
+st.write("DEBUG: boundary loaded =", boundary is not None)
+st.write("DEBUG: bounds =", bounds)
+
+
 # Create map
 m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
