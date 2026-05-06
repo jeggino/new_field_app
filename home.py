@@ -61,12 +61,16 @@ page = st.sidebar.radio("Navigation", ["Create Project", "View Projects", "Delet
 # ---------------------------------------------------------
 if page == "Create Project":
     st.title("Create Project")
-
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
-    from folium.plugins import Draw
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
-    folium.LayerControl(position="topright").add_to(m)
+    from folium.plugins import Draw, Fullscreen, Geocoder
+
+    # Initialize session state for drawings
+    if "last_drawings" not in st.session_state:
+        st.session_state["last_drawings"] = None
+
+    # Create map
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=False)
 
     # Base map (default street)
     folium.TileLayer(
@@ -74,7 +78,7 @@ if page == "Create Project":
         name="Street",
         control=True
     ).add_to(m)
-    
+
     # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -83,7 +87,7 @@ if page == "Create Project":
         overlay=False,
         control=True
     ).add_to(m)
-    
+
     # Hybrid (Esri Satellite + Labels)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
@@ -101,34 +105,34 @@ if page == "Create Project":
         force_separate_button=True
     ).add_to(m)
 
-
-
-    
-
-    
+    # Draw tool
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    # ⭐ Add address search bar
-
+    # Address search bar
     Geocoder(
         collapsed=False,
         add_marker=True,
         position='bottomleft'
     ).add_to(m)
 
-
+    # Render map
     map_data = st_folium(m, height=500, width=800)
 
+    # Store drawings in session state
+    if map_data and "all_drawings" in map_data:
+        st.session_state["last_drawings"] = map_data["all_drawings"]
+
     polygon_geojson = None
-    
-    if map_data and "all_drawings" in map_data and map_data["all_drawings"]:
-        drawings = map_data["all_drawings"]
-    
-        # Extract all polygon coordinate lists
+
+    # Use stored drawings
+    if st.session_state.get("last_drawings"):
+        drawings = st.session_state["last_drawings"]
+
+        # Extract polygons
         polygons = []
         for d in drawings:
             geom = d.get("geometry", {})
@@ -136,8 +140,8 @@ if page == "Create Project":
                 polygons.append(geom["coordinates"])
             elif geom.get("type") == "MultiPolygon":
                 polygons.extend(geom["coordinates"])
-    
-        # Build a MultiPolygon GeoJSON if multiple polygons exist
+
+        # Build GeoJSON
         if len(polygons) == 1:
             polygon_geojson = {
                 "type": "Feature",
@@ -146,7 +150,7 @@ if page == "Create Project":
                     "coordinates": polygons[0]
                 }
             }
-        else:
+        elif len(polygons) > 1:
             polygon_geojson = {
                 "type": "Feature",
                 "geometry": {
@@ -155,7 +159,7 @@ if page == "Create Project":
                 }
             }
 
-
+    # Project form
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
 
@@ -168,6 +172,7 @@ if page == "Create Project":
     email_to_id = {u["email"]: u["id"] for u in users}
     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
+    # Save project
     if st.button("Save Project"):
         if not polygon_geojson:
             st.error("Draw a polygon first.")
@@ -203,6 +208,10 @@ if page == "Create Project":
                 ).execute()
 
             st.success(f"Project '{safe_name}' saved.")
+
+            # CLEAR DRAWINGS AFTER SAVE
+            st.session_state["last_drawings"] = None
+            st.rerun()
 
         except Exception as e:
             st.error(f"Exception while saving project: {e}")
