@@ -272,13 +272,17 @@ elif page == "View Projects":
     st.write(f"**Name:** {project['name']}")
     st.write(f"**Description:** {project['description']}")
 
+    # Load all users
     try:
         users = supabase.rpc("get_all_users").execute().data or []
     except:
         users = []
 
+    # Two mappings: id -> email AND email -> id
     id_to_email = {u["id"]: u["email"] for u in users}
+    email_to_id = {u["email"]: u["id"] for u in users}
 
+    # Load project members
     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
     members = pm_res.data or []
 
@@ -289,6 +293,7 @@ elif page == "View Projects":
     else:
         st.write("No users assigned.")
 
+    # Load GeoJSON
     filename = f"{selected}.geojson"
     try:
         file_bytes = supabase.storage.from_(BUCKET).download(filename)
@@ -299,57 +304,61 @@ elif page == "View Projects":
 
     st.subheader("Project Area")
 
-    
+    # Bounds helper must exist elsewhere in your file:
+    # def get_bounds(geojson_obj): ...
     bounds = get_bounds(geojson_obj)
-    
+
+    # Create map and fit to polygon
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-    
+
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite"
     ).add_to(m)
-    
+
     folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-    
+
     m.fit_bounds(bounds)
-    
+
     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
     folium.LayerControl().add_to(m)
-    
+
     with st.container():
         st_folium(m, height=500, use_container_width=True)
 
+    # -------- Edit users for this project --------
     st.subheader("Edit Users")
-    
+
     all_user_emails = list(email_to_id.keys())
-    
+
     current_user_ids = [m["user_id"] for m in members]
-    current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids]
-    
+    current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids if uid in id_to_email]
+
     new_selection = st.multiselect(
         "Select users for this project",
         all_user_emails,
         default=current_user_emails
     )
-    
+
     if st.button("Save User Changes"):
         try:
             # Remove all existing users
             supabase.table("project_members").delete().eq("project", selected).execute()
-    
+
             # Add new users
             for email in new_selection:
                 supabase.table("project_members").insert(
                     {"project": selected, "user_id": email_to_id[email]}
                 ).execute()
-    
+
             st.success("Users updated.")
             st.rerun()
-    
+
         except Exception as e:
             st.error(f"Error updating users: {e}")
+
 
 
 
