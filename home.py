@@ -306,7 +306,7 @@ elif page == "View Projects":
 
     # Bounds helper must exist elsewhere in your file:
     # def get_bounds(geojson_obj): ...
-    s.write(geojson_obj)
+    st.write(geojson_obj)
     bounds = get_bounds(geojson_obj)
 
     # Create map and fit to polygon
