@@ -3,23 +3,39 @@ from streamlit_folium import st_folium
 import folium
 import json
 from supabase import create_client
-from folium.plugins import Geocoder, Fullscreen
+from folium.plugins import Geocoder, Fullscreen, Draw
 
 # ---------------------------------------------------------
-# PASSWORD PROTECTION
+# USERNAME + PASSWORD LOGIN (from st.secrets)
 # ---------------------------------------------------------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
+
     st.title("Login")
-    pwd = st.text_input("Enter password", type="password")
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
     if st.button("Login"):
-        if pwd == st.secrets["APP_PASSWORD"]:
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
+
+        allowed_users = st.secrets["users"]
+
+        if username not in allowed_users:
+            st.error("Unknown username")
+            st.stop()
+
+        if password != allowed_users[username]:
             st.error("Incorrect password")
+            st.stop()
+
+        st.session_state.authenticated = True
+        st.session_state.username = username
+        st.success("Login successful")
+
+        st.rerun()
+
     st.stop()
 
 # ---------------------------------------------------------
@@ -35,7 +51,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # HELPERS
 # ---------------------------------------------------------
 def compute_centroid(geojson_obj):
-    """Compute centroid (lat, lon) from Polygon or MultiPolygon GeoJSON."""
     geom = geojson_obj.get("geometry", geojson_obj)
     coords = []
 
@@ -64,81 +79,45 @@ if page == "Create Project":
     st.title("Create Project")
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
-    from folium.plugins import Draw, Fullscreen, Geocoder
-
-    # ---------------------------------------------------------
-    # 1. SESSION STATE FOR DRAWINGS
-    # ---------------------------------------------------------
     if "last_drawings" not in st.session_state:
         st.session_state["last_drawings"] = None
 
-    # ---------------------------------------------------------
-    # 2. CREATE MAP
-    # ---------------------------------------------------------
+    # MAP
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=False)
 
-    # Basemaps
-    folium.TileLayer("OpenStreetMap", name="Street", control=True).add_to(m)
-
+    folium.TileLayer("OpenStreetMap", name="Street").add_to(m)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Esri World Imagery",
-        name="Satellite",
-        overlay=False,
-        control=True
+        name="Satellite"
     ).add_to(m)
-
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-        attr="Esri Boundaries & Places",
         name="Hybrid Labels",
-        overlay=True,
-        control=True
+        overlay=True
     ).add_to(m)
 
-    # Fullscreen
-    Fullscreen(
-        position="topright",
-        title="Full Screen",
-        title_cancel="Exit Full Screen",
-        force_separate_button=True
-    ).add_to(m)
+    Fullscreen().add_to(m)
 
-    # Draw tool
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    # Geocoder
-    Geocoder(
-        collapsed=False,
-        add_marker=True,
-        position='bottomleft'
-    ).add_to(m)
+    Geocoder(add_marker=True).add_to(m)
+    folium.LayerControl().add_to(m)
 
-    # Layer control
-    folium.LayerControl(position="topright").add_to(m)
-
-    # ---------------------------------------------------------
-    # 3. RENDER MAP
-    # ---------------------------------------------------------
     map_data = st_folium(m, height=500, width=800)
 
-    # Store drawings
     if map_data and "all_drawings" in map_data:
         st.session_state["last_drawings"] = map_data["all_drawings"]
 
-    # ---------------------------------------------------------
-    # 4. EXTRACT POLYGON GEOJSON
-    # ---------------------------------------------------------
     polygon_geojson = None
 
-    if st.session_state.get("last_drawings"):
-        drawings = st.session_state["last_drawings"]
-
+    if st.session_state.last_drawings:
+        drawings = st.session_state.last_drawings
         polygons = []
+
         for d in drawings:
             geom = d.get("geometry", {})
             if geom.get("type") == "Polygon":
@@ -157,75 +136,50 @@ if page == "Create Project":
                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
             }
 
-    # ---------------------------------------------------------
-    # 5. PROJECT FORM
-    # ---------------------------------------------------------
+    # FORM
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
 
-    try:
-        users = supabase.rpc("get_all_users").execute().data or []
-    except:
-        users = []
-
+    users = supabase.rpc("get_all_users").execute().data or []
     email_to_id = {u["email"]: u["id"] for u in users}
     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
-    # ---------------------------------------------------------
-    # 6. SAVE PROJECT
-    # ---------------------------------------------------------
+    # SAVE PROJECT
     if st.button("Save Project"):
-    
+
         if not polygon_geojson:
             st.error("Draw a polygon first.")
             st.stop()
-    
+
         if not project_name:
             st.error("Enter a project name.")
             st.stop()
-    
+
         safe_name = project_name.replace(" ", "_")
-        filename = f"{safe_name}.geojson"
-    
-        # ⭐ CHECK IF PROJECT ALREADY EXISTS
-        try:
-            existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
-            if existing.data:
-                st.error(f"A project named '{safe_name}' already exists. Choose another name.")
-                st.stop()
-        except Exception as e:
-            st.error(f"Error checking existing projects: {e}")
+
+        existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
+        if existing.data:
+            st.error("A project with this name already exists.")
             st.stop()
-    
-        # ⭐ SAVE PROJECT
-        try:
-            # Upload polygon file
-            supabase.storage.from_(BUCKET).upload(
-                filename,
-                json.dumps(polygon_geojson).encode("utf-8"),
-                file_options={"content-type": "application/geo+json", "x-upsert": "true"}
-            )
-    
-            # Insert into projects table
-            supabase.table("projects").insert(
-                {"name": safe_name, "description": description}
+
+        supabase.storage.from_(BUCKET).upload(
+            f"{safe_name}.geojson",
+            json.dumps(polygon_geojson).encode("utf-8"),
+            file_options={"content-type": "application/geo+json", "x-upsert": "true"}
+        )
+
+        supabase.table("projects").insert(
+            {"name": safe_name, "description": description}
+        ).execute()
+
+        for email in selected_emails:
+            supabase.table("project_members").insert(
+                {"project": safe_name, "user_id": email_to_id[email]}
             ).execute()
-    
-            # Insert project members
-            for email in selected_emails:
-                supabase.table("project_members").insert(
-                    {"project": safe_name, "user_id": email_to_id[email]}
-                ).execute()
-    
-            # ⭐ SUCCESS MESSAGE
-            st.success(f"Project '{safe_name}' has been successfully created.")
-    
-            # Clear drawings and rerun
-            st.session_state["last_drawings"] = None
-            st.rerun()
-    
-        except Exception as e:
-            st.error(f"Exception while saving project: {e}")
+
+        st.success(f"Project '{safe_name}' created.")
+
+        st.rerun()
 
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
@@ -233,70 +187,37 @@ if page == "Create Project":
 elif page == "View Projects":
     st.title("View Projects")
 
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
+    projects = supabase.table("projects").select("*").execute().data or []
 
     if not projects:
         st.info("No projects found.")
         st.stop()
 
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select a project", project_names)
-
+    selected = st.selectbox("Select a project", [p["name"] for p in projects])
     project = next(p for p in projects if p["name"] == selected)
 
     st.subheader("Project Info")
     st.write(f"**Name:** {project['name']}")
     st.write(f"**Description:** {project['description']}")
 
-    # Load users
-    try:
-        users = supabase.rpc("get_all_users").execute().data or []
-    except:
-        users = []
-
+    users = supabase.rpc("get_all_users").execute().data or []
     id_to_email = {u["id"]: u["email"] for u in users}
 
-    # Load members
-    pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
-    members = pm_res.data or []
+    members = supabase.table("project_members").select("*").eq("project", selected).execute().data or []
 
-    st.subheader("Users who can work on this project")
-    if members:
-        for m in members:
-            st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
-    else:
-        st.write("No users assigned.")
+    st.subheader("Users")
+    for m in members:
+        st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
 
-    # Load GeoJSON
-    filename = f"{selected}.geojson"
-    try:
-        file_bytes = supabase.storage.from_(BUCKET).download(filename)
-        geojson_obj = json.loads(file_bytes.decode("utf-8"))
-    except Exception as e:
-        st.error(f"Could not load GeoJSON: {e}")
-        st.stop()
-    
-    st.subheader("Project Area")
-    
-    # Compute centroid
-    centroid = compute_centroid(geojson_obj.get("geometry", geojson_obj))
-    
-    # Map centered on centroid
-    m = folium.Map(location=centroid, zoom_start=17, zoom_control=False)
-    
-    folium.GeoJson(
-        geojson_obj,
-        name="Project Area",
-        zoom_on_click=False
-    ).add_to(m)
-    
-    Geocoder(
-        collapsed=False,
-        add_marker=True,
-        position='topleft'
-    ).add_to(m)
-    
+    file_bytes = supabase.storage.from_(BUCKET).download(f"{selected}.geojson")
+    geojson_obj = json.loads(file_bytes.decode("utf-8"))
+
+    centroid = compute_centroid(geojson_obj)
+
+    m = folium.Map(location=centroid, zoom_start=17)
+    folium.GeoJson(geojson_obj).add_to(m)
+    Geocoder().add_to(m)
+
     st_folium(m, height=500, width=800)
 
 # ---------------------------------------------------------
@@ -305,59 +226,24 @@ elif page == "View Projects":
 elif page == "Delete Project":
     st.title("Delete Project")
 
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
+    projects = supabase.table("projects").select("*").execute().data or []
 
     if not projects:
         st.info("No projects found.")
         st.stop()
 
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select project to delete", project_names)
+    selected = st.selectbox("Select project to delete", [p["name"] for p in projects])
 
     if st.button("DELETE PROJECT", type="primary"):
-        try:
-            supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
-            supabase.table("project_members").delete().eq("project", selected).execute()
-            supabase.table("projects").delete().eq("name", selected).execute()
 
-            st.success(f"Project '{selected}' deleted.")
+        supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
+        supabase.table("project_members").delete().eq("project", selected).execute()
+        supabase.table("projects").delete().eq("name", selected).execute()
 
-            st.rerun()
+        st.success(f"Project '{selected}' deleted.")
 
-        except Exception as e:
-            st.error(f"Error deleting project: {e}")
+        st.rerun()
 
-    
-    st_folium(m, height=500, width=800)
-
-
-# ---------------------------------------------------------
-# PAGE 3 — DELETE PROJECT
-# ---------------------------------------------------------
-elif page == "Delete Project":
-    st.title("Delete Project")
-
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
-
-    if not projects:
-        st.info("No projects found.")
-        st.stop()
-
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select project to delete", project_names)
-
-    if st.button("DELETE PROJECT", type="primary"):
-        try:
-            supabase.storage.from_(BUCKET).remove([f"{selected}.geojson"])
-            supabase.table("project_members").delete().eq("project", selected).execute()
-            supabase.table("projects").delete().eq("name", selected).execute()
-
-            st.success(f"Project '{selected}' deleted.")
-
-        except Exception as e:
-            st.error(f"Error deleting project: {e}")
 
 
 
