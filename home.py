@@ -480,11 +480,7 @@ elif page == "View Projects":
     m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
     folium.TileLayer("OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="",
-        name="Satellite"
-    ).add_to(m)
+
 
     # Add polygon
     try:
