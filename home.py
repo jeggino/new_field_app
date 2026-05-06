@@ -52,13 +52,6 @@ BUCKET = "observation_photos"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-st.markdown("""
-    <style>
-        .leaflet-control-attribution {
-            display: none !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # HELPERS
@@ -113,6 +106,7 @@ def load_project_boundary(project_name):
     except Exception as e:
         st.warning(f"Could not load boundary for project '{project_name}': {e}")
         return None, None
+        
 def compute_centroid(geojson_obj):
     geom = geojson_obj.get("geometry", geojson_obj)
     coords = []
@@ -315,141 +309,212 @@ if page == "Create Project":
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
 # ---------------------------------------------------------
-elif page == "View Projects":
-    st.title("View Projects")
+# elif page == "View Projects":
+#     st.title("View Projects")
 
-    # --- Load all projects ---
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
+#     # --- Load all projects ---
+#     proj_res = supabase.table("projects").select("*").execute()
+#     projects = proj_res.data or []
 
-    if not projects:
-        st.info("No projects found.")
-        st.stop()
+#     if not projects:
+#         st.info("No projects found.")
+#         st.stop()
 
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select a project", project_names)
+#     project_names = [p["name"] for p in projects]
+#     selected = st.selectbox("Select a project", project_names)
 
-    # Current project data
-    project = next(p for p in projects if p["name"] == selected)
+#     # Current project data
+#     project = next(p for p in projects if p["name"] == selected)
 
-    st.subheader("Project Info")
-    st.write(f"**Name:** {project['name']}")
-    st.write(f"**Description:** {project['description']}")
+#     st.subheader("Project Info")
+#     st.write(f"**Name:** {project['name']}")
+#     st.write(f"**Description:** {project['description']}")
 
-    # --- Load all users from Supabase ---
-    try:
-        users = supabase.rpc("get_all_users").execute().data or []
-    except:
-        users = []
+#     # --- Load all users from Supabase ---
+#     try:
+#         users = supabase.rpc("get_all_users").execute().data or []
+#     except:
+#         users = []
 
-    # Two mappings
-    id_to_email = {u["id"]: u["email"] for u in users}
-    email_to_id = {u["email"]: u["id"] for u in users}
+#     # Two mappings
+#     id_to_email = {u["id"]: u["email"] for u in users}
+#     email_to_id = {u["email"]: u["id"] for u in users}
 
-    # --- Load project members ---
-    pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
-    members = pm_res.data or []
+#     # --- Load project members ---
+#     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
+#     members = pm_res.data or []
 
-    st.subheader("Users who can work on this project")
-    if members:
-        for m in members:
-            st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
-    else:
-        st.write("No users assigned.")
+#     st.subheader("Users who can work on this project")
+#     if members:
+#         for m in members:
+#             st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
+#     else:
+#         st.write("No users assigned.")
 
-    # --- Load boundary using your working function ---
-    boundary, bounds = load_project_boundary(selected)
+#     # --- Load boundary using your working function ---
+#     boundary, bounds = load_project_boundary(selected)
 
-    st.subheader("Project Area")
+#     st.subheader("Project Area")
 
-    # --- Create map ---
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+#     # --- Create map ---
+#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # Basemaps
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite"
-    ).add_to(m)
+#     # Basemaps
+#     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+#     folium.TileLayer(
+#         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+#         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+#         name="Satellite"
+#     ).add_to(m)
 
-    # Add polygon if exists
-    if boundary:
-        folium.GeoJson(boundary, name="Project Area").add_to(m)
+#     get_bounds(geojson_obj)
 
-    # Fit to bounds if valid
-    if bounds:
-        try:
-            m.fit_bounds(bounds)
-        except:
-            pass
+#     # Add polygon if exists
+#     if boundary:
+#         folium.GeoJson(boundary, name="Project Area").add_to(m)
 
-    # Plugins
-    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    folium.LayerControl().add_to(m)
+#     # Fit to bounds if valid
+#     if bounds:
+#         try:
+#             m.fit_bounds(bounds)
+#         except:
+#             pass
 
-    # --- Render map (NO HTML WRAPPER) ---
-    with st.container():
-        st_folium(m, height=500, use_container_width=True)
+#     # Plugins
+#     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+#     folium.LayerControl().add_to(m)
 
-    # --- Edit Users Section ---
-    "---"
-    st.subheader("Edit Users")
+#     # --- Render map (NO HTML WRAPPER) ---
+#     with st.container():
+#         st_folium(m, height=500, use_container_width=True)
 
-    all_user_emails = list(email_to_id.keys())
+#     # --- Edit Users Section ---
+#     "---"
+#     st.subheader("Edit Users")
 
-    current_user_ids = [m["user_id"] for m in members]
-    current_user_emails = [
-        id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
-    ]
+#     all_user_emails = list(email_to_id.keys())
 
-    new_selection = st.multiselect(
-        "Select users for this project",
-        all_user_emails,
-        default=current_user_emails
-    )
+#     current_user_ids = [m["user_id"] for m in members]
+#     current_user_emails = [
+#         id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
+#     ]
 
-    if st.button("Save User Changes"):
-        try:
-            # Remove all existing users
-            supabase.table("project_members").delete().eq("project", selected).execute()
+#     new_selection = st.multiselect(
+#         "Select users for this project",
+#         all_user_emails,
+#         default=current_user_emails
+#     )
 
-            # Add new users
-            for email in new_selection:
-                supabase.table("project_members").insert(
-                    {"project": selected, "user_id": email_to_id[email]}
-                ).execute()
+#     if st.button("Save User Changes"):
+#         try:
+#             # Remove all existing users
+#             supabase.table("project_members").delete().eq("project", selected).execute()
 
-            st.success("Users updated.")
-            st.rerun()
+#             # Add new users
+#             for email in new_selection:
+#                 supabase.table("project_members").insert(
+#                     {"project": selected, "user_id": email_to_id[email]}
+#                 ).execute()
 
-        except Exception as e:
-            st.error(f"Error updating users: {e}")
+#             st.success("Users updated.")
+#             st.rerun()
+
+#         except Exception as e:
+#             st.error(f"Error updating users: {e}")
 
 
 
-# ---------------------------------------------------------
-#   DELETE PROJECT
-# ---------------------------------------------------------
-    "---"
-    # st.subheader("Delete Project")
+# # ---------------------------------------------------------
+# #   DELETE PROJECT
+# # ---------------------------------------------------------
+#     "---"
+#     # st.subheader("Delete Project")
 
-    # proj_res = supabase.table("projects").select("*").execute()
-    # projects = proj_res.data or []
+#     # proj_res = supabase.table("projects").select("*").execute()
+#     # projects = proj_res.data or []
 
-    # if not projects:
-    #     st.info("No projects found.")
-    #     st.stop()
+#     # if not projects:
+#     #     st.info("No projects found.")
+#     #     st.stop()
 
-    # project_names = [p["name"] for p in projects]
-    # selected = st.selectbox("Select project to delete", 
-    #                         project_names,
-    #                         index=None,
-    #                         placeholder="Select a project...",
-    #                        )
+#     # project_names = [p["name"] for p in projects]
+#     # selected = st.selectbox("Select project to delete", 
+#     #                         project_names,
+#     #                         index=None,
+#     #                         placeholder="Select a project...",
+#     #                        )
 
-    if st.button("DELETE PROJECT", type="primary"):
-        confirm_delete_dialog(selected)
+#     if st.button("DELETE PROJECT", type="primary"):
+#         confirm_delete_dialog(selected)
+
+
+
+
+
+
+
+import streamlit as st
+import folium
+from streamlit_folium import st_folium
+import json
+
+# Your exact GeoJSON
+geojson_obj = {
+    "type": "Feature",
+    "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+            [
+                [
+                    [4.879426, 52.387533],
+                    [4.879815, 52.387397],
+                    [4.879915, 52.387505],
+                    [4.879523, 52.387636],
+                    [4.879426, 52.387533]
+                ]
+            ],
+            [
+                [
+                    [4.944915, 52.316212],
+                    [4.945983, 52.316586],
+                    [4.944776, 52.317901],
+                    [4.943708, 52.317537],
+                    [4.944915, 52.316212]
+                ]
+            ]
+        ]
+    }
+}
+
+# Compute bounds
+coords = []
+for poly in geojson_obj["geometry"]["coordinates"]:
+    for ring in poly:
+        coords.extend(ring)
+
+lats = [c[1] for c in coords]
+lngs = [c[0] for c in coords]
+bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
+
+# Create map
+m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+
+# Add layers
+folium.TileLayer("OpenStreetMap").add_to(m)
+folium.TileLayer(
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="",
+    name="Satellite"
+).add_to(m)
+
+# Add polygon
+folium.GeoJson(geojson_obj, name="Boundary").add_to(m)
+
+# Fit to bounds
+m.fit_bounds(bounds)
+
+# Show map
+st_folium(m, height=500, use_container_width=True)
 
 
 
