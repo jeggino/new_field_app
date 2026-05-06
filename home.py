@@ -304,77 +304,77 @@ elif page == "View Projects":
 
     st.subheader("Project Area")
 
-# --- SAFE BOUNDS EXTRACTION ---
-try:
-    bounds = get_bounds(geojson_obj)
-    # Validate bounds
-    if not bounds or bounds[0] == bounds[1]:
-        raise ValueError("Invalid bounds")
-except:
-    # Fallback center
-    bounds = [[52.37, 4.90], [52.38, 4.91]]
-
-# --- CREATE MAP ---
-m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-
-# Basemaps
-folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-folium.TileLayer(
-    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-    name="Satellite"
-).add_to(m)
-
-# Polygon
-try:
-    folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-except Exception as e:
-    st.error(f"GeoJSON error: {e}")
-
-# Fit to polygon
-try:
-    m.fit_bounds(bounds)
-except:
-    pass
-
-# Plugins
-Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-folium.LayerControl().add_to(m)
-
-# --- RENDER MAP ---
-with st.container():
-    st_folium(m, height=550, use_container_width=True)
-
-    # -------- Edit users for this project --------
-    st.subheader("Edit Users")
-
-    all_user_emails = list(email_to_id.keys())
-
-    current_user_ids = [m["user_id"] for m in members]
-    current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids if uid in id_to_email]
-
-    new_selection = st.multiselect(
-        "Select users for this project",
-        all_user_emails,
-        default=current_user_emails
-    )
-
-    if st.button("Save User Changes"):
-        try:
-            # Remove all existing users
-            supabase.table("project_members").delete().eq("project", selected).execute()
-
-            # Add new users
-            for email in new_selection:
-                supabase.table("project_members").insert(
-                    {"project": selected, "user_id": email_to_id[email]}
-                ).execute()
-
-            st.success("Users updated.")
-            st.rerun()
-
-        except Exception as e:
-            st.error(f"Error updating users: {e}")
+    # --- SAFE BOUNDS EXTRACTION ---
+    try:
+        bounds = get_bounds(geojson_obj)
+        # Validate bounds
+        if not bounds or bounds[0] == bounds[1]:
+            raise ValueError("Invalid bounds")
+    except:
+        # Fallback center
+        bounds = [[52.37, 4.90], [52.38, 4.91]]
+    
+    # --- CREATE MAP ---
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+    
+    # Basemaps
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite"
+    ).add_to(m)
+    
+    # Polygon
+    try:
+        folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
+    except Exception as e:
+        st.error(f"GeoJSON error: {e}")
+    
+    # Fit to polygon
+    try:
+        m.fit_bounds(bounds)
+    except:
+        pass
+    
+    # Plugins
+    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+    folium.LayerControl().add_to(m)
+    
+    # --- RENDER MAP ---
+    with st.container():
+        st_folium(m, height=550, use_container_width=True)
+    
+        # -------- Edit users for this project --------
+        st.subheader("Edit Users")
+    
+        all_user_emails = list(email_to_id.keys())
+    
+        current_user_ids = [m["user_id"] for m in members]
+        current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids if uid in id_to_email]
+    
+        new_selection = st.multiselect(
+            "Select users for this project",
+            all_user_emails,
+            default=current_user_emails
+        )
+    
+        if st.button("Save User Changes"):
+            try:
+                # Remove all existing users
+                supabase.table("project_members").delete().eq("project", selected).execute()
+    
+                # Add new users
+                for email in new_selection:
+                    supabase.table("project_members").insert(
+                        {"project": selected, "user_id": email_to_id[email]}
+                    ).execute()
+    
+                st.success("Users updated.")
+                st.rerun()
+    
+            except Exception as e:
+                st.error(f"Error updating users: {e}")
 
 
 
