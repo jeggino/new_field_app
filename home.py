@@ -4,7 +4,7 @@ import folium
 import json
 from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
-import geopandas as gpd
+import pandas as pd
 
 # ---------------------------------------------------------
 # USERNAME + PASSWORD LOGIN (from st.secrets)
