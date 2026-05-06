@@ -303,23 +303,23 @@ elif page == "View Projects":
     geojson_obj
 
     # Compute bounds safely
-    bounds = get_bounds(geojson_obj)
+    # bounds = get_bounds(geojson_obj)
 
     # Create map
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite"
-    ).add_to(m)
+    # folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+    # folium.TileLayer(
+    #     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    #     attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+    #     name="Satellite"
+    # ).add_to(m)
 
     folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-    m.fit_bounds(bounds)
+    # m.fit_bounds(bounds)
 
-    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    folium.LayerControl().add_to(m)
+    # Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+    # folium.LayerControl().add_to(m)
 
     # Render map (NO HTML WRAPPER)
     with st.container():
