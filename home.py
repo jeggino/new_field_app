@@ -232,6 +232,9 @@ if page == "Create Project":
         if map_data and "all_drawings" in map_data:
             st.session_state["last_drawings"] = map_data["last_active_drawing"]
 
+
+    st.write(map_data)
+
         
     polygon_geojson = None
 
