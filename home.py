@@ -142,12 +142,20 @@ if page == "Create Project":
     ).add_to(m)
 
     Fullscreen(position="topright").add_to(m)
+    # Geocoder FIRST (top-left)
+    Geocoder(
+        collapsed=False,
+        add_marker=True,
+        position='topleft'
+    ).add_to(m)
+    
+    # Draw SECOND (below geocoder)
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
-    Geocoder(collapsed=False, add_marker=True, position="bottomleft").add_to(m)
+
     folium.LayerControl(position="topright").add_to(m)
 
     # Put map in a container, full width
@@ -291,34 +299,64 @@ elif page == "View Projects":
 
     st.subheader("Project Area")
 
+    
     bounds = get_bounds(geojson_obj)
-
-    m = folium.Map(location=[(bounds[0][0] + bounds[1][0]) / 2,
-                             (bounds[0][1] + bounds[1][1]) / 2],
-                   zoom_start=17, zoom_control=True)
-
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
+    
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+    
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite",
-        overlay=False,
-        control=True
+        name="Satellite"
     ).add_to(m)
-
-    folium.GeoJson(
-        geojson_obj,
-        name="Project Area",
-        zoom_on_click=False
-    ).add_to(m)
-
+    
+    folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
+    
     m.fit_bounds(bounds)
-
+    
     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    folium.LayerControl(position="topright").add_to(m)
-
+    folium.LayerControl().add_to(m)
+    
     with st.container():
         st_folium(m, height=500, use_container_width=True)
+
+    st.subheader("Edit Users")
+    
+    all_user_emails = list(email_to_id.keys())
+    
+    current_user_ids = [m["user_id"] for m in members]
+    current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids]
+    
+    new_selection = st.multiselect(
+        "Select users for this project",
+        all_user_emails,
+        default=current_user_emails
+    )
+    
+    if st.button("Save User Changes"):
+        try:
+            # Remove all existing users
+            supabase.table("project_members").delete().eq("project", selected).execute()
+    
+            # Add new users
+            for email in new_selection:
+                supabase.table("project_members").insert(
+                    {"project": selected, "user_id": email_to_id[email]}
+                ).execute()
+    
+            st.success("Users updated.")
+            st.rerun()
+    
+        except Exception as e:
+            st.error(f"Error updating users: {e}")
+
+
+
+
+
+    
+
 
 # ---------------------------------------------------------
 # PAGE 3 — DELETE PROJECT
