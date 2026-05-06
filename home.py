@@ -250,6 +250,10 @@ if page == "Create Project":
                 "type": "Feature",
                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
             }
+            if button('more then a geometry, click here if you argre, otherwise check you file'):
+                continue
+            else:
+                st.stop()
 
     # FORM
     project_name = st.text_input("Project name")
