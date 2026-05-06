@@ -299,8 +299,9 @@ elif page == "View Projects":
     geojson_obj = json.loads(file_bytes.decode("utf-8"))
 
     st.subheader("Project Area")
-    df = pd.read_json(geojson_obj,orient="index")
-    df
+
+    geojson_obj
+
     # Compute bounds safely
     bounds = get_bounds(geojson_obj)
 
