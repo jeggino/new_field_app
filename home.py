@@ -306,9 +306,9 @@ if page == "Create Project":
         except Exception as e:
             st.error(f"Exception while saving project: {e}")
 
----------------------------------------------------------
-PAGE 2 — VIEW PROJECTS
----------------------------------------------------------
+# ---------------------------------------------------------
+# PAGE 2 — VIEW PROJECTS
+# ---------------------------------------------------------
 elif page == "View Projects":
     st.title("View Projects")
 
