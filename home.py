@@ -386,7 +386,10 @@ elif page == "View Projects":
         st.stop()
 
     project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select a project", project_names)
+    selected = st.selectbox("Select a project", 
+                            project_names,
+                            index=None,
+                            placeholder="Select a project...",)
 
     project = next(p for p in projects if p["name"] == selected)
 
