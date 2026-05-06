@@ -453,72 +453,32 @@ if page == "Create Project":
 
 
 
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
-import json
+st.subheader("Project Area")
 
-# Your exact GeoJSON
-geojson_obj = {
-    "type": "Feature",
-    "geometry": {
-        "type": "MultiPolygon",
-        "coordinates": [
-            [
-                [
-                    [4.879426, 52.387533],
-                    [4.879815, 52.387397],
-                    [4.879915, 52.387505],
-                    [4.879523, 52.387636],
-                    [4.879426, 52.387533]
-                ]
-            ],
-            [
-                [
-                    [4.944915, 52.316212],
-                    [4.945983, 52.316586],
-                    [4.944776, 52.317901],
-                    [4.943708, 52.317537],
-                    [4.944915, 52.316212]
-                ]
-            ]
-        ]
-    }
-}
-
-# Compute bounds
-coords = []
-for poly in geojson_obj["geometry"]["coordinates"]:
-    for ring in poly:
-        coords.extend(ring)
-
-lats = [c[1] for c in coords]
-lngs = [c[0] for c in coords]
-bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
+# Load boundary + bounds
+boundary, bounds = load_project_boundary(selected)
 
 st.write("DEBUG: boundary loaded =", boundary is not None)
 st.write("DEBUG: bounds =", bounds)
 
-
 # Create map
 m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
-# Add layers
+# Basemaps
 folium.TileLayer("OpenStreetMap").add_to(m)
-# folium.TileLayer(
-#     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-#     attr="",
-#     name="Satellite"
-# ).add_to(m)
+
 
 # Add polygon
-folium.GeoJson(geojson_obj, name="Boundary").add_to(m)
+if boundary:
+    folium.GeoJson(boundary, name="Boundary").add_to(m)
 
 # Fit to bounds
-m.fit_bounds(bounds)
+if bounds:
+    m.fit_bounds(bounds)
 
 # Show map
 st_folium(m, height=500, use_container_width=True)
+
 
 
 
