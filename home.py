@@ -484,7 +484,19 @@ elif page == "View Projects":
 
     # Add polygon
     try:
-        folium.GeoJson(boundary, name="Boundary").add_to(m)
+        # folium.GeoJson(boundary, name="Boundary").add_to(m)
+
+        folium.GeoJson(
+            boundary,
+            name="Boundary",
+            style_function=lambda x: {
+                "fillColor": "#ffcc00",
+                "color": "red",
+                "weight": 2.5,
+                "fillOpacity": 0.1,
+            }
+        ).add_to(m)
+    
     except Exception as e:
         st.error(f"GeoJSON error: {e}")
         st.json(boundary)
