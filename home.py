@@ -390,6 +390,8 @@ elif page == "View Projects":
                             project_names,
                             index=None,
                             placeholder="Select a project...",)
+    if not selected:
+        st.stop()
 
     project = next(p for p in projects if p["name"] == selected)
 
