@@ -67,12 +67,28 @@ if page == "Create Project":
     from folium.plugins import Draw
     m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
 
-    # Add satellite basemap
+    # Base map (default street)
+    folium.TileLayer(
+        "OpenStreetMap",
+        name="Street",
+        control=True
+    ).add_to(m)
+    
+    # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri World Imagery",
         name="Satellite",
         overlay=False,
+        control=True
+    ).add_to(m)
+    
+    # Hybrid (Esri Satellite + Labels)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri Boundaries & Places",
+        name="Hybrid Labels",
+        overlay=True,
         control=True
     ).add_to(m)
 
@@ -86,7 +102,8 @@ if page == "Create Project":
 
 
 
-    folium.LayerControl().add_to(m)
+    folium.LayerControl(position="topright").add_to(m)
+
     
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
