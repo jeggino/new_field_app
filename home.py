@@ -218,7 +218,7 @@ if page == "Create Project":
     with st.container():
         map_data = st_folium(m, height=500, use_container_width=True)
 
-    st.write(map_data)
+    # st.write(map_data)
 
     choice = st.sidebar.radio("test", ["single", "multiple"])
 
