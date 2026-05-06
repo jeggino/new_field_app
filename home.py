@@ -7,13 +7,7 @@ from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
 
 
-st.markdown("""
-    <style>
-        .leaflet-control-attribution {
-            display: none !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
+
 
 
 # ---------------------------------------------------------
@@ -57,6 +51,14 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 BUCKET = "observation_photos"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+st.markdown("""
+    <style>
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # HELPERS
