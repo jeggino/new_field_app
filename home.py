@@ -222,7 +222,7 @@ if page == "Create Project":
 
     choice = st.sidebar.radio("test", ["single", "multiple"])
 
-    if choice == "multiple"
+    if choice == "multiple":
     
         if map_data and "all_drawings" in map_data:
             st.session_state["last_drawings"] = map_data["all_drawings"]
