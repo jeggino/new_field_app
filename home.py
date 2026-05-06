@@ -220,20 +220,11 @@ if page == "Create Project":
 
     # st.write(map_data)
 
-    choice = st.radio("test", ["single", "multiple"])
 
-    if choice == "multiple":
     
-        if map_data and "all_drawings" in map_data:
-            st.session_state["last_drawings"] = map_data["all_drawings"]
+    if map_data and "all_drawings" in map_data:
+        st.session_state["last_drawings"] = map_data["all_drawings"]
 
-    else:
-
-        if map_data and "all_drawings" in map_data:
-            st.session_state["last_drawings"] = map_data["last_active_drawing"]
-
-
-    st.write(map_data)
 
         
     polygon_geojson = None
