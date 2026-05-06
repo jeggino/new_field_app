@@ -253,128 +253,6 @@ if page == "Create Project":
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
 # ---------------------------------------------------------
-# elif page == "View Projects":
-#     st.title("View Projects")
-
-#     proj_res = supabase.table("projects").select("*").execute()
-#     projects = proj_res.data or []
-
-#     if not projects:
-#         st.info("No projects found.")
-#         st.stop()
-
-#     project_names = [p["name"] for p in projects]
-#     selected = st.selectbox("Select a project", project_names)
-
-#     project = next(p for p in projects if p["name"] == selected)
-
-#     st.subheader("Project Info")
-#     st.write(f"**Name:** {project['name']}")
-#     st.write(f"**Description:** {project['description']}")
-
-#     # Load all users
-#     try:
-#         users = supabase.rpc("get_all_users").execute().data or []
-#     except:
-#         users = []
-
-#     # Two mappings: id -> email AND email -> id
-#     id_to_email = {u["id"]: u["email"] for u in users}
-#     email_to_id = {u["email"]: u["id"] for u in users}
-
-#     # Load project members
-#     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
-#     members = pm_res.data or []
-
-#     st.subheader("Users who can work on this project")
-#     if members:
-#         for m in members:
-#             st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
-#     else:
-#         st.write("No users assigned.")
-
-#     # Load GeoJSON
-#     filename = f"{selected}.geojson"
-#     try:
-#         file_bytes = supabase.storage.from_(BUCKET).download(filename)
-#         geojson_obj = json.loads(file_bytes.decode("utf-8"))
-#     except Exception as e:
-#         st.error(f"Could not load GeoJSON: {e}")
-#         st.stop()
-
-#     st.subheader("Project Area")
-
-#     # --- SAFE BOUNDS EXTRACTION ---
-#     try:
-#         bounds = get_bounds(geojson_obj)
-#         # Validate bounds
-#         if not bounds or bounds[0] == bounds[1]:
-#             raise ValueError("Invalid bounds")
-#     except:
-#         # Fallback center
-#         bounds = [[52.37, 4.90], [52.38, 4.91]]
-    
-#     # --- CREATE MAP ---
-#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-    
-#     # Basemaps
-#     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-#     folium.TileLayer(
-#         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-#         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-#         name="Satellite"
-#     ).add_to(m)
-    
-#     # Polygon
-#     try:
-#         folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-#     except Exception as e:
-#         st.error(f"GeoJSON error: {e}")
-    
-#     # Fit to polygon
-#     try:
-#         m.fit_bounds(bounds)
-#     except:
-#         pass
-    
-#     # Plugins
-#     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-#     folium.LayerControl().add_to(m)
-    
-#     # --- RENDER MAP ---
-#     with st.container():
-#         st_folium(m, height=550, use_container_width=True)
-    
-#         # -------- Edit users for this project --------
-#         st.subheader("Edit Users")
-    
-#         all_user_emails = list(email_to_id.keys())
-    
-#         current_user_ids = [m["user_id"] for m in members]
-#         current_user_emails = [id_to_email.get(uid, "") for uid in current_user_ids if uid in id_to_email]
-    
-#         new_selection = st.multiselect(
-#             "Select users for this project",
-#             all_user_emails,
-#             default=current_user_emails
-#         )
-    
-#         if st.button("Save User Changes"):
-#             try:
-#                 # Remove all existing users
-#                 supabase.table("project_members").delete().eq("project", selected).execute()
-    
-#                 # Add new users
-#                 for email in new_selection:
-#                     supabase.table("project_members").insert(
-#                         {"project": selected, "user_id": email_to_id[email]}
-#                     ).execute()
-    
-#                 st.success("Users updated.")
-#                 st.rerun()
-    
-#             except Exception as e:
-#                 st.error(f"Error updating users: {e}")
 elif page == "View Projects":
     st.title("View Projects")
 
@@ -421,7 +299,8 @@ elif page == "View Projects":
     geojson_obj = json.loads(file_bytes.decode("utf-8"))
 
     st.subheader("Project Area")
-
+    df = pd.read_json(geojson_obj)
+    df
     # Compute bounds safely
     bounds = get_bounds(geojson_obj)
 
