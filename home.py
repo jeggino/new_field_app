@@ -66,6 +66,7 @@ if page == "Create Project":
 
     from folium.plugins import Draw
     m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
+    folium.LayerControl(position="topright").add_to(m)
 
     # Base map (default street)
     folium.TileLayer(
@@ -102,7 +103,7 @@ if page == "Create Project":
 
 
 
-    folium.LayerControl(position="topright").add_to(m)
+    
 
     
     Draw(
