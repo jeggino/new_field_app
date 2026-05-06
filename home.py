@@ -83,15 +83,13 @@ if page == "Create Project":
         st.session_state["last_drawings"] = None
 
     # MAP
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=False)
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
     folium.TileLayer("OpenStreetMap", name="Street").add_to(m)
     folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite",
-        overlay=False,
-        control=True
+        tiles="https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
+        attr="Map tiles by Stamen Design — Data © OpenStreetMap",
+        name="Terrain"
     ).add_to(m)
     
     folium.TileLayer(
@@ -186,7 +184,10 @@ if page == "Create Project":
 
         st.success(f"Project '{safe_name}' created.")
 
+        st.session_state.clear()
+        st.session_state.authenticated = True  # keep login
         st.rerun()
+
 
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
