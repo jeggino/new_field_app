@@ -158,7 +158,7 @@ def confirm_delete_dialog(project_name):
         "https://media1.tenor.com/m/Y3qtler-qqEAAAAC/suspicious-dog.gif",
         width=500,
     )
-    # st.write(f"Are you sure you want to delete project **{project_name}**?")
+    st.write(f"Are you sure you want to delete project **{project_name}**?")
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Yes, delete", type="primary"):
