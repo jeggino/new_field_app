@@ -477,6 +477,8 @@ if bounds:
 
 # Show map
 st_folium(m, height=500, use_container_width=True)
+st.write("DEBUG: reached map rendering")
+
 
 
 
