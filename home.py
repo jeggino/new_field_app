@@ -398,7 +398,11 @@ elif page == "Delete Project":
         st.stop()
 
     project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select project to delete", project_names)
+    selected = st.selectbox("Select project to delete", 
+                            project_names,
+                            index=None,
+                            placeholder="Select a project...",
+                           )
 
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
