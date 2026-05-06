@@ -66,6 +66,15 @@ if page == "Create Project":
     from folium.plugins import Draw
     m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
 
+    # Add satellite basemap
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri World Imagery",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
 
     folium.LayerControl().add_to(m)
     
