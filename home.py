@@ -781,9 +781,9 @@ def show_main_app():
     )
     reports = res.data or []
 
-    if not reports:
-        st.info("No reports yet.")
-        return
+    # if not reports:
+    #     st.info("No reports yet.")
+    #     return
 
     df = pd.DataFrame(reports)
     st.sidebar.download_button(
