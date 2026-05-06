@@ -313,7 +313,7 @@ page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
 #             st.error(f"Exception while saving project: {e}")
 #             st.stop()
 
-elif page == "Create Project":
+if page == "Create Project":
     st.title("Create Project")
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
