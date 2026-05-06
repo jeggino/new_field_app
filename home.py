@@ -185,39 +185,55 @@ if page == "Create Project":
     # 7. SAVE PROJECT
     # ---------------------------------------------------------
     if st.button("Save Project"):
+    
         if not polygon_geojson:
             st.error("Draw a polygon first.")
             st.stop()
-
+    
         if not project_name:
             st.error("Enter a project name.")
             st.stop()
-
+    
         safe_name = project_name.replace(" ", "_")
         filename = f"{safe_name}.geojson"
-
+    
+        # ⭐ CHECK IF PROJECT ALREADY EXISTS
         try:
+            existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
+            if existing.data:
+                st.error(f"A project named '{safe_name}' already exists. Choose another name.")
+                st.stop()
+        except Exception as e:
+            st.error(f"Error checking existing projects: {e}")
+            st.stop()
+    
+        # ⭐ SAVE PROJECT
+        try:
+            # Upload polygon file
             supabase.storage.from_(BUCKET).upload(
                 filename,
                 json.dumps(polygon_geojson).encode("utf-8"),
                 file_options={"content-type": "application/geo+json", "x-upsert": "true"}
             )
-
+    
+            # Insert into projects table
             supabase.table("projects").insert(
                 {"name": safe_name, "description": description}
             ).execute()
-
+    
+            # Insert project members
             for email in selected_emails:
                 supabase.table("project_members").insert(
                     {"project": safe_name, "user_id": email_to_id[email]}
                 ).execute()
-
-            st.success(f"Project '{safe_name}' saved.")
-
+    
+            # ⭐ SUCCESS MESSAGE
+            st.success(f"Project '{safe_name}' has been successfully created.")
+    
             # Clear drawings after saving
             st.session_state["clear_drawings"] = True
             st.rerun()
-
+    
         except Exception as e:
             st.error(f"Exception while saving project: {e}")
 
