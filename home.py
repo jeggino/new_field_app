@@ -121,6 +121,9 @@ if page == "Create Project":
         position='bottomleft'
     ).add_to(m)
 
+    # ⭐ Add LayerControl (this was missing)
+    folium.LayerControl(position="topright").add_to(m)
+
     # ---------------------------------------------------------
     # 3. RENDER MAP
     # ---------------------------------------------------------
