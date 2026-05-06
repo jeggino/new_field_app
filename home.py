@@ -177,7 +177,7 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects", "Delete Project"])
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -393,6 +393,7 @@ elif page == "View Projects":
         st_folium(m, height=500, use_container_width=True)
 
     # --- Edit Users Section ---
+    "---"
     st.subheader("Edit Users")
 
     all_user_emails = list(email_to_id.keys())
@@ -427,17 +428,10 @@ elif page == "View Projects":
 
 
 
-
-
-
-
-    
-
-
 # ---------------------------------------------------------
-# PAGE 3 — DELETE PROJECT
+#   DELETE PROJECT
 # ---------------------------------------------------------
-elif page == "Delete Project":
+    "---"
     st.title("Delete Project")
 
     proj_res = supabase.table("projects").select("*").execute()
