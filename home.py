@@ -361,11 +361,7 @@ elif page == "View Projects":
 
     # Basemaps
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite"
-    ).add_to(m)
+
 
 
     # Add polygon if exists
@@ -389,8 +385,7 @@ elif page == "View Projects":
             pass
 
     # Plugins
-    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    folium.LayerControl().add_to(m)
+
 
     # --- Render map (NO HTML WRAPPER) ---
     with st.container():
@@ -436,21 +431,7 @@ elif page == "View Projects":
 #   DELETE PROJECT
 # ---------------------------------------------------------
     "---"
-    # st.subheader("Delete Project")
 
-    # proj_res = supabase.table("projects").select("*").execute()
-    # projects = proj_res.data or []
-
-    # if not projects:
-    #     st.info("No projects found.")
-    #     st.stop()
-
-    # project_names = [p["name"] for p in projects]
-    # selected = st.selectbox("Select project to delete", 
-    #                         project_names,
-    #                         index=None,
-    #                         placeholder="Select a project...",
-    #                        )
 
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
