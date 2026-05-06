@@ -64,8 +64,6 @@ if page == "Create Project":
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
     from folium.plugins import Draw, Fullscreen, Geocoder
-    from folium import MacroElement
-    from jinja2 import Template
 
     # ---------------------------------------------------------
     # 1. HANDLE CLEARING BEFORE MAP IS DRAWN
@@ -73,7 +71,7 @@ if page == "Create Project":
     if "last_drawings" not in st.session_state:
         st.session_state["last_drawings"] = None
 
-    if "clear_drawings" in st.session_state and st.session_state["clear_drawings"]:
+    if st.session_state.get("clear_drawings"):
         st.session_state["last_drawings"] = None
         st.session_state["clear_drawings"] = False
 
@@ -124,74 +122,7 @@ if page == "Create Project":
     ).add_to(m)
 
     # ---------------------------------------------------------
-    # 3. LIVE AREA CALCULATION
-    # ---------------------------------------------------------
-    folium.JavascriptLink(
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet.geometryutil/0.10.0/leaflet.geometryutil.min.js"
-    ).add_to(m)
-
-    area_js = """
-    {% macro script(this, kwargs) %}
-
-    function formatArea(area) {
-        if (area < 1000000) {
-            return (area).toFixed(0) + " m²";
-        } else {
-            return (area / 1000000).toFixed(2) + " km²";
-        }
-    }
-
-    var infoBox = L.control({position: 'bottomright'});
-    infoBox.onAdd = function () {
-        this._div = L.DomUtil.create('div', 'area-info');
-        this._div.style.background = 'white';
-        this._div.style.padding = '6px 10px';
-        this._div.style.borderRadius = '6px';
-        this._div.style.boxShadow = '0 0 6px rgba(0,0,0,0.3)';
-        this._div.style.fontSize = '14px';
-        this._div.innerHTML = "Draw a polygon";
-        return this._div;
-    };
-    infoBox.addTo({{this._parent.get_name()}});
-
-    {{this._parent.get_name()}}.on(L.Draw.Event.DRAWVERTEX, function (e) {
-        var latlngs = e.layers._layers;
-        var coords = [];
-
-        for (var key in latlngs) {
-            coords.push(latlngs[key]._latlng);
-        }
-
-        if (coords.length > 2) {
-            var area = L.GeometryUtil.geodesicArea(coords);
-            infoBox._div.innerHTML = "Area: <b>" + formatArea(area) + "</b>";
-        }
-    });
-
-    {{this._parent.get_name()}}.on(L.Draw.Event.CREATED, function (e) {
-        var layer = e.layer;
-        var latlngs = layer.getLatLngs()[0];
-        var area = L.GeometryUtil.geodesicArea(latlngs);
-        infoBox._div.innerHTML = "Final area: <b>" + formatArea(area) + "</b>";
-    });
-
-    {{this._parent.get_name()}}.on(L.Draw.Event.EDITED, function (e) {
-        e.layers.eachLayer(function (layer) {
-            var latlngs = layer.getLatLngs()[0];
-            var area = L.GeometryUtil.geodesicArea(latlngs);
-            infoBox._div.innerHTML = "Updated area: <b>" + formatArea(area) + "</b>";
-        });
-    });
-
-    {% endmacro %}
-    """
-
-    area_calc = MacroElement()
-    area_calc._template = Template(area_js)
-    m.add_child(area_calc)
-
-    # ---------------------------------------------------------
-    # 4. RENDER MAP
+    # 3. RENDER MAP
     # ---------------------------------------------------------
     map_data = st_folium(m, height=500, width=800)
 
@@ -200,7 +131,7 @@ if page == "Create Project":
         st.session_state["last_drawings"] = map_data["all_drawings"]
 
     # ---------------------------------------------------------
-    # 5. EXTRACT POLYGON GEOJSON
+    # 4. EXTRACT POLYGON GEOJSON
     # ---------------------------------------------------------
     polygon_geojson = None
 
@@ -227,14 +158,14 @@ if page == "Create Project":
             }
 
     # ---------------------------------------------------------
-    # 6. CLEAR DRAWINGS BUTTON
+    # 5. CLEAR DRAWINGS BUTTON
     # ---------------------------------------------------------
     if st.button("Clear drawings"):
         st.session_state["clear_drawings"] = True
         st.rerun()
 
     # ---------------------------------------------------------
-    # 7. PROJECT FORM
+    # 6. PROJECT FORM
     # ---------------------------------------------------------
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
@@ -248,7 +179,7 @@ if page == "Create Project":
     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
     # ---------------------------------------------------------
-    # 8. SAVE PROJECT
+    # 7. SAVE PROJECT
     # ---------------------------------------------------------
     if st.button("Save Project"):
         if not polygon_geojson:
