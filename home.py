@@ -176,12 +176,153 @@ page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
 # ---------------------------------------------------------
-if page == "Create Project":
+# if page == "Create Project":
+#     st.title("Create Project")
+#     st.write("Draw a polygon, enter a name, description, and assign users.")
+
+#     if "last_drawings" not in st.session_state:
+#         st.session_state["last_drawings"] = None
+
+#     # MAP
+#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+
+#     # Satellite (Esri)
+#     folium.TileLayer(
+#         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+#         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+#         name="Satellite",
+#         overlay=False,
+#         control=True
+#     ).add_to(m)
+
+    
+#     # Geocoder FIRST (top-left)
+#     Geocoder(
+#         collapsed=False,
+#         add_marker=True,
+#         position='topleft'
+#     ).add_to(m)
+    
+#     # Draw SECOND (below geocoder)
+#     Draw(
+#         draw_options={"polygon": True, "marker": False, "circle": False,
+#                       "polyline": False, "rectangle": False},
+#         edit_options={"edit": True, "remove": True},
+#     ).add_to(m)
+
+#     Fullscreen(position="topleft").add_to(m)
+
+#     folium.LayerControl(position="topright").add_to(m)
+
+#     # Put map in a container, full width
+#     with st.container():
+#         map_data = st_folium(m, height=500, use_container_width=True)
+
+#     # st.write(map_data)
+
+
+    
+#     if map_data and "all_drawings" in map_data:
+#         st.session_state["last_drawings"] = map_data["all_drawings"]
+
+
+        
+#     polygon_geojson = None
+
+#     if st.session_state["last_drawings"]:
+#         drawings = st.session_state["last_drawings"]
+#         polygons = []
+
+#         for d in drawings:
+#             geom = d.get("geometry", {})
+#             if geom.get("type") == "Polygon":
+#                 polygons.append(geom["coordinates"])
+#             elif geom.get("type") == "MultiPolygon":
+#                 polygons.extend(geom["coordinates"])
+
+#         if len(polygons) == 1:
+#             polygon_geojson = {
+#                 "type": "Feature",
+#                 "geometry": {"type": "Polygon", "coordinates": polygons[0]}
+#             }
+#         elif len(polygons) > 1:
+#             polygon_geojson = {
+#                 "type": "Feature",
+#                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
+#             }
+
+#     # FORM
+#     project_name = st.text_input("Project name")
+#     description = st.text_area("Description")
+
+#     try:
+#         users = supabase.rpc("get_all_users").execute().data or []
+#     except:
+#         users = []
+
+#     email_to_id = {u["email"]: u["id"] for u in users}
+#     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
+
+#     # SAVE PROJECT
+#     if st.button("Save Project"):
+
+#         if not polygon_geojson:
+#             st.error("Draw a polygon first.")
+#             st.stop()
+
+#         if not project_name:
+#             st.error("Enter a project name.")
+#             st.stop()
+
+#         safe_name = project_name.replace(" ", "_")
+#         filename = f"{safe_name}.geojson"
+
+#         # Check duplicate
+#         try:
+#             existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
+#             if existing.data:
+#                 st.error(f"A project named '{safe_name}' already exists. Choose another name.")
+#                 st.stop()
+#         except Exception as e:
+#             st.error(f"Error checking existing projects: {e}")
+#             st.stop()
+
+#         try:
+#             supabase.storage.from_(BUCKET).upload(
+#                 filename,
+#                 json.dumps(polygon_geojson).encode("utf-8"),
+#                 file_options={"content-type": "application/geo+json", "x-upsert": "true"}
+#             )
+
+#             supabase.table("projects").insert(
+#                 {"name": safe_name, "description": description}
+#             ).execute()
+
+#             for email in selected_emails:
+#                 supabase.table("project_members").insert(
+#                     {"project": safe_name, "user_id": email_to_id[email]}
+#                 ).execute()
+
+#             st.success(f"Project '{safe_name}' has been successfully created.")
+
+#             # Clear drawings and rerun
+#             st.session_state["last_drawings"] = None
+#             st.rerun()
+
+#         except Exception as e:
+#             st.error(f"Exception while saving project: {e}")
+#             st.stop()
+
+elif page == "Create Project":
     st.title("Create Project")
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
+    # Initialize drawing state
     if "last_drawings" not in st.session_state:
         st.session_state["last_drawings"] = None
+
+    if "confirm_multipolygon" not in st.session_state:
+        st.session_state.confirm_multipolygon = False
 
     # MAP
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
@@ -195,15 +336,14 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
-    
-    # Geocoder FIRST (top-left)
+    # Geocoder FIRST
     Geocoder(
         collapsed=False,
         add_marker=True,
         position='topleft'
     ).add_to(m)
-    
-    # Draw SECOND (below geocoder)
+
+    # Draw SECOND
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
@@ -211,24 +351,19 @@ if page == "Create Project":
     ).add_to(m)
 
     Fullscreen(position="topleft").add_to(m)
-
     folium.LayerControl(position="topright").add_to(m)
 
-    # Put map in a container, full width
+    # Render map
     with st.container():
         map_data = st_folium(m, height=500, use_container_width=True)
 
-    # st.write(map_data)
-
-
-    
+    # Store drawings
     if map_data and "all_drawings" in map_data:
         st.session_state["last_drawings"] = map_data["all_drawings"]
 
-
-        
     polygon_geojson = None
 
+    # Process drawings
     if st.session_state["last_drawings"]:
         drawings = st.session_state["last_drawings"]
         polygons = []
@@ -240,15 +375,37 @@ if page == "Create Project":
             elif geom.get("type") == "MultiPolygon":
                 polygons.extend(geom["coordinates"])
 
-        if len(polygons) == 1:
-            polygon_geojson = {
-                "type": "Feature",
-                "geometry": {"type": "Polygon", "coordinates": polygons[0]}
-            }
-        elif len(polygons) > 1:
+        # MULTIPOLYGON CHECK
+        if len(polygons) > 1:
+
+            if not st.session_state.confirm_multipolygon:
+                st.warning("⚠️ You drew more than one polygon. This will be saved as a MultiPolygon.")
+
+                colA, colB = st.columns(2)
+
+                with colA:
+                    if st.button("Yes, save as MultiPolygon"):
+                        st.session_state.confirm_multipolygon = True
+                        st.rerun()
+
+                with colB:
+                    if st.button("No, let me fix it"):
+                        st.info("Please delete the extra polygons and draw only one.")
+                        st.stop()
+
+                st.stop()
+
+            # User confirmed → build multipolygon
             polygon_geojson = {
                 "type": "Feature",
                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
+            }
+
+        else:
+            # Single polygon
+            polygon_geojson = {
+                "type": "Feature",
+                "geometry": {"type": "Polygon", "coordinates": polygons[0]}
             }
 
     # FORM
@@ -278,40 +435,35 @@ if page == "Create Project":
         filename = f"{safe_name}.geojson"
 
         # Check duplicate
-        try:
-            existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
-            if existing.data:
-                st.error(f"A project named '{safe_name}' already exists. Choose another name.")
-                st.stop()
-        except Exception as e:
-            st.error(f"Error checking existing projects: {e}")
+        existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
+        if existing.data:
+            st.error(f"A project named '{safe_name}' already exists. Choose another name.")
             st.stop()
 
-        try:
-            supabase.storage.from_(BUCKET).upload(
-                filename,
-                json.dumps(polygon_geojson).encode("utf-8"),
-                file_options={"content-type": "application/geo+json", "x-upsert": "true"}
-            )
+        # Save
+        supabase.storage.from_(BUCKET).upload(
+            filename,
+            json.dumps(polygon_geojson).encode("utf-8"),
+            file_options={"content-type": "application/geo+json", "x-upsert": "true"}
+        )
 
-            supabase.table("projects").insert(
-                {"name": safe_name, "description": description}
+        supabase.table("projects").insert(
+            {"name": safe_name, "description": description}
+        ).execute()
+
+        for email in selected_emails:
+            supabase.table("project_members").insert(
+                {"project": safe_name, "user_id": email_to_id[email]}
             ).execute()
 
-            for email in selected_emails:
-                supabase.table("project_members").insert(
-                    {"project": safe_name, "user_id": email_to_id[email]}
-                ).execute()
+        st.success(f"Project '{safe_name}' has been successfully created.")
 
-            st.success(f"Project '{safe_name}' has been successfully created.")
+        # Reset multipolygon confirmation
+        st.session_state.confirm_multipolygon = False
+        st.session_state["last_drawings"] = None
 
-            # Clear drawings and rerun
-            st.session_state["last_drawings"] = None
-            st.rerun()
+        st.rerun()
 
-        except Exception as e:
-            st.error(f"Exception while saving project: {e}")
-            st.stop()
 
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
