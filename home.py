@@ -432,7 +432,7 @@ elif page == "View Projects":
 #   DELETE PROJECT
 # ---------------------------------------------------------
     "---"
-    st.subheader("Delete Project")
+    # st.subheader("Delete Project")
 
     # proj_res = supabase.table("projects").select("*").execute()
     # projects = proj_res.data or []
