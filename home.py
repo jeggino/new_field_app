@@ -306,156 +306,13 @@ if page == "Create Project":
         except Exception as e:
             st.error(f"Exception while saving project: {e}")
 
-# ---------------------------------------------------------
-# PAGE 2 — VIEW PROJECTS
-# ---------------------------------------------------------
-# elif page == "View Projects":
-#     st.title("View Projects")
-
-#     # --- Load all projects ---
-#     proj_res = supabase.table("projects").select("*").execute()
-#     projects = proj_res.data or []
-
-#     if not projects:
-#         st.info("No projects found.")
-#         st.stop()
-
-#     project_names = [p["name"] for p in projects]
-#     selected = st.selectbox("Select a project", project_names)
-
-#     # Current project data
-#     project = next(p for p in projects if p["name"] == selected)
-
-#     st.subheader("Project Info")
-#     st.write(f"**Name:** {project['name']}")
-#     st.write(f"**Description:** {project['description']}")
-
-#     # --- Load all users from Supabase ---
-#     try:
-#         users = supabase.rpc("get_all_users").execute().data or []
-#     except:
-#         users = []
-
-#     # Two mappings
-#     id_to_email = {u["id"]: u["email"] for u in users}
-#     email_to_id = {u["email"]: u["id"] for u in users}
-
-#     # --- Load project members ---
-#     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
-#     members = pm_res.data or []
-
-#     st.subheader("Users who can work on this project")
-#     if members:
-#         for m in members:
-#             st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
-#     else:
-#         st.write("No users assigned.")
-
-#     # --- Load boundary using your working function ---
-#     boundary, bounds = load_project_boundary(selected)
-
-#     st.subheader("Project Area")
-
-#     # --- Create map ---
-#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-
-#     # Basemaps
-#     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-#     folium.TileLayer(
-#         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-#         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-#         name="Satellite"
-#     ).add_to(m)
-
-
-#     # Add polygon if exists
-#     if boundary:
-#         folium.GeoJson(boundary, name="Project Area").add_to(m)
-
-#     # Fit to bounds if valid
-#     if bounds:
-#         try:
-#             m.fit_bounds(bounds)
-#         except:
-#             pass
-
-#     # Plugins
-#     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-#     folium.LayerControl().add_to(m)
-
-#     # --- Render map (NO HTML WRAPPER) ---
-#     with st.container():
-#         st_folium(m, height=500, use_container_width=True)
-
-#     # --- Edit Users Section ---
-#     "---"
-#     st.subheader("Edit Users")
-
-#     all_user_emails = list(email_to_id.keys())
-
-#     current_user_ids = [m["user_id"] for m in members]
-#     current_user_emails = [
-#         id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
-#     ]
-
-#     new_selection = st.multiselect(
-#         "Select users for this project",
-#         all_user_emails,
-#         default=current_user_emails
-#     )
-
-#     if st.button("Save User Changes"):
-#         try:
-#             # Remove all existing users
-#             supabase.table("project_members").delete().eq("project", selected).execute()
-
-#             # Add new users
-#             for email in new_selection:
-#                 supabase.table("project_members").insert(
-#                     {"project": selected, "user_id": email_to_id[email]}
-#                 ).execute()
-
-#             st.success("Users updated.")
-#             st.rerun()
-
-#         except Exception as e:
-#             st.error(f"Error updating users: {e}")
-
-
-
-# # ---------------------------------------------------------
-# #   DELETE PROJECT
-# # ---------------------------------------------------------
-#     "---"
-#     # st.subheader("Delete Project")
-
-#     # proj_res = supabase.table("projects").select("*").execute()
-#     # projects = proj_res.data or []
-
-#     # if not projects:
-#     #     st.info("No projects found.")
-#     #     st.stop()
-
-#     # project_names = [p["name"] for p in projects]
-#     # selected = st.selectbox("Select project to delete", 
-#     #                         project_names,
-#     #                         index=None,
-#     #                         placeholder="Select a project...",
-#     #                        )
-
-#     if st.button("DELETE PROJECT", type="primary"):
-#         confirm_delete_dialog(selected)
-
-
-
-
-
-
-
+---------------------------------------------------------
+PAGE 2 — VIEW PROJECTS
+---------------------------------------------------------
 elif page == "View Projects":
     st.title("View Projects")
 
-    # Load projects
+    # --- Load all projects ---
     proj_res = supabase.table("projects").select("*").execute()
     projects = proj_res.data or []
 
@@ -463,58 +320,147 @@ elif page == "View Projects":
         st.info("No projects found.")
         st.stop()
 
-    selected = st.selectbox("Select a project", [p["name"] for p in projects])
+    project_names = [p["name"] for p in projects]
+    selected = st.selectbox("Select a project", project_names)
 
-    # Load boundary + bounds
+    # Current project data
+    project = next(p for p in projects if p["name"] == selected)
+
+    st.subheader("Project Info")
+    st.write(f"**Name:** {project['name']}")
+    st.write(f"**Description:** {project['description']}")
+
+    # --- Load all users from Supabase ---
+    try:
+        users = supabase.rpc("get_all_users").execute().data or []
+    except:
+        users = []
+
+    # Two mappings
+    id_to_email = {u["id"]: u["email"] for u in users}
+    email_to_id = {u["email"]: u["id"] for u in users}
+
+    # --- Load project members ---
+    pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
+    members = pm_res.data or []
+
+    st.subheader("Users who can work on this project")
+    if members:
+        for m in members:
+            st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
+    else:
+        st.write("No users assigned.")
+
+    # --- Load boundary using your working function ---
     boundary, bounds = load_project_boundary(selected)
 
-    # DEBUG
-    st.write("DEBUG: boundary loaded =", boundary is not None)
-    st.write("DEBUG: bounds =", bounds)
+    st.subheader("Project Area")
 
-    if not boundary:
-        st.error("Boundary could not be loaded.")
-        st.stop()
+    # --- Create map ---
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # Create map
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+    # Basemaps
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite"
+    ).add_to(m)
 
-    folium.TileLayer("OpenStreetMap").add_to(m)
 
+    # Add polygon if exists
+    if boundary:
+            folium.GeoJson(
+                boundary,
+                name="Boundary",
+                style_function=lambda x: {
+                    "fillColor": "#ffcc00",
+                    "color": "red",
+                    "weight": 2.5,
+                    "fillOpacity": 0.1,
+                }
+            ).add_to(m)
 
-    # Add polygon
-    try:
-        # folium.GeoJson(boundary, name="Boundary").add_to(m)
-
-        folium.GeoJson(
-            boundary,
-            name="Boundary",
-            style_function=lambda x: {
-                "fillColor": "#ffcc00",
-                "color": "red",
-                "weight": 2.5,
-                "fillOpacity": 0.1,
-            }
-        ).add_to(m)
-    
-    except Exception as e:
-        st.error(f"GeoJSON error: {e}")
-        st.json(boundary)
-        st.stop()
-
-    # Fit to bounds
+    # Fit to bounds if valid
     if bounds:
         try:
             m.fit_bounds(bounds)
+        except:
+            pass
+
+    # Plugins
+    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+    folium.LayerControl().add_to(m)
+
+    # --- Render map (NO HTML WRAPPER) ---
+    with st.container():
+        st_folium(m, height=500, use_container_width=True)
+
+    # --- Edit Users Section ---
+    "---"
+    st.subheader("Edit Users")
+
+    all_user_emails = list(email_to_id.keys())
+
+    current_user_ids = [m["user_id"] for m in members]
+    current_user_emails = [
+        id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
+    ]
+
+    new_selection = st.multiselect(
+        "Select users for this project",
+        all_user_emails,
+        default=current_user_emails
+    )
+
+    if st.button("Save User Changes"):
+        try:
+            # Remove all existing users
+            supabase.table("project_members").delete().eq("project", selected).execute()
+
+            # Add new users
+            for email in new_selection:
+                supabase.table("project_members").insert(
+                    {"project": selected, "user_id": email_to_id[email]}
+                ).execute()
+
+            st.success("Users updated.")
+            st.rerun()
+
         except Exception as e:
-            st.error(f"Bounds error: {e}")
+            st.error(f"Error updating users: {e}")
 
-    # DEBUG
-    st.write("DEBUG: reached map rendering")
 
-    st.write("DEBUG: forcing clean map container")
-    st.write(bounds)
-    st.write(boundary)
+
+# ---------------------------------------------------------
+#   DELETE PROJECT
+# ---------------------------------------------------------
+    "---"
+    # st.subheader("Delete Project")
+
+    # proj_res = supabase.table("projects").select("*").execute()
+    # projects = proj_res.data or []
+
+    # if not projects:
+    #     st.info("No projects found.")
+    #     st.stop()
+
+    # project_names = [p["name"] for p in projects]
+    # selected = st.selectbox("Select project to delete", 
+    #                         project_names,
+    #                         index=None,
+    #                         placeholder="Select a project...",
+    #                        )
+
+    if st.button("DELETE PROJECT", type="primary"):
+        confirm_delete_dialog(selected)
+
+
+
+
+
+
+
 
     
 
