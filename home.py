@@ -6,6 +6,16 @@ from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
 
+
+st.markdown("""
+    <style>
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
 # ---------------------------------------------------------
 # USERNAME + PASSWORD LOGIN (from st.secrets)
 # ---------------------------------------------------------
