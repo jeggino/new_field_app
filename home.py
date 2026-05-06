@@ -250,7 +250,7 @@ if page == "Create Project":
                 "type": "Feature",
                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
             }
-            if button('more then a geometry, click here if you argre, otherwise check you file'):
+            if st.button('more then a geometry, click here if you argre, otherwise check you file'):
                 st.success("Ok, you saved a multipolygon")
             else:
                 st.stop()
