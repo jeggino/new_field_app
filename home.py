@@ -309,7 +309,7 @@ elif page == "View Projects":
     # def get_bounds(geojson_obj): ...
 
     
-    bounds = get_bounds(geojson_obj)
+    # bounds = get_bounds(geojson_obj)
 
     # Create map and fit to polygon
     m = folium.Map(zoom_start=18, zoom_control=True)
@@ -321,7 +321,7 @@ elif page == "View Projects":
         name="Satellite"
     ).add_to(m)
 
-    folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
+    # folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
 
     Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
     folium.LayerControl().add_to(m)
