@@ -154,9 +154,9 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    Fullscreen(position="topright").add_to(m)
+    Fullscreen(position="topleft").add_to(m)
 
-    folium.LayerControl(position="topleft").add_to(m)
+    folium.LayerControl(position="topright").add_to(m)
 
     # Put map in a container, full width
     with st.container():
