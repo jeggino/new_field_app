@@ -130,9 +130,6 @@ if page == "Create Project":
     # MAP
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # OpenStreetMap
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
-
     # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -142,7 +139,7 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
-    Fullscreen(position="topright").add_to(m)
+    
     # Geocoder FIRST (top-left)
     Geocoder(
         collapsed=False,
@@ -157,7 +154,9 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
+    Fullscreen(position="topright").add_to(m)
+
+    folium.LayerControl(position="topleft").add_to(m)
 
     # Put map in a container, full width
     with st.container():
