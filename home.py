@@ -1035,12 +1035,12 @@ def main():
             show_login()
     elif st.session_state.changing_project:
         show_project_selection()
-        st.divider()
+        st.sidebar.divider()
         if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
             logout()
     elif not st.session_state.project:
         show_project_selection()
-        st.divider()
+        st.sidebar.divider()
         if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
             logout()
     else:
