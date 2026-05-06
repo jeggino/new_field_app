@@ -64,22 +64,27 @@ if page == "Create Project":
     st.write("Draw a polygon, enter a name, description, and assign users.")
 
     from folium.plugins import Draw, Fullscreen, Geocoder
+    from folium import MacroElement
+    from jinja2 import Template
 
-    # Initialize session state for drawings
+    # ---------------------------------------------------------
+    # 1. HANDLE CLEARING BEFORE MAP IS DRAWN
+    # ---------------------------------------------------------
     if "last_drawings" not in st.session_state:
         st.session_state["last_drawings"] = None
 
-    # Create map
+    if "clear_drawings" in st.session_state and st.session_state["clear_drawings"]:
+        st.session_state["last_drawings"] = None
+        st.session_state["clear_drawings"] = False
+
+    # ---------------------------------------------------------
+    # 2. CREATE MAP
+    # ---------------------------------------------------------
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=False)
 
-    # Base map (default street)
-    folium.TileLayer(
-        "OpenStreetMap",
-        name="Street",
-        control=True
-    ).add_to(m)
+    # Basemaps
+    folium.TileLayer("OpenStreetMap", name="Street", control=True).add_to(m)
 
-    # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri World Imagery",
@@ -88,7 +93,6 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
-    # Hybrid (Esri Satellite + Labels)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
         attr="Esri Boundaries & Places",
@@ -97,7 +101,7 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
-    # Fullscreen button
+    # Fullscreen
     Fullscreen(
         position="topright",
         title="Full Screen",
@@ -112,27 +116,97 @@ if page == "Create Project":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
-    # Address search bar
+    # Geocoder
     Geocoder(
         collapsed=False,
         add_marker=True,
         position='bottomleft'
     ).add_to(m)
 
-    # Render map
+    # ---------------------------------------------------------
+    # 3. LIVE AREA CALCULATION
+    # ---------------------------------------------------------
+    folium.JavascriptLink(
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet.geometryutil/0.10.0/leaflet.geometryutil.min.js"
+    ).add_to(m)
+
+    area_js = """
+    {% macro script(this, kwargs) %}
+
+    function formatArea(area) {
+        if (area < 1000000) {
+            return (area).toFixed(0) + " m²";
+        } else {
+            return (area / 1000000).toFixed(2) + " km²";
+        }
+    }
+
+    var infoBox = L.control({position: 'bottomright'});
+    infoBox.onAdd = function () {
+        this._div = L.DomUtil.create('div', 'area-info');
+        this._div.style.background = 'white';
+        this._div.style.padding = '6px 10px';
+        this._div.style.borderRadius = '6px';
+        this._div.style.boxShadow = '0 0 6px rgba(0,0,0,0.3)';
+        this._div.style.fontSize = '14px';
+        this._div.innerHTML = "Draw a polygon";
+        return this._div;
+    };
+    infoBox.addTo({{this._parent.get_name()}});
+
+    {{this._parent.get_name()}}.on(L.Draw.Event.DRAWVERTEX, function (e) {
+        var latlngs = e.layers._layers;
+        var coords = [];
+
+        for (var key in latlngs) {
+            coords.push(latlngs[key]._latlng);
+        }
+
+        if (coords.length > 2) {
+            var area = L.GeometryUtil.geodesicArea(coords);
+            infoBox._div.innerHTML = "Area: <b>" + formatArea(area) + "</b>";
+        }
+    });
+
+    {{this._parent.get_name()}}.on(L.Draw.Event.CREATED, function (e) {
+        var layer = e.layer;
+        var latlngs = layer.getLatLngs()[0];
+        var area = L.GeometryUtil.geodesicArea(latlngs);
+        infoBox._div.innerHTML = "Final area: <b>" + formatArea(area) + "</b>";
+    });
+
+    {{this._parent.get_name()}}.on(L.Draw.Event.EDITED, function (e) {
+        e.layers.eachLayer(function (layer) {
+            var latlngs = layer.getLatLngs()[0];
+            var area = L.GeometryUtil.geodesicArea(latlngs);
+            infoBox._div.innerHTML = "Updated area: <b>" + formatArea(area) + "</b>";
+        });
+    });
+
+    {% endmacro %}
+    """
+
+    area_calc = MacroElement()
+    area_calc._template = Template(area_js)
+    m.add_child(area_calc)
+
+    # ---------------------------------------------------------
+    # 4. RENDER MAP
+    # ---------------------------------------------------------
     map_data = st_folium(m, height=500, width=800)
 
-    # Store drawings in session state
+    # Store drawings
     if map_data and "all_drawings" in map_data:
         st.session_state["last_drawings"] = map_data["all_drawings"]
 
+    # ---------------------------------------------------------
+    # 5. EXTRACT POLYGON GEOJSON
+    # ---------------------------------------------------------
     polygon_geojson = None
 
-    # Use stored drawings
     if st.session_state.get("last_drawings"):
         drawings = st.session_state["last_drawings"]
 
-        # Extract polygons
         polygons = []
         for d in drawings:
             geom = d.get("geometry", {})
@@ -141,29 +215,30 @@ if page == "Create Project":
             elif geom.get("type") == "MultiPolygon":
                 polygons.extend(geom["coordinates"])
 
-        # Build GeoJSON
         if len(polygons) == 1:
             polygon_geojson = {
                 "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": polygons[0]
-                }
+                "geometry": {"type": "Polygon", "coordinates": polygons[0]}
             }
         elif len(polygons) > 1:
             polygon_geojson = {
                 "type": "Feature",
-                "geometry": {
-                    "type": "MultiPolygon",
-                    "coordinates": polygons
-                }
+                "geometry": {"type": "MultiPolygon", "coordinates": polygons}
             }
 
-    # Project form
+    # ---------------------------------------------------------
+    # 6. CLEAR DRAWINGS BUTTON
+    # ---------------------------------------------------------
+    if st.button("Clear drawings"):
+        st.session_state["clear_drawings"] = True
+        st.rerun()
+
+    # ---------------------------------------------------------
+    # 7. PROJECT FORM
+    # ---------------------------------------------------------
     project_name = st.text_input("Project name")
     description = st.text_area("Description")
 
-    # Load users
     try:
         users = supabase.rpc("get_all_users").execute().data or []
     except:
@@ -172,7 +247,9 @@ if page == "Create Project":
     email_to_id = {u["email"]: u["id"] for u in users}
     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
 
-    # Save project
+    # ---------------------------------------------------------
+    # 8. SAVE PROJECT
+    # ---------------------------------------------------------
     if st.button("Save Project"):
         if not polygon_geojson:
             st.error("Draw a polygon first.")
@@ -186,22 +263,16 @@ if page == "Create Project":
         filename = f"{safe_name}.geojson"
 
         try:
-            # Upload polygon file
             supabase.storage.from_(BUCKET).upload(
                 filename,
                 json.dumps(polygon_geojson).encode("utf-8"),
-                file_options={
-                    "content-type": "application/geo+json",
-                    "x-upsert": "true"
-                }
+                file_options={"content-type": "application/geo+json", "x-upsert": "true"}
             )
 
-            # Insert into projects table
             supabase.table("projects").insert(
                 {"name": safe_name, "description": description}
             ).execute()
 
-            # Insert project members
             for email in selected_emails:
                 supabase.table("project_members").insert(
                     {"project": safe_name, "user_id": email_to_id[email]}
@@ -209,8 +280,8 @@ if page == "Create Project":
 
             st.success(f"Project '{safe_name}' saved.")
 
-            # CLEAR DRAWINGS AFTER SAVE
-            st.session_state["last_drawings"] = None
+            # Clear drawings after saving
+            st.session_state["clear_drawings"] = True
             st.rerun()
 
         except Exception as e:
