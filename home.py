@@ -220,7 +220,7 @@ if page == "Create Project":
 
     # st.write(map_data)
 
-    choice = st.sidebar.radio("test", ["single", "multiple"])
+    choice = st.radio("test", ["single", "multiple"])
 
     if choice == "multiple":
     
