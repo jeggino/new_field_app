@@ -51,6 +51,56 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ---------------------------------------------------------
 # HELPERS
 # ---------------------------------------------------------
+def load_project_boundary(project_name):
+    """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
+
+    filename = f"{project_name}.geojson"
+
+    try:
+        file_bytes = supabase.storage.from_(BUCKET).download(filename)
+        if not file_bytes:
+            return None, None
+
+        geojson_str = file_bytes.decode("utf-8")
+        data = json.loads(geojson_str)
+
+        # Extract coordinates for bounds
+        coords = []
+
+        def extract_coords(geom):
+            t = geom["type"]
+            c = geom["coordinates"]
+
+            if t == "Polygon":
+                for ring in c:
+                    coords.extend(ring)
+
+            elif t == "MultiPolygon":
+                for poly in c:
+                    for ring in poly:
+                        coords.extend(ring)
+
+        # GeoJSON may be Feature or FeatureCollection
+        if data.get("type") == "Feature":
+            extract_coords(data["geometry"])
+
+        elif data.get("type") == "FeatureCollection":
+            for feature in data["features"]:
+                extract_coords(feature["geometry"])
+
+        if not coords:
+            return data, None
+
+        lats = [p[1] for p in coords]
+        lngs = [p[0] for p in coords]
+
+        bounds = [[min(lats), min(lngs)], [max(lats), max(lngs)]]
+
+        return data, bounds
+
+    except Exception as e:
+        st.warning(f"Could not load boundary for project '{project_name}': {e}")
+        return None, None
 def compute_centroid(geojson_obj):
     geom = geojson_obj.get("geometry", geojson_obj)
     coords = []
