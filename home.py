@@ -500,5 +500,28 @@ elif page == "View Projects":
     # DEBUG
     st.write("DEBUG: reached map rendering")
 
+    st.write("DEBUG: forcing clean map container")
+    
+    # Completely isolate the map from your app CSS
+    st.markdown("""
+        <style>
+            .clean-map-container {
+                height: 520px !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+                position: relative !important;
+                z-index: 9999 !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div class="clean-map-container">', unsafe_allow_html=True)
+        st_folium(m, height=500, width="100%")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
     # Render map
     st_folium(m, height=500, use_container_width=True)
