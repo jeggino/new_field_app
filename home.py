@@ -367,7 +367,6 @@ elif page == "View Projects":
         name="Satellite"
     ).add_to(m)
 
-    get_bounds(geojson_obj)
 
     # Add polygon if exists
     if boundary:
