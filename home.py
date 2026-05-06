@@ -320,7 +320,6 @@ elif page == "View Projects":
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite"
     ).add_to(m)
-    gdf_area.explore(m=m)
 
     folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
 
