@@ -3,7 +3,7 @@ from streamlit_folium import st_folium
 import folium
 import json
 from supabase import create_client
-from folium.plugins import Geocoder
+from folium.plugins import Geocoder, Fullscreen
 
 # ---------------------------------------------------------
 # PASSWORD PROTECTION
@@ -76,12 +76,12 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
-    folium.TileLayer(
-        tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-        attr="Google Satellite",
-        name="Google Satellite",
-        overlay=False,
-        control=True
+    # Fullscreen button
+    Fullscreen(
+        position="topright",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True
     ).add_to(m)
 
 
