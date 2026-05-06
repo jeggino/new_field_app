@@ -224,7 +224,6 @@ def load_project_boundary(project_name):
 
     except Exception as e:
         st.warning(f"Could not load boundary for project '{project_name}': {e}")
-        show_project_selection()
         return None, None
 
 
