@@ -75,6 +75,15 @@ if page == "Create Project":
         control=True
     ).add_to(m)
 
+    folium.TileLayer(
+        tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        attr="Google Satellite",
+        name="Google Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+
 
     folium.LayerControl().add_to(m)
     
