@@ -1035,8 +1035,12 @@ def main():
             show_login()
     elif st.session_state.changing_project:
         show_project_selection()
+        if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
+            logout()
     elif not st.session_state.project:
         show_project_selection()
+        if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
+            logout()
     else:
         st.logo(IMAGE,  link=None, size="large", icon_image=IMAGE)
         show_main_app()
