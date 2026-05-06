@@ -256,6 +256,7 @@ if page == "Create Project":
 elif page == "View Projects":
     st.title("View Projects")
 
+    # --- Load all projects ---
     proj_res = supabase.table("projects").select("*").execute()
     projects = proj_res.data or []
 
@@ -264,25 +265,26 @@ elif page == "View Projects":
         st.stop()
 
     project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select a project", 
-                            project_names,
-                            index=None,
-                            placeholder="Select a project...",)
-    if not selected:
-        st.stop()
+    selected = st.selectbox("Select a project", project_names)
 
+    # Current project data
     project = next(p for p in projects if p["name"] == selected)
 
     st.subheader("Project Info")
     st.write(f"**Name:** {project['name']}")
     st.write(f"**Description:** {project['description']}")
 
-    # Load all users
-    users = supabase.rpc("get_all_users").execute().data or []
+    # --- Load all users from Supabase ---
+    try:
+        users = supabase.rpc("get_all_users").execute().data or []
+    except:
+        users = []
+
+    # Two mappings
     id_to_email = {u["id"]: u["email"] for u in users}
     email_to_id = {u["email"]: u["id"] for u in users}
 
-    # Load project members
+    # --- Load project members ---
     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
     members = pm_res.data or []
 
@@ -293,44 +295,50 @@ elif page == "View Projects":
     else:
         st.write("No users assigned.")
 
-    # Load GeoJSON
-    filename = f"{selected}.geojson"
-    file_bytes = supabase.storage.from_(BUCKET).download(filename)
-    geojson_obj = json.loads(file_bytes.decode("utf-8"))
+    # --- Load boundary using your working function ---
+    boundary, bounds = load_project_boundary(selected)
 
     st.subheader("Project Area")
 
-    geojson_obj
-
-    # Compute bounds safely
-    # bounds = get_bounds(geojson_obj)
-
-    # Create map
+    # --- Create map ---
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    # folium.TileLayer(
-    #     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    #     attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-    #     name="Satellite"
-    # ).add_to(m)
+    # Basemaps
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite"
+    ).add_to(m)
 
-    folium.GeoJson(geojson_obj, name="Project Area").add_to(m)
-    # m.fit_bounds(bounds)
+    # Add polygon if exists
+    if boundary:
+        folium.GeoJson(boundary, name="Project Area").add_to(m)
 
-    # Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
-    # folium.LayerControl().add_to(m)
+    # Fit to bounds if valid
+    if bounds:
+        try:
+            m.fit_bounds(bounds)
+        except:
+            pass
 
-    # Render map (NO HTML WRAPPER)
-    # with st.container():
-    st_folium(m, height=500, use_container_width=True)
+    # Plugins
+    Geocoder(collapsed=False, add_marker=True, position="topleft").add_to(m)
+    folium.LayerControl().add_to(m)
 
-    # Edit users
+    # --- Render map (NO HTML WRAPPER) ---
+    with st.container():
+        st_folium(m, height=500, use_container_width=True)
+
+    # --- Edit Users Section ---
     st.subheader("Edit Users")
 
     all_user_emails = list(email_to_id.keys())
+
     current_user_ids = [m["user_id"] for m in members]
-    current_user_emails = [id_to_email.get(uid) for uid in current_user_ids]
+    current_user_emails = [
+        id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
+    ]
 
     new_selection = st.multiselect(
         "Select users for this project",
@@ -339,14 +347,22 @@ elif page == "View Projects":
     )
 
     if st.button("Save User Changes"):
-        supabase.table("project_members").delete().eq("project", selected).execute()
-        for email in new_selection:
-            supabase.table("project_members").insert(
-                {"project": selected, "user_id": email_to_id[email]}
-            ).execute()
+        try:
+            # Remove all existing users
+            supabase.table("project_members").delete().eq("project", selected).execute()
 
-        st.success("Users updated.")
-        st.rerun()
+            # Add new users
+            for email in new_selection:
+                supabase.table("project_members").insert(
+                    {"project": selected, "user_id": email_to_id[email]}
+                ).execute()
+
+            st.success("Users updated.")
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"Error updating users: {e}")
+
 
 
 
