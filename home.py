@@ -3,6 +3,7 @@ from streamlit_folium import st_folium
 import folium
 import json
 from supabase import create_client
+from folium.plugins import Geocoder
 
 # ---------------------------------------------------------
 # PASSWORD PROTECTION
@@ -94,7 +95,7 @@ if page == "Create Project":
     ).add_to(m)
 
     # ⭐ Add address search bar
-    from folium.plugins import Geocoder
+
     Geocoder(
         collapsed=False,
         add_marker=True,
