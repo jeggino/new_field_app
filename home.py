@@ -65,6 +65,11 @@ if page == "Create Project":
 
     from folium.plugins import Draw
     m = folium.Map(location=[52.37, 4.90], zoom_start=12,zoom_control=False)
+    folium.TileLayer(tiles='https://api.mapbox.com/styles/v1/jeggino/cm2vtvb2l000w01qz9wet0mv9/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ',
+                 attr='XXX Mapbox Attribution',overlay=False,show=False,name="Satellietkaart").add_to(m)
+
+    folium.LayerControl().add_to(m)
+    
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
                       "polyline": False, "rectangle": False},
