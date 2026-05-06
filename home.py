@@ -92,7 +92,7 @@ def get_bounds(geojson_obj):
 @st.dialog("Confirm deletion", width="small")
 def confirm_delete_dialog(project_name):
     st.image(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Warning_icon.svg/240px-Warning_icon.svg.png",
+        "https://media1.tenor.com/m/Y3qtler-qqEAAAAC/suspicious-dog.gif",
         width=80,
     )
     st.write(f"Are you sure you want to delete project **{project_name}**?")
