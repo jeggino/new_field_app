@@ -322,8 +322,8 @@ elif page == "View Projects":
     # folium.LayerControl().add_to(m)
 
     # Render map (NO HTML WRAPPER)
-    with st.container():
-        st_folium(m, height=500, use_container_width=True)
+    # with st.container():
+    st_folium(m, height=500, use_container_width=True)
 
     # Edit users
     st.subheader("Edit Users")
