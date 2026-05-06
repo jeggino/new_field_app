@@ -432,21 +432,21 @@ elif page == "View Projects":
 #   DELETE PROJECT
 # ---------------------------------------------------------
     "---"
-    st.title("Delete Project")
+    st.subheader("Delete Project")
 
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
+    # proj_res = supabase.table("projects").select("*").execute()
+    # projects = proj_res.data or []
 
-    if not projects:
-        st.info("No projects found.")
-        st.stop()
+    # if not projects:
+    #     st.info("No projects found.")
+    #     st.stop()
 
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select project to delete", 
-                            project_names,
-                            index=None,
-                            placeholder="Select a project...",
-                           )
+    # project_names = [p["name"] for p in projects]
+    # selected = st.selectbox("Select project to delete", 
+    #                         project_names,
+    #                         index=None,
+    #                         placeholder="Select a project...",
+    #                        )
 
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
