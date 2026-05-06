@@ -308,6 +308,7 @@ elif page == "View Projects":
     # Bounds helper must exist elsewhere in your file:
     # def get_bounds(geojson_obj): ...
     gdf_area = gpd.read_file(geojson_obj)
+    gdf
     
     bounds = get_bounds(geojson_obj)
 
