@@ -218,6 +218,8 @@ if page == "Create Project":
     with st.container():
         map_data = st_folium(m, height=500, use_container_width=True)
 
+    st.write(map_data)
+
     if map_data and "all_drawings" in map_data:
         st.session_state["last_drawings"] = map_data["all_drawings"]
 
@@ -305,6 +307,7 @@ if page == "Create Project":
 
         except Exception as e:
             st.error(f"Exception while saving project: {e}")
+            st.stop()
 
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
