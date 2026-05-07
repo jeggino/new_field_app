@@ -502,7 +502,7 @@ def edit_observation_dialog(obs):
     
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
-    if st.button("Update"):
+    if st.button("Update",width="stretch"):
         photo_url = obs.get("photo_url")
         if new_photo:
             photo_url = upload_photo(new_photo)
