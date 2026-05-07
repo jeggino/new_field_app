@@ -41,7 +41,7 @@ IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_L
 REPORT_KINDS = [
     'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend (1/3)', 'Kraamverblijf Ochtend (2/3)', 'Kraamverblijf Ochtend (3/3)',
     'Winterverblijf','Paarverblijf (1/2)',
-    'Paarverblijf (2/2)', 'Huismus (1/2)','Huismus (2/2)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)'
+    'Paarverblijf (2/2)', 'Huismus (1/2)','Huismus (2/2)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)','Steenuil (1/3)','Steenuil (2/3)', 'Steenuil (3/3)',
 ]
 # ----------------- SPECIES LISTS -----------------
 BAT_SPECIES = [
@@ -52,7 +52,7 @@ BAT_SPECIES = [
 
 BIRD_SPECIES = [
     'Gierzwaluw','Huiszwaluw','Boerenzwaluw','Huismus','Spreeuw',
-    'Boomkruiper','Kauw','..ander'
+    'Boomkruiper','Kauw','Steenuil','..ander'
 ]
 
 # ----------------- FUNCTION LISTS -----------------
@@ -86,7 +86,7 @@ ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
 COLOR_PALETTE = [
     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
     "darkgreen","cadetblue","darkpurple","white","pink","lightblue","lightgreen",
-    "gray","black"
+    "gray","black","red"
 ]
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
 
