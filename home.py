@@ -935,7 +935,7 @@ def show_main_app():
             text_color="black"
             
         marker_size = 22
-        inner_icon_px = 14
+        inner_icon_px = 12
         
         # BeautifyIcon marker
         marker_icon = BeautifyIcon(
