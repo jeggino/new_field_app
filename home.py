@@ -43,8 +43,8 @@ WIDTH = 30
 IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 
 # ................. ICON CUSTUMIZE ----------------
-marker_size = 20
-inner_icon_px = 10
+marker_size = 21
+inner_icon_px = 11
 
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
