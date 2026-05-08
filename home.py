@@ -1106,7 +1106,7 @@ def show_main_app():
     # If found, show only that button
     if selected_obs:
         obs_id = str(selected_obs["id"])
-        base_label = f"{selected_obs.get('species','')} – {selected_obs.get('function','')}"
+        base_label = f"{obs_id}: {selected_obs.get('species','')} – {selected_obs.get('function','')}"
         label = f"{base_label}"
     
         if st.sidebar.button(label, key=f"obs_{obs_id}", width="stretch"):
