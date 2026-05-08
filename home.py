@@ -814,23 +814,53 @@ def show_main_app():
 
     st.sidebar.header("Filters")
     
-    # -------------------------
-    # SPECIES FILTER
-    # -------------------------
-    species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
-    selected_species = st.sidebar.multiselect("Species", species_values)
+    st.sidebar.header("Filters")
     
-    # -------------------------
-    # FUNCTION FILTER  (NEW)
-    # -------------------------
-    function_values = sorted({o.get("function", "") for o in st.session_state.observations if o.get("function")})
-    selected_functions = st.sidebar.multiselect("Function", function_values)
+    obs = st.session_state.observations
     
-    # -------------------------
-    # DATE FILTER
-    # -------------------------
+    # -----------------------------------------
+    # 1) INITIAL FULL SETS
+    # -----------------------------------------
+    all_species = sorted({o.get("species") for o in obs if o.get("species")})
+    all_functions = sorted({o.get("function") for o in obs if o.get("function")})
+    
+    # -----------------------------------------
+    # 2) USER SELECTIONS (start with full sets)
+    # -----------------------------------------
+    selected_species = st.sidebar.multiselect("Species", all_species)
+    selected_functions = st.sidebar.multiselect("Function", all_functions)
+    
+    # -----------------------------------------
+    # 3) CASCADING LOGIC
+    # -----------------------------------------
+    
+    # Filter by species first (if selected)
+    filtered = obs
+    if selected_species:
+        filtered = [o for o in filtered if o.get("species") in selected_species]
+    
+    # Now update function list based on filtered species
+    available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
+    
+    # If user selected a function that is no longer valid → remove it
+    selected_functions = [f for f in selected_functions if f in available_functions]
+    
+    # Re-render function selector with updated options
+    selected_functions = st.sidebar.multiselect(
+        "Function (filtered)",
+        available_functions,
+        default=selected_functions
+    )
+    
+    # Apply function filter
+    if selected_functions:
+        filtered = [o for o in filtered if o.get("function") in selected_functions]
+    
+    # -----------------------------------------
+    # 4) DATE FILTER (based on filtered subset)
+    # -----------------------------------------
     dates = []
-    for o in st.session_state.observations:
+    for o in filtered:
         if o.get("date"):
             try:
                 dates.append(datetime.fromisoformat(o["date"]).date())
@@ -839,44 +869,21 @@ def show_main_app():
     
     if dates:
         min_d, max_d = min(dates), max(dates)
-        if min_d == max_d:
-            date_range = (min_d, max_d)
-        else:
-            date_range = st.sidebar.slider(
-                "Date range",
-                min_value=min_d,
-                max_value=max_d,
-                value=(min_d, max_d),
-            )
+        date_range = st.sidebar.slider(
+            "Date range",
+            min_value=min_d,
+            max_value=max_d,
+            value=(min_d, max_d),
+        )
+    
+        start_d, end_d = date_range
+        filtered = [
+            o for o in filtered
+            if o.get("date")
+            and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
+        ]
     else:
         date_range = None
-    
-    # -------------------------
-    # APPLY FILTERS
-    # -------------------------
-    filtered = st.session_state.observations
-    
-    # Species filter
-    if selected_species:
-        filtered = [o for o in filtered if o.get("species") in selected_species]
-    
-    # Function filter (NEW)
-    if selected_functions:
-        filtered = [o for o in filtered if o.get("function") in selected_functions]
-    
-    # Date filter
-    if date_range:
-        start_d, end_d = date_range
-        tmp = []
-        for o in filtered:
-            if o.get("date"):
-                try:
-                    d = datetime.fromisoformat(o["date"]).date()
-                    if start_d <= d <= end_d:
-                        tmp.append(o)
-                except:
-                    pass
-        filtered = tmp
 
     st.sidebar.divider()
     
