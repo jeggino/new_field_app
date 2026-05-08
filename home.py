@@ -636,7 +636,7 @@ elif page == "View Projects":
     # --- Download Observations ---
     try:
         obs_res = (
-            supabase.table("observation")
+            supabase.table("observations")
             .select("*")
             .eq("project", selected)
             .order("date", desc=True)
