@@ -503,34 +503,8 @@ def show_reports_dialog():
         
         # Step 1: user clicks delete → activate confirmation mode
         if st.button("Delete Report", type="secondary", use_container_width=True):
-            st.session_state.confirm_delete_id = report["id"]
-            st.session_state.confirm_delete_active = True
+            supabase.table("report").delete().eq("id", report["id"]).execute()
             st.rerun()
-        
-        # Step 2: show confirmation UI if active
-        if st.session_state.get("confirm_delete_active") and \
-           st.session_state.get("confirm_delete_id") == report["id"]:
-        
-            st.error("Are you sure you want to delete this report? This action cannot be undone.")
-        
-            col1, col2 = st.columns(2)
-        
-            with col1:
-                if st.button("Yes, delete", use_container_width=True):
-                    supabase.table("report").delete().eq("id", report["id"]).execute()
-                    st.success("Report deleted.")
-        
-                    # Reset confirmation state
-                    st.session_state.confirm_delete_active = False
-                    st.session_state.confirm_delete_id = None
-        
-                    st.rerun()
-        
-            with col2:
-                if st.button("Cancel", use_container_width=True):
-                    st.session_state.confirm_delete_active = False
-                    st.session_state.confirm_delete_id = None
-                    st.rerun()
 
 
 
