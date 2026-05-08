@@ -349,9 +349,10 @@ def daily_report_dialog():
     st.write("Fill in the daily report.")
 
     kind = st.selectbox("Kind", REPORT_KINDS)
+
     with st.expander("Choose date"):
         date = st.date_input("Date", value=datetime.utcnow().date())
-    # NEW: start and end time
+
     start_time = st.time_input("Start Time")
     end_time = st.time_input("End Time")
     operator = st.text_input("Operator", value=st.session_state.user.email)
@@ -361,7 +362,26 @@ def daily_report_dialog():
     rain = st.selectbox("Rain", REPORT_RAIN)
     comment = st.text_area("Comment")
 
-    if st.button("Submit Report",width="stretch"):
+    if st.button("Submit Report", width="stretch"):
+
+        # ---------------------------------------------------------
+        # CHECK FOR DUPLICATE REPORT (same project + same kind)
+        # ---------------------------------------------------------
+        existing = (
+            supabase.table("report")
+            .select("id")
+            .eq("project", st.session_state.project)
+            .eq("kind", kind)
+            .execute()
+        )
+
+        if existing.data:
+            st.error(f"A report of kind **{kind}** already exists for this project.")
+            st.stop()
+
+        # ---------------------------------------------------------
+        # INSERT NEW REPORT
+        # ---------------------------------------------------------
         supabase.table("report").insert({
             "kind": kind,
             "date": str(date),
