@@ -417,8 +417,8 @@ def show_reports_dialog():
     operator = st.text_input("Operator", value=report["operator"])
     extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
 
-    temperature = st.number_input("Temperature (°C)", step=1, value=float(report.get("temperature") or 0))
-    wind = st.number_input("Wind", step=1, value=float(report.get("wind") or 0))
+    temperature = st.number_input("Temperature (°C)", step=1, value=float(report.get("temperature")))
+    wind = st.number_input("Wind", step=1, value=float(report.get("wind")))
     rain =  st.selectbox("Rain", REPORT_RAIN,
                          index=REPORT_RAIN.index(report["kind"]))
     comment = st.text_area("Comment", value=report.get("comment", ""))
