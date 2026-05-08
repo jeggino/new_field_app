@@ -42,6 +42,10 @@ WIDTH = 30
 # ----------------- LOGO --------------------------
 IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 
+# ................. ICON CUSTUMIZE ----------------
+marker_size = 20
+inner_icon_px = 8
+
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
     'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend (1/3)', 'Kraamverblijf Ochtend (2/3)', 'Kraamverblijf Ochtend (3/3)',
@@ -994,9 +998,7 @@ def show_main_app():
             text_color="lightgrey"
         else:
             text_color="black"
-            
-        marker_size = 22
-        inner_icon_px = 12
+
         
         # BeautifyIcon marker
         marker_icon = BeautifyIcon(
