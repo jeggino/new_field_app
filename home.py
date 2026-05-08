@@ -776,35 +776,6 @@ def show_main_app():
     if st.sidebar.button("View Reports",width="stretch",icon=":material/menu_book:"):
         show_reports_dialog()
 
-    # CSV download    
-    res = (
-        supabase.table("report")
-        .select("*")
-        .eq("project", st.session_state.project)
-        .order("date", desc=True)
-        .execute()
-    )
-    reports = res.data or []
-
-    # if not reports:
-    #     st.info("No reports yet.")
-    #     return
-
-    df = pd.DataFrame(reports)
-    st.sidebar.download_button(
-        "Download All Reports (CSV)",
-        df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{st.session_state.project}_reports.csv",
-        mime="text/csv",
-        width="stretch",
-        icon=":material/sim_card_download:"
-    )
-
-
-
-
-
-
 
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
@@ -998,19 +969,6 @@ def show_main_app():
     
     st.sidebar.header("Observations")
 
-    # Download observations as CSV
-    csv_data = download_observations_csv()
-    if csv_data:
-        st.sidebar.download_button(
-            label="Download All Observations (CSV)",
-            data=csv_data,
-            file_name=f"{st.session_state.project}_observations.csv",
-            mime="text/csv",
-            width="stretch",
-            icon=":material/download:"
-        )
-    else:
-        st.sidebar.write("No observations to download.")
     
     # OBSERVATION LIST IN SIDEBAR (no title, no new button)
     for obs in filtered:
