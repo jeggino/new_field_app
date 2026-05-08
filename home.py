@@ -1038,7 +1038,7 @@ def show_main_app():
         # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
 
-        if color in ["darkred","darkblue","darkgreen","black","blue","purple"]:
+        if color in ["darkred","darkblue","darkgreen","black","purple"]:
             text_color="white"
         else:
             text_color="black"
