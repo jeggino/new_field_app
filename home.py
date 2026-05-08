@@ -354,9 +354,9 @@ def daily_report_dialog():
     end_time = st.time_input("End Time")
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
-    temperature = st.number_input("Temperature (°C)", step=0.1)
-    wind = st.text_input("Wind")
-    rain = st.text_input("Rain")
+    temperature = st.number_input("Temperature (°C)", step=1)
+    wind = st.number_input("Wind", step=1)
+    rain = st.selectbox("Rain", ["Droog", "Nevel/mist", "Motregen"])
     comment = st.text_area("Comment")
 
     if st.button("Submit Report",width="stretch"):
