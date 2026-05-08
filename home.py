@@ -48,6 +48,8 @@ REPORT_KINDS = [
     'Winterverblijf','Paarverblijf (1/2)',
     'Paarverblijf (2/2)', 'Huismus (1/3)','Huismus (2/3)', 'Huismus (3/3)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)','Steenuil (1/3)','Steenuil (2/3)', 'Steenuil (3/3)',
 ]
+
+REPORT_RAIN = ["Droog", "Nevel/mist", "Motregen"]
 # ----------------- SPECIES LISTS -----------------
 BAT_SPECIES = [
     'Gewone dwergvleermuis','Ruige dwergvleermuis','Laatvlieger','Rosse vleermuis',
@@ -356,7 +358,7 @@ def daily_report_dialog():
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=1)
     wind = st.number_input("Wind", step=1)
-    rain = st.selectbox("Rain", ["Droog", "Nevel/mist", "Motregen"])
+    rain = st.selectbox("Rain", REPORT_RAIN)
     comment = st.text_area("Comment")
 
     if st.button("Submit Report",width="stretch"):
@@ -415,9 +417,10 @@ def show_reports_dialog():
     operator = st.text_input("Operator", value=report["operator"])
     extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
 
-    temperature = st.number_input("Temperature (°C)", step=0.1, value=float(report.get("temperature") or 0))
-    wind = st.text_input("Wind", value=report.get("wind", ""))
-    rain = st.text_input("Rain", value=report.get("rain", ""))
+    temperature = st.number_input("Temperature (°C)", step=1, value=float(report.get("temperature") or 0))
+    wind = st.number_input("Wind", step=1, value=float(report.get("wind") or 0))
+    rain =  st.selectbox("Rain", REPORT_RAIN,
+                         index=REPORT_RAIN.index(report["kind"]))
     comment = st.text_area("Comment", value=report.get("comment", ""))
 
     # Save changes
