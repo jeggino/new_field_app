@@ -275,6 +275,24 @@ def upload_photo(file):
 
 
 # ----------------- HELPER FUNCTION -------------
+def delete_photo_from_storage(photo_url):
+    """
+    Extracts the file name from the Supabase public URL
+    and deletes it from the storage bucket.
+    """
+    if not photo_url:
+        return
+
+    try:
+        # Example URL:
+        # https://xxxx.supabase.co/storage/v1/object/public/observations/myphoto.jpg
+        filename = photo_url.split("/")[-1]
+
+        supabase.storage.from_(BUCKET).remove(filename)
+
+    except Exception as e:
+        st.warning(f"Could not delete photo: {e}")
+
 def extract_id_from_popup(popup_html):
     if not popup_html:
         return None
@@ -435,7 +453,7 @@ def edit_observation_dialog(obs):
     # Start from the current observation location
     edit_center = [obs["lat"], obs["lon"]]
     
-    m = folium.Map(location=edit_center, zoom_start=18,zoom_control=False)
+    m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     # Add a blue marker showing the original coordinate
@@ -507,7 +525,7 @@ def edit_observation_dialog(obs):
     
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
-    if st.button("Update",width="stretch"):
+    if st.button("Update", width="stretch"):
         photo_url = obs.get("photo_url")
         if new_photo:
             photo_url = upload_photo(new_photo)
@@ -527,8 +545,13 @@ def edit_observation_dialog(obs):
         load_observations(st.session_state.project)
         st.rerun()
 
-    if st.button("Delete", type="secondary",width="stretch"):
+    if st.button("Delete", type="secondary", width="stretch"):
+        # Delete photo from storage
+        delete_photo_from_storage(obs.get("photo_url"))
+
+        # Delete observation from database
         supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
+
         load_observations(st.session_state.project)
         st.rerun()
 
