@@ -1062,8 +1062,8 @@ def show_main_app():
         folium.Marker(
             location=[obs["lat"], obs["lon"]],
             popup=popup_html,
-            # tooltip=tooltip_text,
-            tooltip=None,
+            tooltip=tooltip_text,
+            # tooltip=None,
             icon=marker_icon
         ).add_to(cluster)
 
