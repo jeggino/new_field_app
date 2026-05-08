@@ -946,7 +946,7 @@ def show_main_app():
             border_width=0.7,
             text_color=text_color,
             icon_size=[marker_size, marker_size],                 # marker size
-            inner_icon_style=f"font-size:{inner_icon_px}px; line-heigth:{marker_size}px; text-align:center;" # icon size
+            inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center;" # icon size
         )
     
         # Add marker to cluster (NOT to map)
