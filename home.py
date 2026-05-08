@@ -450,20 +450,16 @@ def show_reports_dialog():
 def edit_observation_dialog(obs):
     st.write("Move the map to adjust the coordinates")
     
-    # Start from the current observation location
     edit_center = [obs["lat"], obs["lon"]]
-    
     m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
-    # Add a blue marker showing the original coordinate
     folium.Marker(
         location=[obs["lat"], obs["lon"]],
         icon=folium.Icon(color="blue", icon="info-sign"),
         popup="Original location"
     ).add_to(m)
 
-    # Crosshair overlay
     crosshair_html = f"""
     <div style="
         position: fixed;
@@ -481,7 +477,6 @@ def edit_observation_dialog(obs):
     
     map_data = st_folium(m, width="100%", height=350)
     
-    # Extract new coordinates from map center
     try:
         new_lat = map_data["center"]["lat"]
         new_lon = map_data["center"]["lng"]
@@ -525,9 +520,13 @@ def edit_observation_dialog(obs):
     
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
 
+    # UPDATE
     if st.button("Update", width="stretch"):
         photo_url = obs.get("photo_url")
+
+        # Delete old photo if new one is uploaded
         if new_photo:
+            delete_photo_from_storage(photo_url)
             photo_url = upload_photo(new_photo)
 
         supabase.table(OBS_TABLE).update({
@@ -545,13 +544,10 @@ def edit_observation_dialog(obs):
         load_observations(st.session_state.project)
         st.rerun()
 
+    # DELETE
     if st.button("Delete", type="secondary", width="stretch"):
-        # Delete photo from storage
         delete_photo_from_storage(obs.get("photo_url"))
-
-        # Delete observation from database
         supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
-
         load_observations(st.session_state.project)
         st.rerun()
 
