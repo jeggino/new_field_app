@@ -1092,17 +1092,37 @@ def show_main_app():
     st.sidebar.header("Observations")
 
     
-    # OBSERVATION LIST IN SIDEBAR (no title, no new button)
-    for obs in filtered:
-        obs_id = str(obs["id"])
-        base_label = f"{obs.get('species','')} – {obs.get('function','')}"
-        if st.session_state.selected_obs_id == obs_id:
-            label = f"🔴 {base_label}"
-        else:
-            label = base_label
+    # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
+    # for obs in filtered:
+    #     obs_id = str(obs["id"])
+    #     base_label = f"{obs.get('species','')} – {obs.get('function','')}"
+    #     if st.session_state.selected_obs_id == obs_id:
+    #         label = f"🔴 {base_label}"
+    #     else:
+    #         label = base_label
 
-        if st.sidebar.button(label, key=f"obs_{obs_id}",width="stretch"):
-            edit_observation_dialog(obs)
+    #     if st.sidebar.button(label, key=f"obs_{obs_id}",width="stretch"):
+    #         edit_observation_dialog(obs)
+
+    selected_id = st.session_state.selected_obs_id
+    
+    # Find the matching observation
+    selected_obs = None
+    for obs in filtered:
+        if str(obs["id"]) == selected_id:
+            selected_obs = obs
+            break
+    
+    # If found, show only that button
+    if selected_obs:
+        obs_id = str(selected_obs["id"])
+        base_label = f"{selected_obs.get('species','')} – {selected_obs.get('function','')}"
+        label = f"🔴 {base_label}"
+    
+        if st.sidebar.button(label, key=f"obs_{obs_id}", width="stretch"):
+            edit_observation_dialog(selected_obs)
+
+
 
 
 # ----------------- RESTORE SESSION -----------------
