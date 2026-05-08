@@ -513,11 +513,33 @@ def edit_observation_dialog(obs):
     m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
+    # BeautifyIcon marker
+    marker_icon = BeautifyIcon(
+        icon="map-marker",
+        icon_shape="marker",
+        background_color="blue",
+        border_color="black",
+        border_width=0.7,
+        text_color="white",
+        icon_size=[marker_size, marker_size],                 # marker size
+        inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
+    )
+
     folium.Marker(
         location=[obs["lat"], obs["lon"]],
-        icon=folium.Icon(color="blue", icon="info-sign"),
+        icon=marker_icon,
         popup="Original location"
     ).add_to(m)
+
+
+
+    
+
+
+
+
+
+    
 
     crosshair_html = f"""
     <div style="
