@@ -1089,21 +1089,10 @@ def show_main_app():
 
     st.sidebar.divider()
     
-    st.sidebar.header("Observations")
+    st.sidebar.header("Edit/Delet Observation")
 
     
     # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
-    # for obs in filtered:
-    #     obs_id = str(obs["id"])
-    #     base_label = f"{obs.get('species','')} – {obs.get('function','')}"
-    #     if st.session_state.selected_obs_id == obs_id:
-    #         label = f"🔴 {base_label}"
-    #     else:
-    #         label = base_label
-
-    #     if st.sidebar.button(label, key=f"obs_{obs_id}",width="stretch"):
-    #         edit_observation_dialog(obs)
-
     selected_id = st.session_state.selected_obs_id
     
     # Find the matching observation
@@ -1117,7 +1106,7 @@ def show_main_app():
     if selected_obs:
         obs_id = str(selected_obs["id"])
         base_label = f"{selected_obs.get('species','')} – {selected_obs.get('function','')}"
-        label = f"🔴 {base_label}"
+        label = f"{base_label}"
     
         if st.sidebar.button(label, key=f"obs_{obs_id}", width="stretch"):
             edit_observation_dialog(selected_obs)
