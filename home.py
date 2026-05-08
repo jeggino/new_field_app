@@ -11,8 +11,7 @@ import re
 
 
 st.image(
-    "https://i.imgur.com/2xO0m5U.png",
-    caption="Hold on… the app is fixing itself 👷‍♂️"
+    "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg",
 )
 
 st.stop()
