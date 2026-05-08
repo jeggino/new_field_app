@@ -176,143 +176,6 @@ page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
 # ---------------------------------------------------------
-# if page == "Create Project":
-#     st.title("Create Project")
-#     st.write("Draw a polygon, enter a name, description, and assign users.")
-
-#     if "last_drawings" not in st.session_state:
-#         st.session_state["last_drawings"] = None
-
-#     # MAP
-#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-
-#     # Satellite (Esri)
-#     folium.TileLayer(
-#         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-#         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-#         name="Satellite",
-#         overlay=False,
-#         control=True
-#     ).add_to(m)
-
-    
-#     # Geocoder FIRST (top-left)
-#     Geocoder(
-#         collapsed=False,
-#         add_marker=True,
-#         position='topleft'
-#     ).add_to(m)
-    
-#     # Draw SECOND (below geocoder)
-#     Draw(
-#         draw_options={"polygon": True, "marker": False, "circle": False,
-#                       "polyline": False, "rectangle": False},
-#         edit_options={"edit": True, "remove": True},
-#     ).add_to(m)
-
-#     Fullscreen(position="topleft").add_to(m)
-
-#     folium.LayerControl(position="topright").add_to(m)
-
-#     # Put map in a container, full width
-#     with st.container():
-#         map_data = st_folium(m, height=500, use_container_width=True)
-
-#     # st.write(map_data)
-
-
-    
-#     if map_data and "all_drawings" in map_data:
-#         st.session_state["last_drawings"] = map_data["all_drawings"]
-
-
-        
-#     polygon_geojson = None
-
-#     if st.session_state["last_drawings"]:
-#         drawings = st.session_state["last_drawings"]
-#         polygons = []
-
-#         for d in drawings:
-#             geom = d.get("geometry", {})
-#             if geom.get("type") == "Polygon":
-#                 polygons.append(geom["coordinates"])
-#             elif geom.get("type") == "MultiPolygon":
-#                 polygons.extend(geom["coordinates"])
-
-#         if len(polygons) == 1:
-#             polygon_geojson = {
-#                 "type": "Feature",
-#                 "geometry": {"type": "Polygon", "coordinates": polygons[0]}
-#             }
-#         elif len(polygons) > 1:
-#             polygon_geojson = {
-#                 "type": "Feature",
-#                 "geometry": {"type": "MultiPolygon", "coordinates": polygons}
-#             }
-
-#     # FORM
-#     project_name = st.text_input("Project name")
-#     description = st.text_area("Description")
-
-#     try:
-#         users = supabase.rpc("get_all_users").execute().data or []
-#     except:
-#         users = []
-
-#     email_to_id = {u["email"]: u["id"] for u in users}
-#     selected_emails = st.multiselect("Users who can work on this project", list(email_to_id.keys()))
-
-#     # SAVE PROJECT
-#     if st.button("Save Project"):
-
-#         if not polygon_geojson:
-#             st.error("Draw a polygon first.")
-#             st.stop()
-
-#         if not project_name:
-#             st.error("Enter a project name.")
-#             st.stop()
-
-#         safe_name = project_name.replace(" ", "_")
-#         filename = f"{safe_name}.geojson"
-
-#         # Check duplicate
-#         try:
-#             existing = supabase.table("projects").select("name").eq("name", safe_name).execute()
-#             if existing.data:
-#                 st.error(f"A project named '{safe_name}' already exists. Choose another name.")
-#                 st.stop()
-#         except Exception as e:
-#             st.error(f"Error checking existing projects: {e}")
-#             st.stop()
-
-#         try:
-#             supabase.storage.from_(BUCKET).upload(
-#                 filename,
-#                 json.dumps(polygon_geojson).encode("utf-8"),
-#                 file_options={"content-type": "application/geo+json", "x-upsert": "true"}
-#             )
-
-#             supabase.table("projects").insert(
-#                 {"name": safe_name, "description": description}
-#             ).execute()
-
-#             for email in selected_emails:
-#                 supabase.table("project_members").insert(
-#                     {"project": safe_name, "user_id": email_to_id[email]}
-#                 ).execute()
-
-#             st.success(f"Project '{safe_name}' has been successfully created.")
-
-#             # Clear drawings and rerun
-#             st.session_state["last_drawings"] = None
-#             st.rerun()
-
-#         except Exception as e:
-#             st.error(f"Exception while saving project: {e}")
-#             st.stop()
-
 if page == "Create Project":
     st.title("Create Project")
     st.write("Draw a polygon, enter a name, description, and assign users.")
@@ -465,6 +328,153 @@ if page == "Create Project":
         st.rerun()
 
 
+# # ---------------------------------------------------------
+# # PAGE 2 — VIEW PROJECTS
+# # ---------------------------------------------------------
+# elif page == "View Projects":
+#     st.title("View Projects")
+
+#     # --- Load all projects ---
+#     proj_res = supabase.table("projects").select("*").execute()
+#     projects = proj_res.data or []
+
+#     if not projects:
+#         st.info("No projects found.")
+#         st.stop()
+
+#     project_names = [p["name"] for p in projects]
+#     selected = st.selectbox("Select a project", 
+#                             project_names,
+#                             index=None,
+#                             placeholder="Select a project...",)
+
+#     if not selected:
+#         st.stop()
+
+#     # Current project data
+#     project = next(p for p in projects if p["name"] == selected)
+
+#     st.subheader("Project Info")
+#     st.write(f"**Name:** {project['name']}")
+#     st.write(f"**Description:** {project['description']}")
+
+#     # --- Load all users from Supabase ---
+#     try:
+#         users = supabase.rpc("get_all_users").execute().data or []
+#     except:
+#         users = []
+
+#     # Two mappings
+#     id_to_email = {u["id"]: u["email"] for u in users}
+#     email_to_id = {u["email"]: u["id"] for u in users}
+
+#     # --- Load project members ---
+#     pm_res = supabase.table("project_members").select("*").eq("project", selected).execute()
+#     members = pm_res.data or []
+
+#     st.subheader("Users who can work on this project")
+#     if members:
+#         for m in members:
+#             st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
+#     else:
+#         st.write("No users assigned.")
+
+#     # --- Load boundary using your working function ---
+#     boundary, bounds = load_project_boundary(selected)
+
+#     st.subheader("Project Area")
+
+#     # --- Create map ---
+#     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+
+#     # Basemaps
+#     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+
+
+
+#     # Add polygon if exists
+#     if boundary:
+#             folium.GeoJson(
+#                 boundary,
+#                 name="Boundary",
+#                 style_function=lambda x: {
+#                     "fillColor": "#ffcc00",
+#                     "color": "red",
+#                     "weight": 2.5,
+#                     "fillOpacity": 0.1,
+#                 }
+#             ).add_to(m)
+
+#     # Fit to bounds if valid
+#     if bounds:
+#         try:
+#             m.fit_bounds(bounds)
+#         except:
+#             pass
+
+#     # Plugins
+
+
+#     # --- Render map (NO HTML WRAPPER) ---
+#     with st.container():
+#         st_folium(m, height=500, use_container_width=True)
+
+#     # --- Edit Users Section ---
+#     "---"
+#     st.subheader("Edit Users")
+
+#     all_user_emails = list(email_to_id.keys())
+
+#     current_user_ids = [m["user_id"] for m in members]
+#     current_user_emails = [
+#         id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
+#     ]
+
+#     new_selection = st.multiselect(
+#         "Select users for this project",
+#         all_user_emails,
+#         default=current_user_emails
+#     )
+
+#     if st.button("Save User Changes"):
+#         try:
+#             # Remove all existing users
+#             supabase.table("project_members").delete().eq("project", selected).execute()
+
+#             # Add new users
+#             for email in new_selection:
+#                 supabase.table("project_members").insert(
+#                     {"project": selected, "user_id": email_to_id[email]}
+#                 ).execute()
+
+#             st.success("Users updated.")
+#             st.rerun()
+
+#         except Exception as e:
+#             st.error(f"Error updating users: {e}")
+
+
+
+# # ---------------------------------------------------------
+# #   DELETE PROJECT
+# # ---------------------------------------------------------
+#     "---"
+
+
+#     if st.button("DELETE PROJECT", type="primary"):
+#         confirm_delete_dialog(selected)
+
+
+
+
+
+
+
+
+    
+
+#     st_folium(m, height=500, width="100%")
+
 # ---------------------------------------------------------
 # PAGE 2 — VIEW PROJECTS
 # ---------------------------------------------------------
@@ -480,10 +490,12 @@ elif page == "View Projects":
         st.stop()
 
     project_names = [p["name"] for p in projects]
-    selected = st.selectbox("Select a project", 
-                            project_names,
-                            index=None,
-                            placeholder="Select a project...",)
+    selected = st.selectbox(
+        "Select a project",
+        project_names,
+        index=None,
+        placeholder="Select a project...",
+    )
 
     if not selected:
         st.stop()
@@ -527,20 +539,18 @@ elif page == "View Projects":
     # Basemaps
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
 
-
-
     # Add polygon if exists
     if boundary:
-            folium.GeoJson(
-                boundary,
-                name="Boundary",
-                style_function=lambda x: {
-                    "fillColor": "#ffcc00",
-                    "color": "red",
-                    "weight": 2.5,
-                    "fillOpacity": 0.1,
-                }
-            ).add_to(m)
+        folium.GeoJson(
+            boundary,
+            name="Boundary",
+            style_function=lambda x: {
+                "fillColor": "#ffcc00",
+                "color": "red",
+                "weight": 2.5,
+                "fillOpacity": 0.1,
+            }
+        ).add_to(m)
 
     # Fit to bounds if valid
     if bounds:
@@ -549,15 +559,12 @@ elif page == "View Projects":
         except:
             pass
 
-    # Plugins
-
-
-    # --- Render map (NO HTML WRAPPER) ---
+    # --- Render map ---
     with st.container():
         st_folium(m, height=500, use_container_width=True)
 
     # --- Edit Users Section ---
-    "---"
+    st.markdown("---")
     st.subheader("Edit Users")
 
     all_user_emails = list(email_to_id.keys())
@@ -590,27 +597,64 @@ elif page == "View Projects":
         except Exception as e:
             st.error(f"Error updating users: {e}")
 
-
-
-# ---------------------------------------------------------
-#   DELETE PROJECT
-# ---------------------------------------------------------
-    "---"
-
+    # ---------------------------------------------------------
+    #   DELETE PROJECT
+    # ---------------------------------------------------------
+    st.markdown("---")
 
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
 
+    # ---------------------------------------------------------
+    #   DOWNLOAD REPORTS + OBSERVATIONS
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("Download Data")
 
+    # --- Download Reports ---
+    try:
+        report_res = (
+            supabase.table("report")
+            .select("*")
+            .eq("project", selected)
+            .order("date", desc=True)
+            .execute()
+        )
+        report_df = pd.DataFrame(report_res.data or [])
+    except Exception as e:
+        report_df = pd.DataFrame()
+        st.error(f"Error loading reports: {e}")
 
+    st.download_button(
+        label="Download Reports (CSV)",
+        data=report_df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{selected}_reports.csv",
+        mime="text/csv",
+        icon=":material/sim_card_download:"
+    )
 
+    # --- Download Observations ---
+    try:
+        obs_res = (
+            supabase.table("observation")
+            .select("*")
+            .eq("project", selected)
+            .order("date", desc=True)
+            .execute()
+        )
+        obs_df = pd.DataFrame(obs_res.data or [])
+    except Exception as e:
+        obs_df = pd.DataFrame()
+        st.error(f"Error loading observations: {e}")
 
+    st.download_button(
+        label="Download Observations (CSV)",
+        data=obs_df.to_csv(index=False).encode("utf-8"),
+        file_name=f"{selected}_observations.csv",
+        mime="text/csv",
+        icon=":material/download:"
+    )
 
-
-
-    
-
-    st_folium(m, height=500, width="100%")
 
 
 
