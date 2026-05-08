@@ -812,74 +812,74 @@ def show_main_app():
     
     obs = st.session_state.observations
     
-    # -----------------------------------------
-    # 1) READ CURRENT SELECTIONS (from previous run, if any)
-    # -----------------------------------------
-    # We use keys so Streamlit remembers choices across reruns
+    # -----------------------------
+    # 1) READ PREVIOUS SELECTIONS
+    # -----------------------------
+    prev_species = st.session_state.get("filter_species", [])
+    prev_functions = st.session_state.get("filter_functions", [])
+    
+    # -----------------------------
+    # 2) APPLY PREVIOUS FILTERS TO GET CURRENT SUBSET
+    # -----------------------------
+    filtered_for_options = obs
+    
+    if prev_species:
+        filtered_for_options = [
+            o for o in filtered_for_options
+            if o.get("species") in prev_species
+        ]
+    
+    if prev_functions:
+        filtered_for_options = [
+            o for o in filtered_for_options
+            if o.get("function") in prev_functions
+        ]
+    
+    # -----------------------------
+    # 3) BUILD AVAILABLE OPTIONS FROM CURRENT SUBSET
+    # -----------------------------
+    species_options = sorted({
+        o.get("species") for o in filtered_for_options if o.get("species")
+    })
+    function_options = sorted({
+        o.get("function") for o in filtered_for_options if o.get("function")
+    })
+    
+    # Keep only still-valid previous selections
+    prev_species = [s for s in prev_species if s in species_options]
+    prev_functions = [f for f in prev_functions if f in function_options]
+    
+    # -----------------------------
+    # 4) RENDER SINGLE WIDGET PER FILTER
+    # -----------------------------
     selected_species = st.sidebar.multiselect(
         "Species",
-        sorted({o.get("species") for o in obs if o.get("species")}),
+        options=species_options,
+        default=prev_species,
         key="filter_species",
     )
     
     selected_functions = st.sidebar.multiselect(
         "Function",
-        sorted({o.get("function") for o in obs if o.get("function")}),
-        key="filter_function",
+        options=function_options,
+        default=prev_functions,
+        key="filter_functions",
     )
     
-    # We'll compute date_range after we know which dates are available
-    
-    
-    # -----------------------------------------
-    # 2) APPLY FILTERS IN CASCADE
-    # -----------------------------------------
+    # -----------------------------
+    # 5) APPLY FILTERS TO GET FINAL SUBSET
+    # -----------------------------
     filtered = obs
     
-    # Apply species filter
     if selected_species:
         filtered = [o for o in filtered if o.get("species") in selected_species]
     
-    # Apply function filter
     if selected_functions:
         filtered = [o for o in filtered if o.get("function") in selected_functions]
     
-    # -----------------------------------------
-    # 3) UPDATE AVAILABLE OPTIONS BASED ON FILTERED SET
-    # -----------------------------------------
-    available_species = sorted({o.get("species") for o in filtered if o.get("species")})
-    available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
-    
-    # Clean up selections that are no longer valid
-    selected_species = [s for s in selected_species if s in available_species]
-    selected_functions = [f for f in selected_functions if f in available_functions]
-    
-    # Re-render widgets with updated options and cleaned defaults
-    selected_species = st.sidebar.multiselect(
-        "Species",
-        available_species,
-        default=selected_species,
-        key="filter_species_updated",
-    )
-    
-    selected_functions = st.sidebar.multiselect(
-        "Function",
-        available_functions,
-        default=selected_functions,
-        key="filter_function_updated",
-    )
-    
-    # Re-apply filters with cleaned selections
-    filtered = obs
-    if selected_species:
-        filtered = [o for o in filtered if o.get("species") in selected_species]
-    if selected_functions:
-        filtered = [o for o in filtered if o.get("function") in selected_functions]
-    
-    
-    # -----------------------------------------
-    # 4) DATE FILTER (BASED ON FILTERED SET)
-    # -----------------------------------------
+    # -----------------------------
+    # 6) DATE FILTER BASED ON FINAL SUBSET
+    # -----------------------------
     dates = []
     for o in filtered:
         if o.get("date"):
@@ -890,7 +890,6 @@ def show_main_app():
     
     if dates:
         min_d, max_d = min(dates), max(dates)
-    
         if min_d == max_d:
             date_range = (min_d, max_d)
         else:
@@ -910,6 +909,9 @@ def show_main_app():
         ]
     else:
         date_range = None
+    
+    # `filtered` now contains the observations after all cascading filters
+
         
 
     st.sidebar.divider()
