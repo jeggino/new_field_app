@@ -934,6 +934,8 @@ def show_main_app():
         else:
             text_color="black"
             
+        marker_size = 22
+        inner_icon_px = 14
         
         # BeautifyIcon marker
         marker_icon = BeautifyIcon(
@@ -943,8 +945,8 @@ def show_main_app():
             border_color="black",
             border_width=0.7,
             text_color=text_color,
-            icon_size=[30, 30],                 # marker size
-            inner_icon_style="font-Selec15px;" # icon size
+            icon_size=[marker_size, marker_size],                 # marker size
+            inner_icon_style=f"font-size:{inner_icon_px}px; line-heigth:{marker_size}px; text-align:center;" # icon size
         )
     
         # Add marker to cluster (NOT to map)
