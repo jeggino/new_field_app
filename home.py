@@ -420,7 +420,7 @@ def show_reports_dialog():
     temperature = st.number_input("Temperature (°C)", step=1, value=int(report.get("temperature")))
     wind = st.number_input("Wind", step=1, value=int(report.get("wind")))
     rain =  st.selectbox("Rain", REPORT_RAIN,
-                         index=REPORT_RAIN.index(report["kind"]))
+                         index=REPORT_RAIN.index(report["rain"]))
     comment = st.text_area("Comment", value=report.get("comment", ""))
 
     # Save changes
