@@ -806,11 +806,7 @@ def show_main_app():
     if st.sidebar.button("Logout",width="stretch",icon=":material/login:"):
         logout()
 
-    st.sidebar.divider()
-
-    # if st.sidebar.button("Legend",width="stretch"):
-    #     show_legend()
-    
+    st.sidebar.divider()  
 
     st.sidebar.header("Filters")
     
@@ -823,7 +819,7 @@ def show_main_app():
     all_functions = sorted({o.get("function") for o in obs if o.get("function")})
     
     # -----------------------------------------
-    # 2) USER SELECTIONS (start with full sets)
+    # 2) USER SELECTIONS (initial)
     # -----------------------------------------
     selected_species = st.sidebar.multiselect("Species", all_species)
     selected_functions = st.sidebar.multiselect("Function", all_functions)
@@ -832,22 +828,24 @@ def show_main_app():
     # 3) CASCADING LOGIC
     # -----------------------------------------
     
-    # Filter by species first (if selected)
+    # Start from all observations
     filtered = obs
+    
+    # Apply species filter
     if selected_species:
         filtered = [o for o in filtered if o.get("species") in selected_species]
     
-    # Now update function list based on filtered species
+    # Update available functions based on species-filtered set
     available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
     
-    # If user selected a function that is no longer valid → remove it
+    # Keep only still-valid selected functions
     selected_functions = [f for f in selected_functions if f in available_functions]
     
     # Re-render function selector with updated options
     selected_functions = st.sidebar.multiselect(
         "Function (filtered)",
         available_functions,
-        default=selected_functions
+        default=selected_functions,
     )
     
     # Apply function filter
@@ -867,12 +865,17 @@ def show_main_app():
     
     if dates:
         min_d, max_d = min(dates), max(dates)
-        date_range = st.sidebar.slider(
-            "Date range",
-            min_value=min_d,
-            max_value=max_d,
-            value=(min_d, max_d),
-        )
+    
+        # IMPORTANT: handle single-date case safely
+        if min_d == max_d:
+            date_range = (min_d, max_d)
+        else:
+            date_range = st.sidebar.slider(
+                "Date range",
+                min_value=min_d,
+                max_value=max_d,
+                value=(min_d, max_d),
+            )
     
         start_d, end_d = date_range
         filtered = [
@@ -882,6 +885,7 @@ def show_main_app():
         ]
     else:
         date_range = None
+
 
     st.sidebar.divider()
     
