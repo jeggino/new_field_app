@@ -943,8 +943,8 @@ def show_main_app():
             border_color="black",
             border_width=0.7,
             text_color=text_color,
-            icon_size=[15, 15],                 # marker size
-            inner_icon_style="font-size:8px;" # icon size
+            icon_size=[30, 30],                 # marker size
+            inner_icon_style="font-Selec15px;" # icon size
         )
     
         # Add marker to cluster (NOT to map)
