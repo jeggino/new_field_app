@@ -814,8 +814,6 @@ def show_main_app():
 
     st.sidebar.header("Filters")
     
-    st.sidebar.header("Filters")
-    
     obs = st.session_state.observations
     
     # -----------------------------------------
