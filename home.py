@@ -812,51 +812,71 @@ def show_main_app():
     #     show_legend()
     
 
-    st.sidebar.header("Filters")
+st.sidebar.header("Filters")
 
-    species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
-    selected_species = st.sidebar.multiselect("Species", species_values)
+# -------------------------
+# SPECIES FILTER
+# -------------------------
+species_values = sorted({o.get("species", "") for o in st.session_state.observations if o.get("species")})
+selected_species = st.sidebar.multiselect("Species", species_values)
 
-    # DATE FILTER
-    dates = []
-    for o in st.session_state.observations:
+# -------------------------
+# FUNCTION FILTER  (NEW)
+# -------------------------
+function_values = sorted({o.get("function", "") for o in st.session_state.observations if o.get("function")})
+selected_functions = st.sidebar.multiselect("Function", function_values)
+
+# -------------------------
+# DATE FILTER
+# -------------------------
+dates = []
+for o in st.session_state.observations:
+    if o.get("date"):
+        try:
+            dates.append(datetime.fromisoformat(o["date"]).date())
+        except:
+            pass
+
+if dates:
+    min_d, max_d = min(dates), max(dates)
+    if min_d == max_d:
+        date_range = (min_d, max_d)
+    else:
+        date_range = st.sidebar.slider(
+            "Date range",
+            min_value=min_d,
+            max_value=max_d,
+            value=(min_d, max_d),
+        )
+else:
+    date_range = None
+
+# -------------------------
+# APPLY FILTERS
+# -------------------------
+filtered = st.session_state.observations
+
+# Species filter
+if selected_species:
+    filtered = [o for o in filtered if o.get("species") in selected_species]
+
+# Function filter (NEW)
+if selected_functions:
+    filtered = [o for o in filtered if o.get("function") in selected_functions]
+
+# Date filter
+if date_range:
+    start_d, end_d = date_range
+    tmp = []
+    for o in filtered:
         if o.get("date"):
             try:
-                dates.append(datetime.fromisoformat(o["date"]).date())
+                d = datetime.fromisoformat(o["date"]).date()
+                if start_d <= d <= end_d:
+                    tmp.append(o)
             except:
                 pass
-
-    if dates:
-        min_d, max_d = min(dates), max(dates)
-        if min_d == max_d:
-            date_range = (min_d, max_d)
-        else:
-            date_range = st.sidebar.slider(
-                "Date range",
-                min_value=min_d,
-                max_value=max_d,
-                value=(min_d, max_d),
-            )
-    else:
-        date_range = None
-
-    filtered = st.session_state.observations
-
-    if selected_species:
-        filtered = [o for o in filtered if o.get("species") in selected_species]
-
-    if date_range:
-        start_d, end_d = date_range
-        tmp = []
-        for o in filtered:
-            if o.get("date"):
-                try:
-                    d = datetime.fromisoformat(o["date"]).date()
-                    if start_d <= d <= end_d:
-                        tmp.append(o)
-                except:
-                    pass
-        filtered = tmp
+    filtered = tmp
 
     st.sidebar.divider()
     
