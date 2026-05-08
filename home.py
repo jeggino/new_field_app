@@ -10,6 +10,12 @@ import pandas as pd
 import re
 
 
+st.image(
+    "https://i.imgur.com/2xO0m5U.png",
+    caption="Hold on… the app is fixing itself 👷‍♂️"
+)
+
+st.stop()
 
 
 # ----------------- CONFIG -----------------
