@@ -808,211 +808,108 @@ def show_main_app():
 
     st.sidebar.divider()  
 
-st.sidebar.header("Filters")
-
-obs = st.session_state.observations
-
-# -----------------------------------------
-# 1) READ CURRENT SELECTIONS (from previous run, if any)
-# -----------------------------------------
-# We use keys so Streamlit remembers choices across reruns
-selected_species = st.sidebar.multiselect(
-    "Species",
-    sorted({o.get("species") for o in obs if o.get("species")}),
-    key="filter_species",
-)
-
-selected_functions = st.sidebar.multiselect(
-    "Function",
-    sorted({o.get("function") for o in obs if o.get("function")}),
-    key="filter_function",
-)
-
-# We'll compute date_range after we know which dates are available
-
-
-# -----------------------------------------
-# 2) APPLY FILTERS IN CASCADE
-# -----------------------------------------
-filtered = obs
-
-# Apply species filter
-if selected_species:
-    filtered = [o for o in filtered if o.get("species") in selected_species]
-
-# Apply function filter
-if selected_functions:
-    filtered = [o for o in filtered if o.get("function") in selected_functions]
-
-# -----------------------------------------
-# 3) UPDATE AVAILABLE OPTIONS BASED ON FILTERED SET
-# -----------------------------------------
-available_species = sorted({o.get("species") for o in filtered if o.get("species")})
-available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
-
-# Clean up selections that are no longer valid
-selected_species = [s for s in selected_species if s in available_species]
-selected_functions = [f for f in selected_functions if f in available_functions]
-
-# Re-render widgets with updated options and cleaned defaults
-selected_species = st.sidebar.multiselect(
-    "Species",
-    available_species,
-    default=selected_species,
-    key="filter_species_updated",
-)
-
-selected_functions = st.sidebar.multiselect(
-    "Function",
-    available_functions,
-    default=selected_functions,
-    key="filter_function_updated",
-)
-
-# Re-apply filters with cleaned selections
-filtered = obs
-if selected_species:
-    filtered = [o for o in filtered if o.get("species") in selected_species]
-if selected_functions:
-    filtered = [o for o in filtered if o.get("function") in selected_functions]
-
-
-# -----------------------------------------
-# 4) DATE FILTER (BASED ON FILTERED SET)
-# -----------------------------------------
-dates = []
-for o in filtered:
-    if o.get("date"):
-        try:
-            dates.append(datetime.fromisoformat(o["date"]).date())
-        except:
-            pass
-
-if dates:
-    min_d, max_d = min(dates), max(dates)
-
-    if min_d == max_d:
-        date_range = (min_d, max_d)
+    st.sidebar.header("Filters")
+    
+    obs = st.session_state.observations
+    
+    # -----------------------------------------
+    # 1) READ CURRENT SELECTIONS (from previous run, if any)
+    # -----------------------------------------
+    # We use keys so Streamlit remembers choices across reruns
+    selected_species = st.sidebar.multiselect(
+        "Species",
+        sorted({o.get("species") for o in obs if o.get("species")}),
+        key="filter_species",
+    )
+    
+    selected_functions = st.sidebar.multiselect(
+        "Function",
+        sorted({o.get("function") for o in obs if o.get("function")}),
+        key="filter_function",
+    )
+    
+    # We'll compute date_range after we know which dates are available
+    
+    
+    # -----------------------------------------
+    # 2) APPLY FILTERS IN CASCADE
+    # -----------------------------------------
+    filtered = obs
+    
+    # Apply species filter
+    if selected_species:
+        filtered = [o for o in filtered if o.get("species") in selected_species]
+    
+    # Apply function filter
+    if selected_functions:
+        filtered = [o for o in filtered if o.get("function") in selected_functions]
+    
+    # -----------------------------------------
+    # 3) UPDATE AVAILABLE OPTIONS BASED ON FILTERED SET
+    # -----------------------------------------
+    available_species = sorted({o.get("species") for o in filtered if o.get("species")})
+    available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
+    
+    # Clean up selections that are no longer valid
+    selected_species = [s for s in selected_species if s in available_species]
+    selected_functions = [f for f in selected_functions if f in available_functions]
+    
+    # Re-render widgets with updated options and cleaned defaults
+    selected_species = st.sidebar.multiselect(
+        "Species",
+        available_species,
+        default=selected_species,
+        key="filter_species_updated",
+    )
+    
+    selected_functions = st.sidebar.multiselect(
+        "Function",
+        available_functions,
+        default=selected_functions,
+        key="filter_function_updated",
+    )
+    
+    # Re-apply filters with cleaned selections
+    filtered = obs
+    if selected_species:
+        filtered = [o for o in filtered if o.get("species") in selected_species]
+    if selected_functions:
+        filtered = [o for o in filtered if o.get("function") in selected_functions]
+    
+    
+    # -----------------------------------------
+    # 4) DATE FILTER (BASED ON FILTERED SET)
+    # -----------------------------------------
+    dates = []
+    for o in filtered:
+        if o.get("date"):
+            try:
+                dates.append(datetime.fromisoformat(o["date"]).date())
+            except:
+                pass
+    
+    if dates:
+        min_d, max_d = min(dates), max(dates)
+    
+        if min_d == max_d:
+            date_range = (min_d, max_d)
+        else:
+            date_range = st.sidebar.slider(
+                "Date range",
+                min_value=min_d,
+                max_value=max_d,
+                value=(min_d, max_d),
+                key="filter_date_range",
+            )
+    
+        start_d, end_d = date_range
+        filtered = [
+            o for o in filtered
+            if o.get("date")
+            and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
+        ]
     else:
-        date_range = st.sidebar.slider(
-            "Date range",
-            min_value=min_d,
-            max_value=max_d,
-            value=(min_d, max_d),
-            key="filter_date_range",
-        )
-
-    start_d, end_d = date_range
-    filtered = [
-        o for o in filtered
-        if o.get("date")
-        and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
-    ]
-else:
-    date_range = None
-st.sidebar.header("Filters")
-
-obs = st.session_state.observations
-
-# -----------------------------------------
-# 1) READ CURRENT SELECTIONS (from previous run, if any)
-# -----------------------------------------
-# We use keys so Streamlit remembers choices across reruns
-selected_species = st.sidebar.multiselect(
-    "Species",
-    sorted({o.get("species") for o in obs if o.get("species")}),
-    key="filter_species",
-)
-
-selected_functions = st.sidebar.multiselect(
-    "Function",
-    sorted({o.get("function") for o in obs if o.get("function")}),
-    key="filter_function",
-)
-
-# We'll compute date_range after we know which dates are available
-
-
-# -----------------------------------------
-# 2) APPLY FILTERS IN CASCADE
-# -----------------------------------------
-filtered = obs
-
-# Apply species filter
-if selected_species:
-    filtered = [o for o in filtered if o.get("species") in selected_species]
-
-# Apply function filter
-if selected_functions:
-    filtered = [o for o in filtered if o.get("function") in selected_functions]
-
-# -----------------------------------------
-# 3) UPDATE AVAILABLE OPTIONS BASED ON FILTERED SET
-# -----------------------------------------
-available_species = sorted({o.get("species") for o in filtered if o.get("species")})
-available_functions = sorted({o.get("function") for o in filtered if o.get("function")})
-
-# Clean up selections that are no longer valid
-selected_species = [s for s in selected_species if s in available_species]
-selected_functions = [f for f in selected_functions if f in available_functions]
-
-# Re-render widgets with updated options and cleaned defaults
-selected_species = st.sidebar.multiselect(
-    "Species",
-    available_species,
-    default=selected_species,
-    key="filter_species_updated",
-)
-
-selected_functions = st.sidebar.multiselect(
-    "Function",
-    available_functions,
-    default=selected_functions,
-    key="filter_function_updated",
-)
-
-# Re-apply filters with cleaned selections
-filtered = obs
-if selected_species:
-    filtered = [o for o in filtered if o.get("species") in selected_species]
-if selected_functions:
-    filtered = [o for o in filtered if o.get("function") in selected_functions]
-
-
-# -----------------------------------------
-# 4) DATE FILTER (BASED ON FILTERED SET)
-# -----------------------------------------
-dates = []
-for o in filtered:
-    if o.get("date"):
-        try:
-            dates.append(datetime.fromisoformat(o["date"]).date())
-        except:
-            pass
-
-if dates:
-    min_d, max_d = min(dates), max(dates)
-
-    if min_d == max_d:
-        date_range = (min_d, max_d)
-    else:
-        date_range = st.sidebar.slider(
-            "Date range",
-            min_value=min_d,
-            max_value=max_d,
-            value=(min_d, max_d),
-            key="filter_date_range",
-        )
-
-    start_d, end_d = date_range
-    filtered = [
-        o for o in filtered
-        if o.get("date")
-        and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
-    ]
-else:
-    date_range = None
-
+        date_range = None
         
 
     st.sidebar.divider()
