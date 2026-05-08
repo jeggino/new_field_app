@@ -817,46 +817,25 @@ def show_main_app():
     # ---------------------------------------------------------
     prev_species = st.session_state.get("filter_species", [])
     prev_functions = st.session_state.get("filter_functions", [])
-    prev_date_range = st.session_state.get("filter_date_range", None)
     
     # ---------------------------------------------------------
-    # 2) APPLY ALL PREVIOUS FILTERS TO GET CURRENT SUBSET
+    # 2) APPLY PREVIOUS FILTERS TO GET CURRENT SUBSET
     # ---------------------------------------------------------
     filtered_for_options = obs
     
-    # Species
+    # Apply species filter
     if prev_species:
         filtered_for_options = [
             o for o in filtered_for_options
             if o.get("species") in prev_species
         ]
     
-    # Function
+    # Apply function filter
     if prev_functions:
         filtered_for_options = [
             o for o in filtered_for_options
             if o.get("function") in prev_functions
         ]
-    
-    # Date
-    dates_tmp = []
-    for o in filtered_for_options:
-        if o.get("date"):
-            try:
-                dates_tmp.append(datetime.fromisoformat(o["date"]).date())
-            except:
-                pass
-    
-    if dates_tmp:
-        min_d, max_d = min(dates_tmp), max(dates_tmp)
-    
-        if prev_date_range:
-            start_d, end_d = prev_date_range
-            filtered_for_options = [
-                o for o in filtered_for_options
-                if o.get("date")
-                and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
-            ]
     
     # ---------------------------------------------------------
     # 3) BUILD AVAILABLE OPTIONS FROM CURRENT SUBSET
@@ -889,31 +868,6 @@ def show_main_app():
         key="filter_functions"
     )
     
-    # DATE WIDGET
-    dates = []
-    for o in filtered_for_options:
-        if o.get("date"):
-            try:
-                dates.append(datetime.fromisoformat(o["date"]).date())
-            except:
-                pass
-    
-    if dates:
-        min_d, max_d = min(dates), max(dates)
-    
-        if min_d == max_d:
-            selected_date_range = (min_d, max_d)
-        else:
-            selected_date_range = st.sidebar.slider(
-                "Date range",
-                min_value=min_d,
-                max_value=max_d,
-                value=(min_d, max_d),
-                key="filter_date_range"
-            )
-    else:
-        selected_date_range = None
-    
     # ---------------------------------------------------------
     # 5) APPLY FILTERS AGAIN TO GET FINAL RESULT
     # ---------------------------------------------------------
@@ -925,13 +879,7 @@ def show_main_app():
     if selected_functions:
         filtered = [o for o in filtered if o.get("function") in selected_functions]
     
-    if selected_date_range:
-        start_d, end_d = selected_date_range
-        filtered = [
-            o for o in filtered
-            if o.get("date")
-            and start_d <= datetime.fromisoformat(o["date"]).date() <= end_d
-        ]
+    # `filtered` now contains the final cascade result
 
         
 
