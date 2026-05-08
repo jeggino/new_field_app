@@ -78,7 +78,7 @@ FUNCTION_ICONS = {
 
     "vogel waarneming": "binoculars",
     "nestlocatie": "egg",
-    "mogelijke nestlocatie": "question-sign",
+    "mogelijke nestlocatie": "question",
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
