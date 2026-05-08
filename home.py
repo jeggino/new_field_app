@@ -1089,7 +1089,7 @@ def show_main_app():
 
     st.sidebar.divider()
     
-    st.sidebar.header("Edit/Delet Observation")
+    st.sidebar.header("Edit/Delete observation")
 
     
     # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
