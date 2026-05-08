@@ -401,8 +401,9 @@ def daily_report_dialog():
 
 @st.dialog("Daily Reports")
 def show_reports_dialog():
-    st.subheader("Select a report to view or edit")
+    st.subheader("Daily Reports")
 
+    # Load reports
     res = (
         supabase.table("report")
         .select("*")
@@ -416,56 +417,87 @@ def show_reports_dialog():
         st.info("No reports yet.")
         return
 
-    # Dropdown
+    # Map for dropdown
     report_map = {
         f"{r['kind']} - {r['date']}": r
         for r in reports
     }
-    selected_label = st.selectbox("Choose report", list(report_map.keys()))
-    report = report_map[selected_label]
 
-    "---"
-    
-    # Editable fields
-    kind = st.selectbox("Kind", REPORT_KINDS,
-                        index=REPORT_KINDS.index(report["kind"]))
-    with st.expander("Edit date"):
-        date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
-    # NEW: start + end time
-    start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
-    end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
-    operator = st.text_input("Operator", value=report["operator"])
-    extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
+    tab_view, tab_edit = st.tabs(["📄 View Report", "✏️ Edit / Delete Report"])
 
-    temperature = st.number_input("Temperature (°C)", step=1, value=int(report.get("temperature")))
-    wind = st.number_input("Wind", step=1, value=int(report.get("wind")))
-    rain =  st.selectbox("Rain", REPORT_RAIN,
-                         index=REPORT_RAIN.index(report["rain"]))
-    comment = st.text_area("Comment", value=report.get("comment", ""))
+    # ---------------------------------------------------------
+    # TAB 1 — VIEW ONLY
+    # ---------------------------------------------------------
+    with tab_view:
+        st.write("Select a report to view")
 
-    # Save changes
-    if st.button("Save Changes",width="stretch"):
-        supabase.table("report").update({
-            "kind": kind,
-            "date": str(date),
-            "operator": operator,
-            "extra_operator": extra_operator,
-            "start_time": str(start_time),
-            "end_time": str(end_time),
-            "temperature": temperature,
-            "wind": wind,
-            "rain": rain,
-            "comment": comment
-        }).eq("id", report["id"]).execute()
+        selected_label = st.selectbox("Report", list(report_map.keys()), key="view_select")
+        r = report_map[selected_label]
 
-        st.success("Report updated.")
-        st.rerun()
+        st.markdown("### Report Details")
+        st.write(f"**Kind:** {r['kind']}")
+        st.write(f"**Date:** {r['date']}")
+        st.write(f"**Operator:** {r['operator']}")
+        st.write(f"**Extra Operator:** {r.get('extra_operator','')}")
+        st.write(f"**Start Time:** {r.get('start_time','')}")
+        st.write(f"**End Time:** {r.get('end_time','')}")
+        st.write(f"**Temperature:** {r.get('temperature','')}")
+        st.write(f"**Wind:** {r.get('wind','')}")
+        st.write(f"**Rain:** {r.get('rain','')}")
+        st.write(f"**Comment:** {r.get('comment','')}")
 
-    # Delete
-    if st.button("Delete Report",width="stretch"):
-        supabase.table("report").delete().eq("id", report["id"]).execute()
-        st.success("Report deleted.")
-        st.rerun()
+    # ---------------------------------------------------------
+    # TAB 2 — EDIT / DELETE
+    # ---------------------------------------------------------
+    with tab_edit:
+        st.write("Select a report to edit or delete")
+
+        selected_label = st.selectbox("Report", list(report_map.keys()), key="edit_select")
+        report = report_map[selected_label]
+
+        "---"
+
+        # Editable fields
+        kind = st.selectbox("Kind", REPORT_KINDS,
+                            index=REPORT_KINDS.index(report["kind"]))
+
+        with st.expander("Edit date"):
+            date = st.date_input("Date", value=datetime.fromisoformat(report["date"]).date())
+
+        start_time = st.time_input("Start Time", value=parse_time_safe(report.get("start_time")))
+        end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
+        operator = st.text_input("Operator", value=report["operator"])
+        extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
+
+        temperature = st.number_input("Temperature (°C)", step=1, value=int(report.get("temperature")))
+        wind = st.number_input("Wind", step=1, value=int(report.get("wind")))
+        rain = st.selectbox("Rain", REPORT_RAIN,
+                            index=REPORT_RAIN.index(report["rain"]))
+        comment = st.text_area("Comment", value=report.get("comment", ""))
+
+        # Save changes
+        if st.button("Save Changes", use_container_width=True):
+            supabase.table("report").update({
+                "kind": kind,
+                "date": str(date),
+                "operator": operator,
+                "extra_operator": extra_operator,
+                "start_time": str(start_time),
+                "end_time": str(end_time),
+                "temperature": temperature,
+                "wind": wind,
+                "rain": rain,
+                "comment": comment
+            }).eq("id", report["id"]).execute()
+
+            st.success("Report updated.")
+            st.rerun()
+
+        # Delete
+        if st.button("Delete Report", type="secondary", use_container_width=True):
+            supabase.table("report").delete().eq("id", report["id"]).execute()
+            st.success("Report deleted.")
+            st.rerun()
 
 
 
