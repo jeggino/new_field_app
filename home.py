@@ -517,6 +517,7 @@ def edit_observation_dialog(obs):
     marker_icon = BeautifyIcon(
         icon="map-marker",
         icon_shape="marker",
+        icon_anchor=[marker_size/2, marker_size],
         background_color="blue",
         border_color="black",
         border_width=0.7,
@@ -531,16 +532,7 @@ def edit_observation_dialog(obs):
         popup="Original location"
     ).add_to(m)
 
-
-
     
-
-
-
-
-
-    
-
     crosshair_html = f"""
     <div style="
         position: fixed;
@@ -1028,13 +1020,13 @@ def show_main_app():
             icon_shape="marker",
             background_color=color,
             border_color="black",
+            icon_anchor=[marker_size/2, marker_size],
             border_width=0.7,
             text_color=text_color,
             icon_size=[marker_size, marker_size],                 # marker size
             inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
         )
 
-        # inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
     
         # Add marker to cluster (NOT to map)
         folium.Marker(
