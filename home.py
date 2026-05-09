@@ -43,7 +43,7 @@ WIDTH = 30
 IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 
 # ................. ICON CUSTUMIZE ----------------
-marker_size = 22
+marker_size = 24
 inner_icon_px = 12
 
 # ----------------- REPORT KINDS ------------------
@@ -96,7 +96,7 @@ FUNCTION_ICONS = {
 ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
 COLOR_PALETTE = [
     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
-    "darkgreen","cadetblue","cadetblue","white","pink","lightblue","lightgreen",
+    "darkgreen","cadetblue","cadetblue","blue","pink","lightblue","lightgreen",
     "gray","black","red"
 ]
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
@@ -1048,10 +1048,10 @@ def show_main_app():
         marker_icon = BeautifyIcon(
             icon=icon,
             icon_shape="marker",
-            background_color=color,
-            border_color="black",
+            background_color="white",
+            border_color=color,
             icon_anchor=[marker_size/2, marker_size],
-            border_width=0.7,
+            border_width=1.2,
             text_color=text_color,
             icon_size=[marker_size, marker_size],                 # marker size
             inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
