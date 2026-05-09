@@ -1051,7 +1051,7 @@ def show_main_app():
             background_color="white",
             border_color=color,
             icon_anchor=[marker_size/2, marker_size],
-            border_width=2,
+            border_width=3,
             text_color="black",
             icon_size=[marker_size, marker_size],                 # marker size
             inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
