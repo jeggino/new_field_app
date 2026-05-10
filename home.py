@@ -592,6 +592,7 @@ def edit_observation_dialog(obs):
 
     species = st.selectbox("Species", species_list, index=species_list.index(species_value))
     function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+    aantal = st.number_input("amount", step=1, value=int(report.get("aantal")))
 
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
@@ -612,6 +613,7 @@ def edit_observation_dialog(obs):
             "species": species,
             "function": function,
             "behavior": behavior,
+            "aantal": aantal,
             "username": username,
             "date": str(obs_date),
             "lat": float(new_lat),
@@ -677,6 +679,7 @@ def new_observation_dialog():
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS)
 
+    aantal = st.number_input("amount", step=1, value=1)
     behavior = st.text_area("Comments")
     username = st.session_state.user.email
     
@@ -689,6 +692,7 @@ def new_observation_dialog():
             "animal_type": animal_type,
             "species": species,
             "function": function,
+            "aantal": aantal,
             "behavior": behavior,
             "username": username,
             "date": str(obs_date),
@@ -1018,6 +1022,20 @@ def show_main_app():
             ">
                 {obs.get('function', '').capitalize()}
             </div>
+
+            <!-- Ammount (centered, capitalized) -->
+            <div style="
+                font-size: 12px;
+                color: #555;
+                margin-bottom: 4px;
+                font-style: italic;
+                text-align: center;
+            ">
+                {obs.get('aantal', '')}
+            </div>
+
+
+            aantal
         
             <!-- Comment (bold, justified) -->
             <div style="
