@@ -1020,19 +1020,8 @@ def show_main_app():
                 font-style: italic;
                 text-align: center;
             ">
-                {obs.get('function', '').capitalize()}
+                ({obs.get('aantal', '')}) {obs.get('function', '').capitalize()}
             </div>
-
-            <!-- Ammount (centered, capitalized) -->
-            <div style="
-                font-size: 12px;
-                color: #555;
-                margin-bottom: 4px;
-                text-align: center;
-            ">
-                {obs.get('aantal', '')}
-            </div>
-
         
             <!-- Comment (bold, justified) -->
             <div style="
