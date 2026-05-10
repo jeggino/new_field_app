@@ -592,7 +592,7 @@ def edit_observation_dialog(obs):
 
     species = st.selectbox("Species", species_list, index=species_list.index(species_value))
     function = st.selectbox("Function", func_list, index=func_list.index(function_value))
-    aantal = st.number_input("amount", step=1, value=int(report.get("aantal")))
+    aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
 
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
