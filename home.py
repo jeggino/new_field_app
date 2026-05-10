@@ -1028,14 +1028,11 @@ def show_main_app():
                 font-size: 12px;
                 color: #555;
                 margin-bottom: 4px;
-                font-style: italic;
                 text-align: center;
             ">
                 {obs.get('aantal', '')}
             </div>
 
-
-            aantal
         
             <!-- Comment (bold, justified) -->
             <div style="
