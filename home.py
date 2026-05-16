@@ -510,10 +510,11 @@ if page == "Create Project":
 #         icon=":material/download:"
 #     )
 
-# ---------------------------------------------------------
-# PAGE 2 — VIEW PROJECTS
-# ---------------------------------------------------------
+# ---------------------------
+# VIEW PROJECTS (complete page)
+# ---------------------------
 elif page == "View Projects":
+    import json
     import folium
     from folium.plugins import Draw
     from streamlit_folium import st_folium
@@ -544,7 +545,7 @@ elif page == "View Projects":
 
     st.subheader("Project Info")
     st.write(f"**Name:** {project['name']}")
-    st.write(f"**Description:** {project['description']}")
+    st.write(f"**Description:** {project.get('description', '')}")
 
     # --- Load all users from Supabase ---
     try:
@@ -571,18 +572,84 @@ elif page == "View Projects":
     else:
         st.write("No users assigned.")
 
-    # --- Load boundary (your existing helper) ---
+    # --- Load boundary using your helper (must return GeoJSON Feature or None) ---
     # boundary: GeoJSON Feature or None
     # bounds: [[min_lat, min_lon], [max_lat, max_lon]] or None
     boundary, bounds = load_project_boundary(selected)
 
     st.subheader("Project Area")
 
-    # --- Create map ---
+    # -------------------------
+    # Helper: sanitize geometry
+    # -------------------------
+    def _to_native(obj):
+        """
+        Recursively convert numpy types and other non-JSON-native types
+        to Python native types so supabase/json.dumps won't fail.
+        """
+        if isinstance(obj, dict):
+            return {str(k): _to_native(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [_to_native(v) for v in obj]
+        if hasattr(obj, "item"):  # numpy scalar
+            try:
+                return obj.item()
+            except Exception:
+                pass
+        # primitives (int, float, str, bool, None)
+        return obj
+
+    def build_feature_from_shape(shape):
+        """
+        Accepts a Leaflet/Draw returned shape and returns a valid GeoJSON Feature
+        or None if invalid.
+        Handles:
+          - shape being a Feature (with 'geometry')
+          - shape being a geometry dict directly
+          - shape being a FeatureCollection (takes first feature)
+        """
+        if not shape or not isinstance(shape, dict):
+            return None
+
+        # If it's a FeatureCollection, take first feature
+        if shape.get("type") == "FeatureCollection":
+            features = shape.get("features", [])
+            if not features:
+                return None
+            feat = features[0]
+            geom = feat.get("geometry")
+            if not geom:
+                return None
+            return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
+
+        # If it's a Feature
+        if shape.get("type") == "Feature" and "geometry" in shape:
+            geom = shape.get("geometry")
+            if not geom:
+                return None
+            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+
+        # If it looks like a geometry dict (has 'type' and 'coordinates')
+        if "type" in shape and "coordinates" in shape:
+            geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
+            return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
+
+        # Some Leaflet returns wrap geometry under 'geometry' key but empty; check nested
+        geom = shape.get("geometry")
+        if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
+            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+
+        # No valid geometry found
+        return None
+
+    # -------------------------
+    # Create map and layers
+    # -------------------------
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
     # Basemaps
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
+    # Google Satellite (unofficial tile) - if you prefer another provider, replace tiles URL
     folium.TileLayer(
         tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
         attr="Google Satellite",
@@ -591,18 +658,22 @@ elif page == "View Projects":
         control=True,
     ).add_to(m)
 
-    # Add existing polygon if exists
+    # Add existing polygon if exists (boundary expected to be a Feature)
     if boundary:
-        folium.GeoJson(
-            boundary,
-            name="Boundary",
-            style_function=lambda x: {
-                "fillColor": "#ffcc00",
-                "color": "red",
-                "weight": 2.5,
-                "fillOpacity": 0.1,
-            },
-        ).add_to(m)
+        try:
+            folium.GeoJson(
+                _to_native(boundary),
+                name="Boundary",
+                style_function=lambda x: {
+                    "fillColor": "#ffcc00",
+                    "color": "red",
+                    "weight": 2.5,
+                    "fillOpacity": 0.1,
+                },
+            ).add_to(m)
+        except Exception:
+            # If boundary is malformed, ignore rendering but keep it for saving fallback
+            pass
 
     # Fit to bounds if valid
     if bounds:
@@ -621,74 +692,94 @@ elif page == "View Projects":
             "marker": False,
             "circlemarker": False,
         },
-        edit_options={
-            "edit": True,
-            "remove": True,
-        },
+        edit_options={"edit": True, "remove": True},
     )
     draw.add_to(m)
 
     folium.LayerControl().add_to(m)
 
-    # --- Render map and capture edits ---
+    # -------------------------
+    # Render map and capture edits
+    # -------------------------
     map_data = st_folium(
         m,
-        height=500,
+        height=600,
         use_container_width=True,
         returned_objects=["all_drawings", "last_active_drawing"],
     )
 
+    # Try to get the most reliable shape:
+    # 1) last_active_drawing (preferred)
+    # 2) last element of all_drawings
+    # 3) fallback to None
     new_polygon_feature = None
-
-    # 1. Try last_active_drawing first
-    shape = map_data.get("last_active_drawing") if map_data else None
-
-    # 2. If empty, fall back to all_drawings
-    if not shape and map_data:
-        drawings = map_data.get("all_drawings", [])
-        if drawings:
-            shape = drawings[-1]
-
-    # 3. Validate and build full GeoJSON Feature
-    if shape:
-        geom = shape.get("geometry")
-        if geom and geom.get("type") in ["Polygon", "MultiPolygon"]:
-            new_polygon_feature = {
-                "type": "Feature",
-                "properties": {},
-                "geometry": geom,
-            }
+    if map_data:
+        shape = map_data.get("last_active_drawing") or None
+        if not shape:
+            drawings = map_data.get("all_drawings", [])
+            if drawings:
+                shape = drawings[-1]
+        # Build a sanitized GeoJSON Feature if possible
+        new_polygon_feature = build_feature_from_shape(shape) if shape else None
 
     st.markdown(
         "You can draw, edit, or delete the project area. "
-        "When you're happy, click **Save Area**."
+        "When you're happy, click **Save Area**. Existing reports and observations will remain linked to the project."
     )
 
+    # -------------------------
+    # Save Area button
+    # -------------------------
     if st.button("Save Area"):
-        # If user didn't draw anything new, keep the old boundary
-        geometry_to_save = new_polygon_feature if new_polygon_feature else boundary
+        # Choose geometry to save: new drawn feature if present, otherwise existing boundary
+        geometry_to_save = new_polygon_feature if new_polygon_feature is not None else boundary
 
         if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
         else:
+            # Final validation: ensure geometry_to_save is a valid Feature with geometry.type and coordinates
             try:
-                # Upsert boundary for this project
-                # Adjust table/column names if needed
-                supabase.table("project_boundaries").upsert(
-                    {
-                        "project": selected,
-                        "geometry": geometry_to_save,
-                    }
-                ).execute()
+                if not isinstance(geometry_to_save, dict):
+                    raise ValueError("Geometry is not a dict")
 
-                st.success(
-                    "Project area updated successfully. "
-                    "Existing reports and observations remain linked to this project."
-                )
-            except Exception as e:
-                st.error(f"Error saving project area: {e}")
+                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
+                    raise ValueError("Geometry must be a GeoJSON Feature with a geometry member")
 
-    # --- Edit Users Section ---
+                geom = geometry_to_save["geometry"]
+                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
+                    raise ValueError("Feature.geometry must contain type and coordinates")
+
+                # Ensure coordinates are JSON-serializable native Python lists/floats
+                geometry_to_save = _to_native(geometry_to_save)
+
+                # Optional: quick JSON dump to catch serialization issues early
+                _ = json.dumps(geometry_to_save)
+
+            except Exception as ex:
+                st.error(f"Invalid geometry: {ex}")
+            else:
+                try:
+                    # Upsert boundary for this project
+                    # NOTE: adjust table/column names if your schema differs
+                    res = supabase.table("project_boundaries").upsert(
+                        {
+                            "project": selected,
+                            "geometry": geometry_to_save,
+                        }
+                    ).execute()
+
+                    # Check response for errors
+                    if hasattr(res, "error") and res.error:
+                        st.error(f"Error saving project area: {res.error}")
+                    else:
+                        st.success("Project area updated successfully. Existing reports and observations remain linked to this project.")
+                except Exception as e:
+                    # Provide the raw exception message but avoid exposing internal traces
+                    st.error(f"Error saving project area: {e}")
+
+    # -------------------------
+    # Edit Users Section
+    # -------------------------
     st.markdown("---")
     st.subheader("Edit Users")
 
@@ -719,17 +810,16 @@ elif page == "View Projects":
         except Exception as e:
             st.error(f"Error updating users: {e}")
 
-    # ---------------------------------------------------------
-    #   DELETE PROJECT
-    # ---------------------------------------------------------
+    # -------------------------
+    # DELETE PROJECT
+    # -------------------------
     st.markdown("---")
-
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
 
-    # ---------------------------------------------------------
-    #   DOWNLOAD REPORTS + OBSERVATIONS
-    # ---------------------------------------------------------
+    # -------------------------
+    # DOWNLOAD REPORTS + OBSERVATIONS
+    # -------------------------
     st.markdown("---")
     st.subheader("Download Data")
 
