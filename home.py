@@ -656,14 +656,24 @@
 #     )
 
 import streamlit as st
-from streamlit_folium import st_folium
+from streamlit_folium import st_folium, folium_static
 import folium
+from folium.plugins import MarkerCluster, FastMarkerCluster
 import json
 from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
 from typing import Optional, Tuple, Dict, List, Any
-from functools import lru_cache
+
+# =========================================================
+# PAGE CONFIG - MUST BE FIRST STREAMLIT COMMAND
+# =========================================================
+st.set_page_config(
+    page_title="Project Manager",
+    page_icon="🗺️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # =========================================================
 # CONSTANTS
@@ -717,7 +727,7 @@ def get_supabase_client():
 # =========================================================
 # CACHED DATA FETCHING
 # =========================================================
-@st.cache_data(ttl=300)  # Cache for 5 minutes
+@st.cache_data(ttl=300)
 def fetch_all_projects() -> List[Dict]:
     """Fetch all projects with caching."""
     supabase = get_supabase_client()
@@ -750,7 +760,7 @@ def fetch_all_users() -> List[Dict]:
         st.error(f"Error loading users: {e}")
         return []
 
-@st.cache_data(ttl=60)  # Shorter TTL for boundary data
+@st.cache_data(ttl=60)
 def load_project_boundary(project_name: str) -> Tuple[Optional[Dict], Optional[List]]:
     """Load GeoJSON boundary from Supabase storage."""
     supabase = get_supabase_client()
@@ -769,6 +779,28 @@ def load_project_boundary(project_name: str) -> Tuple[Optional[Dict], Optional[L
         st.warning(f"Could not load boundary for '{project_name}': {e}")
         return None, None
 
+@st.cache_data(ttl=60)
+def fetch_project_observations(project_name: str) -> pd.DataFrame:
+    """Fetch observations with lat/lon for map display."""
+    supabase = get_supabase_client()
+    try:
+        res = supabase.table("observations").select("*").eq("project", project_name).execute()
+        return pd.DataFrame(res.data or [])
+    except Exception as e:
+        st.error(f"Error loading observations: {e}")
+        return pd.DataFrame()
+
+@st.cache_data(ttl=60)
+def fetch_project_reports(project_name: str) -> pd.DataFrame:
+    """Fetch reports for project."""
+    supabase = get_supabase_client()
+    try:
+        res = supabase.table("report").select("*").eq("project", project_name).order("date", desc=True).execute()
+        return pd.DataFrame(res.data or [])
+    except Exception as e:
+        st.error(f"Error loading reports: {e}")
+        return pd.DataFrame()
+
 # =========================================================
 # GEOMETRY UTILITIES
 # =========================================================
@@ -781,6 +813,8 @@ def extract_coordinates(geometry: Dict) -> List[List[float]]:
         return [coord for ring in coords for coord in ring]
     elif geom_type == "MultiPolygon":
         return [coord for poly in coords for ring in poly for coord in ring]
+    elif geom_type == "Point":
+        return [coords]
     return []
 
 def extract_bounds(geojson_obj: Dict) -> Optional[List[List[float]]]:
@@ -813,47 +847,173 @@ def compute_centroid(geojson_obj: Dict) -> List[float]:
     return [sum(lats) / len(lats), sum(lons) / len(lons)]
 
 # =========================================================
-# MAP CREATION
+# MAP CREATION WITH POINTS
 # =========================================================
 def create_base_map(location: Optional[List[float]] = None, 
                     zoom_start: int = 12) -> folium.Map:
     """Create a base Folium map with standard layers."""
     loc = location or DEFAULT_LOCATION
     
-    m = folium.Map(location=loc, zoom_start=zoom_start, zoom_control=True)
+    m = folium.Map(
+        location=loc, 
+        zoom_start=zoom_start, 
+        zoom_control=True,
+        tiles=None  # Don't add default tile yet
+    )
+    
+    # Add OpenStreetMap as default
+    folium.TileLayer(
+        tiles="OpenStreetMap",
+        name="OpenStreetMap",
+        overlay=False,
+        control=True
+    ).add_to(m)
     
     # Add satellite layer
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
         control=True
     ).add_to(m)
     
-    folium.LayerControl(position="topright").add_to(m)
     return m
 
 def add_boundary_to_map(m: folium.Map, boundary: Dict) -> folium.Map:
     """Add a GeoJSON boundary to the map."""
     folium.GeoJson(
         boundary,
-        name="Boundary",
+        name="Project Boundary",
         style_function=lambda x: {
             "fillColor": "#ffcc00",
             "color": "red",
             "weight": 2.5,
-            "fillOpacity": 0.1,
+            "fillOpacity": 0.15,
+        },
+        highlight_function=lambda x: {
+            "fillOpacity": 0.3
         }
     ).add_to(m)
     return m
+
+def add_observations_to_map(m: folium.Map, observations_df: pd.DataFrame) -> folium.Map:
+    """Add observation points to the map with clustering."""
+    if observations_df.empty or 'latitude' not in observations_df.columns or 'longitude' not in observations_df.columns:
+        return m
+    
+    # Create feature group for observations
+    obs_group = folium.FeatureGroup(name="Observations")
+    
+    # Add points
+    for _, row in observations_df.iterrows():
+        lat = row.get('latitude')
+        lon = row.get('longitude')
+        
+        if pd.isna(lat) or pd.isna(lon):
+            continue
+            
+        # Create popup content
+        popup_content = "<div style='min-width: 200px;'>"
+        popup_content += f"<b>Date:</b> {row.get('date', 'N/A')}<br>"
+        popup_content += f"<b>Type:</b> {row.get('type', 'N/A')}<br>"
+        popup_content += f"<b>Description:</b> {row.get('description', 'N/A')}<br>"
+        
+        # Add photo if available
+        if 'photo_url' in row and row['photo_url']:
+            popup_content += f"<img src='{row['photo_url']}' style='max-width: 200px; margin-top: 5px;'><br>"
+        
+        popup_content += "</div>"
+        
+        # Color based on type or status
+        color = "blue"
+        if 'status' in row:
+            status_colors = {
+                'pending': 'orange',
+                'completed': 'green',
+                'urgent': 'red',
+                'review': 'purple'
+            }
+            color = status_colors.get(row['status'], 'blue')
+        
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=8,
+            popup=folium.Popup(popup_content, max_width=300),
+            tooltip=f"Observation: {row.get('type', 'Unknown')}",
+            color=color,
+            fill=True,
+            fillColor=color,
+            fillOpacity=0.7,
+            weight=2
+        ).add_to(obs_group)
+    
+    obs_group.add_to(m)
+    return m
+
+def add_reports_to_map(m: folium.Map, reports_df: pd.DataFrame) -> folium.Map:
+    """Add report points to the map."""
+    if reports_df.empty or 'latitude' not in reports_df.columns or 'longitude' not in reports_df.columns:
+        return m
+    
+    reports_group = folium.FeatureGroup(name="Reports")
+    
+    for _, row in reports_df.iterrows():
+        lat = row.get('latitude')
+        lon = row.get('longitude')
+        
+        if pd.isna(lat) or pd.isna(lon):
+            continue
+        
+        popup_content = "<div style='min-width: 200px;'>"
+        popup_content += f"<b>Report Date:</b> {row.get('date', 'N/A')}<br>"
+        popup_content += f"<b>Title:</b> {row.get('title', 'N/A')}<br>"
+        popup_content += f"<b>Status:</b> {row.get('status', 'N/A')}<br>"
+        popup_content += "</div>"
+        
+        folium.Marker(
+            location=[lat, lon],
+            popup=folium.Popup(popup_content, max_width=300),
+            tooltip=f"Report: {row.get('title', 'Unknown')}",
+            icon=folium.Icon(color='green', icon='file-alt', prefix='fa')
+        ).add_to(reports_group)
+    
+    reports_group.add_to(m)
+    return m
+
+def render_map(m: folium.Map, key: str, height: int = 600):
+    """
+    Render Folium map with fallback methods.
+    Primary: st_folium (interactive)
+    Fallback: folium_static or components.html if st_folium fails
+    """
+    try:
+        # Try st_folium first with unique key
+        map_data = st_folium(
+            m, 
+            height=height, 
+            width=None,  # Use None instead of use_container_width to avoid issues
+            returned_objects=[],  # Don't return data to avoid rerenders
+            key=key
+        )
+        return map_data
+    except Exception as e:
+        st.warning(f"Interactive map failed, using static display: {e}")
+        try:
+            # Fallback to folium_static
+            folium_static(m, width=1200, height=height)
+        except:
+            # Final fallback to components.html
+            import streamlit.components.v1 as components
+            fig = folium.Figure().add_child(m)
+            components.html(fig.render(), height=height, scrolling=False)
 
 # =========================================================
 # PROJECT OPERATIONS
 # =========================================================
 def save_project_with_boundary(project_name: str, description: str, 
                                boundary: Dict, user_ids: List[str]) -> bool:
-    """Save project with boundary and members in a consistent manner."""
+    """Save project with boundary and members."""
     supabase = get_supabase_client()
     safe_name = project_name.replace(" ", "_")
     filename = f"{safe_name}.geojson"
@@ -881,7 +1041,6 @@ def save_project_with_boundary(project_name: str, description: str,
         
     except Exception as e:
         st.error(f"Error saving project: {e}")
-        # Consider cleanup logic here (delete uploaded file if DB insert fails)
         return False
 
 def delete_project(project_name: str) -> bool:
@@ -908,20 +1067,6 @@ def update_project_members(project_name: str, user_ids: List[str]) -> bool:
     except Exception as e:
         st.error(f"Error updating members: {e}")
         return False
-
-# =========================================================
-# DATA EXPORT
-# =========================================================
-@st.cache_data(ttl=60)
-def fetch_project_data(table_name: str, project_name: str) -> pd.DataFrame:
-    """Fetch data for export with caching."""
-    supabase = get_supabase_client()
-    try:
-        res = supabase.table(table_name).select("*").eq("project", project_name).order("date", desc=True).execute()
-        return pd.DataFrame(res.data or [])
-    except Exception as e:
-        st.error(f"Error loading {table_name}: {e}")
-        return pd.DataFrame()
 
 # =========================================================
 # UI COMPONENTS
@@ -961,16 +1106,24 @@ def create_project_page():
     # Create map with drawing tools
     m = create_base_map()
     
-    Geocoder(collapsed=False, add_marker=True, position='topleft').add_to(m)
+    # Add plugins in specific order (Draw before Geocoder to avoid mouse issues)
     Draw(
-        draw_options={"polygon": True, "marker": False, "circle": False,
-                      "polyline": False, "rectangle": False},
+        draw_options={
+            "polygon": True, 
+            "marker": False, 
+            "circle": False,
+            "polyline": False, 
+            "rectangle": False
+        },
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
-    Fullscreen(position="topleft").add_to(m)
     
-    # Render map
-    map_data = st_folium(m, height=500, use_container_width=True, key="create_map")
+    Geocoder(collapsed=False, add_marker=True, position='topleft').add_to(m)
+    Fullscreen(position="topleft").add_to(m)
+    folium.LayerControl(position="topright").add_to(m)
+    
+    # Render map with unique key
+    map_data = render_map(m, key="create_map", height=500)
     
     # Store drawings
     if map_data and "all_drawings" in map_data:
@@ -1091,8 +1244,11 @@ def view_projects_page():
     
     # Display project info
     st.subheader("Project Info")
-    st.write(f"**Name:** {project['name']}")
-    st.write(f"**Description:** {project.get('description', 'N/A')}")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**Name:** {project['name']}")
+    with col2:
+        st.write(f"**Description:** {project.get('description', 'N/A')}")
     
     # Load related data
     users = fetch_all_users()
@@ -1108,17 +1264,51 @@ def view_projects_page():
     else:
         st.write("No users assigned.")
     
-    # Map
-    st.subheader("Project Area")
+    # Load data for map
     boundary, bounds = load_project_boundary(selected)
+    observations_df = fetch_project_observations(selected)
+    reports_df = fetch_project_reports(selected)
     
-    m = create_base_map()
+    # Create map with all layers
+    st.subheader("Project Map")
+    
+    # Determine map center
+    if boundary:
+        center = compute_centroid(boundary)
+    elif not observations_df.empty:
+        center = [
+            observations_df['latitude'].mean(),
+            observations_df['longitude'].mean()
+        ]
+    else:
+        center = DEFAULT_LOCATION
+    
+    m = create_base_map(location=center)
+    
+    # Add boundary
     if boundary:
         m = add_boundary_to_map(m, boundary)
+    
+    # Add observations and reports
+    m = add_observations_to_map(m, observations_df)
+    m = add_reports_to_map(m, reports_df)
+    
+    # Add layer control and plugins
+    Fullscreen(position="topleft").add_to(m)
+    folium.LayerControl(position="topright").add_to(m)
+    
+    # Fit to bounds if available
     if bounds:
         m.fit_bounds(bounds)
     
-    st_folium(m, height=500, use_container_width=True, key="view_map")
+    # Render map
+    render_map(m, key="view_map", height=600)
+    
+    # Stats
+    if not observations_df.empty:
+        st.metric("Total Observations", len(observations_df))
+    if not reports_df.empty:
+        st.metric("Total Reports", len(reports_df))
     
     # Edit members
     st.divider()
@@ -1150,23 +1340,21 @@ def view_projects_page():
     
     col1, col2 = st.columns(2)
     with col1:
-        report_df = fetch_project_data("report", selected)
         st.download_button(
-            label=f"📥 Reports ({len(report_df)} rows)",
-            data=report_df.to_csv(index=False).encode("utf-8"),
+            label=f"📥 Reports ({len(reports_df)} rows)",
+            data=reports_df.to_csv(index=False).encode("utf-8"),
             file_name=f"{selected}_reports.csv",
             mime="text/csv",
-            disabled=report_df.empty
+            disabled=reports_df.empty
         )
     
     with col2:
-        obs_df = fetch_project_data("observations", selected)
         st.download_button(
             label=f"📥 Observations ({len(obs_df)} rows)",
-            data=obs_df.to_csv(index=False).encode("utf-8"),
+            data=observations_df.to_csv(index=False).encode("utf-8"),
             file_name=f"{selected}_observations.csv",
             mime="text/csv",
-            disabled=obs_df.empty
+            disabled=observations_df.empty
         )
 
 # =========================================================
@@ -1174,13 +1362,6 @@ def view_projects_page():
 # =========================================================
 def main():
     """Main application entry point."""
-    st.set_page_config(
-        page_title="Project Manager",
-        page_icon="🗺️",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-    
     init_auth_state()
     
     if not st.session_state.authenticated:
