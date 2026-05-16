@@ -209,7 +209,7 @@ if page == "Create Project":
     # Draw SECOND
     Draw(
         draw_options={"polygon": True, "marker": False, "circle": False,
-                      "polyline": False, "rectangle": False},
+                      "polyline": False, "rectangle": True},
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
@@ -628,7 +628,6 @@ elif page == "View Projects":
     # ---------------------------------------------------------
     m = folium.Map(location=[52.37, 4.90], zoom_start=12)
 
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
     folium.TileLayer(
         tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
         attr="Google Satellite",
