@@ -511,383 +511,62 @@ if page == "Create Project":
 #     )
 
 # ---------------------------------------------------------
-# PAGE 2 — VIEW PROJECTS
+# SAVE AREA: OVERWRITE GEOJSON FILE IN STORAGE
 # ---------------------------------------------------------
-elif page == "View Projects":
-    import json
-    import io
-    import folium
-    from folium.plugins import Draw
-    from streamlit_folium import st_folium
-    import pandas as pd
-    import streamlit as st
-
-    BUCKET_NAME = "observation_photos"   # your storage bucket
-
-    st.title("View Projects")
-
-    # --- Load all projects ---
-    proj_res = supabase.table("projects").select("*").execute()
-    projects = proj_res.data or []
-
-    if not projects:
-        st.info("No projects found.")
-        st.stop()
-
-    project_names = [p["name"] for p in projects]
-    selected = st.selectbox(
-        "Select a project",
-        project_names,
-        index=None,
-        placeholder="Select a project...",
+if st.button("Save Area"):
+    geometry_to_save = (
+        new_polygon_feature
+        if new_polygon_feature is not None
+        else existing_boundary_feature
     )
 
-    if not selected:
-        st.stop()
-
-    # Current project data
-    project = next(p for p in projects if p["name"] == selected)
-
-    st.subheader("Project Info")
-    st.write(f"**Name:** {project.get('name')}")
-    st.write(f"**Description:** {project.get('description', '')}")
-
-    # --- Load all users from Supabase ---
-    try:
-        users = supabase.rpc("get_all_users").execute().data or []
-    except Exception:
-        users = []
-
-    id_to_email = {u["id"]: u["email"] for u in users}
-    email_to_id = {u["email"]: u["id"] for u in users}
-
-    # --- Load project members ---
-    pm_res = (
-        supabase.table("project_members")
-        .select("*")
-        .eq("project", selected)
-        .execute()
-    )
-    members = pm_res.data or []
-
-    st.subheader("Users who can work on this project")
-    if members:
-        for m in members:
-            st.write(f"- {id_to_email.get(m['user_id'], 'Unknown')}")
+    if geometry_to_save is None:
+        st.error("No polygon found. Please draw a project area first.")
     else:
-        st.write("No users assigned.")
+        try:
+            # Validate
+            if not isinstance(geometry_to_save, dict):
+                raise ValueError("Geometry is not a dict")
+            if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
+                raise ValueError("Geometry must be a GeoJSON Feature")
+            geom = geometry_to_save["geometry"]
+            if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
+                raise ValueError("Feature.geometry must contain type and coordinates")
 
-    # ---------------------------------------------------------
-    # LOAD EXISTING GEOJSON FILE FROM STORAGE (IF ANY)
-    # ---------------------------------------------------------
-    # We assume a naming convention like "<project_name>.geojson" in the bucket root
-    file_path = f"{selected}.geojson"
+            # Serialize to JSON text
+            geojson_text = json.dumps(geometry_to_save, indent=2)
 
-    existing_boundary_feature = None
-    bounds = None
+            # File path in bucket
+            file_path = f"{selected}.geojson"
 
-    try:
-        download_res = supabase.storage.from_(BUCKET_NAME).download(file_path)
-        if download_res:
-            geojson_text = (
-                download_res.decode("utf-8")
-                if isinstance(download_res, (bytes, bytearray))
-                else download_res
+            # ---------------------------------------------------------
+            # WRITE TO A TEMPORARY FILE (this is what your old code did)
+            # ---------------------------------------------------------
+            import tempfile, os
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".geojson") as tmp:
+                tmp.write(geojson_text.encode("utf-8"))
+                tmp_path = tmp.name
+
+            # Delete old file (if exists)
+            try:
+                supabase.storage.from_(BUCKET_NAME).remove([file_path])
+            except Exception:
+                pass  # ignore if file didn't exist
+
+            # Upload new file (must be a real file path)
+            upload_res = supabase.storage.from_(BUCKET_NAME).upload(
+                file_path,
+                tmp_path
             )
-            existing_boundary_feature = json.loads(geojson_text)
 
-            # compute bounds for fit_bounds
-            try:
-                geom = existing_boundary_feature.get("geometry", {})
-                coords = geom.get("coordinates", [])
-                flat = []
-                if geom.get("type") == "Polygon":
-                    for ring in coords:
-                        flat.extend(ring)
-                elif geom.get("type") == "MultiPolygon":
-                    for poly in coords:
-                        for ring in poly:
-                            flat.extend(ring)
-                if flat:
-                    lats = [pt[1] for pt in flat]
-                    lons = [pt[0] for pt in flat]
-                    bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
-            except Exception:
-                bounds = None
-    except Exception:
-        # No file yet or cannot read; just start with empty map
-        existing_boundary_feature = None
-        bounds = None
+            # Remove temp file
+            os.remove(tmp_path)
 
-    st.subheader("Project Area")
+            st.success(
+                "GeoJSON file saved in storage. Old file replaced. "
+                "Reports and observations remain linked to this project."
+            )
 
-    # ---------------------------------------------------------
-    # HELPERS
-    # ---------------------------------------------------------
-    def _to_native(obj):
-        if isinstance(obj, dict):
-            return {str(k): _to_native(v) for k, v in obj.items()}
-        if isinstance(obj, (list, tuple)):
-            return [_to_native(v) for v in obj]
-        if hasattr(obj, "item"):
-            try:
-                return obj.item()
-            except Exception:
-                pass
-        return obj
-
-    def build_feature_from_shape(shape):
-        if not shape or not isinstance(shape, dict):
-            return None
-        if shape.get("type") == "FeatureCollection":
-            features = shape.get("features", [])
-            if not features:
-                return None
-            feat = features[0]
-            geom = feat.get("geometry")
-            if not geom:
-                return None
-            return {
-                "type": "Feature",
-                "properties": feat.get("properties", {}),
-                "geometry": _to_native(geom),
-            }
-        if shape.get("type") == "Feature" and "geometry" in shape:
-            geom = shape.get("geometry")
-            if not geom:
-                return None
-            return {
-                "type": "Feature",
-                "properties": shape.get("properties", {}),
-                "geometry": _to_native(geom),
-            }
-        if "type" in shape and "coordinates" in shape:
-            geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
-            return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
-        geom = shape.get("geometry")
-        if (
-            geom
-            and isinstance(geom, dict)
-            and "type" in geom
-            and "coordinates" in geom
-        ):
-            return {
-                "type": "Feature",
-                "properties": shape.get("properties", {}),
-                "geometry": _to_native(geom),
-            }
-        return None
-
-    # ---------------------------------------------------------
-    # CREATE MAP
-    # ---------------------------------------------------------
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
-
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    folium.TileLayer(
-        tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-        attr="Google Satellite",
-        name="Google Satellite",
-        overlay=False,
-        control=True,
-    ).add_to(m)
-
-    if existing_boundary_feature:
-        try:
-            folium.GeoJson(
-                _to_native(existing_boundary_feature),
-                name="Boundary",
-                style_function=lambda x: {
-                    "fillColor": "#ffcc00",
-                    "color": "red",
-                    "weight": 2.5,
-                    "fillOpacity": 0.1,
-                },
-            ).add_to(m)
-        except Exception:
-            pass
-
-    if bounds:
-        try:
-            m.fit_bounds(bounds)
-        except Exception:
-            pass
-
-    draw = Draw(
-        draw_options={
-            "polyline": False,
-            "rectangle": True,
-            "polygon": True,
-            "circle": False,
-            "marker": False,
-            "circlemarker": False,
-        },
-        edit_options={"edit": True, "remove": True},
-    )
-    draw.add_to(m)
-
-    folium.LayerControl().add_to(m)
-
-    # ---------------------------------------------------------
-    # CAPTURE DRAWN / EDITED POLYGON
-    # ---------------------------------------------------------
-    map_data = st_folium(
-        m,
-        height=650,
-        use_container_width=True,
-        returned_objects=["all_drawings", "last_active_drawing"],
-    )
-
-    new_polygon_feature = None
-    if map_data:
-        shape = map_data.get("last_active_drawing") or None
-        if not shape:
-            drawings = map_data.get("all_drawings", [])
-            if drawings:
-                shape = drawings[-1]
-        new_polygon_feature = build_feature_from_shape(shape) if shape else None
-
-    st.markdown(
-        "Draw or edit the project area. When you're happy, click **Save Area**. "
-        "The old GeoJSON file in storage will be replaced, but reports and observations stay linked to this project."
-    )
-
-    # ---------------------------------------------------------
-    # SAVE AREA: OVERWRITE GEOJSON FILE IN STORAGE
-    # ---------------------------------------------------------
-    if st.button("Save Area"):
-        geometry_to_save = (
-            new_polygon_feature
-            if new_polygon_feature is not None
-            else existing_boundary_feature
-        )
-    
-        if geometry_to_save is None:
-            st.error("No polygon found. Please draw a project area first.")
-        else:
-            try:
-                # Validate
-                if not isinstance(geometry_to_save, dict):
-                    raise ValueError("Geometry is not a dict")
-                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
-                    raise ValueError("Geometry must be a GeoJSON Feature")
-                geom = geometry_to_save["geometry"]
-                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
-                    raise ValueError("Feature.geometry must contain type and coordinates")
-    
-                # Serialize
-                geometry_to_save = _to_native(geometry_to_save)
-                geojson_text = json.dumps(geometry_to_save)
-                file_bytes = io.BytesIO(geojson_text.encode("utf-8"))
-    
-                # File path in bucket
-                file_path = f"{selected}.geojson"
-    
-                # Delete old file (if exists)
-                try:
-                    supabase.storage.from_(BUCKET_NAME).remove([file_path])
-                except Exception:
-                    pass  # ignore if file didn't exist
-    
-                # Upload new file (NO content_type, NO upsert)
-                upload_res = supabase.storage.from_(BUCKET_NAME).upload(
-                    file_path,
-                    file_bytes
-                )
-    
-                st.success(
-                    "GeoJSON file saved in storage. Old file replaced. "
-                    "Reports and observations remain linked to this project."
-                )
-    
-            except Exception as ex:
-                st.error(f"Error saving GeoJSON: {ex}")
-
-
-    # ---------------------------------------------------------
-    # EDIT USERS
-    # ---------------------------------------------------------
-    st.markdown("---")
-    st.subheader("Edit Users")
-
-    all_user_emails = list(email_to_id.keys())
-
-    current_user_ids = [m["user_id"] for m in members]
-    current_user_emails = [
-        id_to_email.get(uid) for uid in current_user_ids if uid in id_to_email
-    ]
-
-    new_selection = st.multiselect(
-        "Select users for this project",
-        all_user_emails,
-        default=current_user_emails,
-    )
-
-    if st.button("Save User Changes"):
-        try:
-            supabase.table("project_members").delete().eq("project", selected).execute()
-            for email in new_selection:
-                supabase.table("project_members").insert(
-                    {"project": selected, "user_id": email_to_id[email]}
-                ).execute()
-            st.success("Users updated.")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error updating users: {e}")
-
-    # ---------------------------------------------------------
-    # DELETE PROJECT
-    # ---------------------------------------------------------
-    st.markdown("---")
-    if st.button("DELETE PROJECT", type="primary"):
-        confirm_delete_dialog(selected)
-
-    # ---------------------------------------------------------
-    # DOWNLOAD REPORTS + OBSERVATIONS
-    # ---------------------------------------------------------
-    st.markdown("---")
-    st.subheader("Download Data")
-
-    # Reports
-    try:
-        report_res = (
-            supabase.table("report")
-            .select("*")
-            .eq("project", selected)
-            .order("date", desc=True)
-            .execute()
-        )
-        report_df = pd.DataFrame(report_res.data or [])
-    except Exception as e:
-        report_df = pd.DataFrame()
-        st.error(f"Error loading reports: {e}")
-
-    st.download_button(
-        label="Download Reports (CSV)",
-        data=report_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{selected}_reports.csv",
-        mime="text/csv",
-        icon=":material/sim_card_download:",
-    )
-
-    # Observations
-    try:
-        obs_res = (
-            supabase.table("observations")
-            .select("*")
-            .eq("project", selected)
-            .order("date", desc=True)
-            .execute()
-        )
-        obs_df = pd.DataFrame(obs_res.data or [])
-    except Exception as e:
-        obs_df = pd.DataFrame()
-        st.error(f"Error loading observations: {e}")
-
-    st.download_button(
-        label="Download Observations (CSV)",
-        data=obs_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{selected}_observations.csv",
-        mime="text/csv",
-        icon=":material/download:",
-    )
+        except Exception as ex:
+            st.error(f"Error saving GeoJSON: {ex}")
