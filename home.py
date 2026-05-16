@@ -580,23 +580,23 @@ elif page == "View Projects":
     # ---------------------------------------------------------
     # LOAD EXISTING GEOJSON FILE FROM STORAGE (IF ANY)
     # ---------------------------------------------------------
-    try:
-        pb_res = supabase.table("project_boundaries").select("*").eq("project", selected).execute()
-        pb_rows = pb_res.data or []
-        existing_file_path = pb_rows[0].get("file_path") if pb_rows else None  # change if your column differs
-    except Exception:
-        existing_file_path = None
+    # We assume a naming convention like "<project_name>.geojson" in the bucket root
+    file_path = f"{selected}.geojson"
 
     existing_boundary_feature = None
     bounds = None
 
-    if existing_file_path:
-        try:
-            download_res = supabase.storage.from_(BUCKET_NAME).download(existing_file_path)
-            geojson_text = download_res.decode("utf-8") if isinstance(download_res, (bytes, bytearray)) else download_res
+    try:
+        download_res = supabase.storage.from_(BUCKET_NAME).download(file_path)
+        if download_res:
+            geojson_text = (
+                download_res.decode("utf-8")
+                if isinstance(download_res, (bytes, bytearray))
+                else download_res
+            )
             existing_boundary_feature = json.loads(geojson_text)
 
-            # compute bounds
+            # compute bounds for fit_bounds
             try:
                 geom = existing_boundary_feature.get("geometry", {})
                 coords = geom.get("coordinates", [])
@@ -614,10 +614,10 @@ elif page == "View Projects":
                     bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
             except Exception:
                 bounds = None
-        except Exception as e:
-            st.warning(f"Could not load existing boundary file: {e}")
-            existing_boundary_feature = None
-            bounds = None
+    except Exception:
+        # No file yet or cannot read; just start with empty map
+        existing_boundary_feature = None
+        bounds = None
 
     st.subheader("Project Area")
 
@@ -647,18 +647,35 @@ elif page == "View Projects":
             geom = feat.get("geometry")
             if not geom:
                 return None
-            return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
+            return {
+                "type": "Feature",
+                "properties": feat.get("properties", {}),
+                "geometry": _to_native(geom),
+            }
         if shape.get("type") == "Feature" and "geometry" in shape:
             geom = shape.get("geometry")
             if not geom:
                 return None
-            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+            return {
+                "type": "Feature",
+                "properties": shape.get("properties", {}),
+                "geometry": _to_native(geom),
+            }
         if "type" in shape and "coordinates" in shape:
             geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
             return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
         geom = shape.get("geometry")
-        if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
-            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+        if (
+            geom
+            and isinstance(geom, dict)
+            and "type" in geom
+            and "coordinates" in geom
+        ):
+            return {
+                "type": "Feature",
+                "properties": shape.get("properties", {}),
+                "geometry": _to_native(geom),
+            }
         return None
 
     # ---------------------------------------------------------
@@ -732,14 +749,18 @@ elif page == "View Projects":
 
     st.markdown(
         "Draw or edit the project area. When you're happy, click **Save Area**. "
-        "The old GeoJSON file will be replaced, but reports and observations stay linked to this project."
+        "The old GeoJSON file in storage will be replaced, but reports and observations stay linked to this project."
     )
 
     # ---------------------------------------------------------
-    # SAVE AREA: UPLOAD GEOJSON FILE AND UPDATE project_boundaries
+    # SAVE AREA: OVERWRITE GEOJSON FILE IN STORAGE
     # ---------------------------------------------------------
     if st.button("Save Area"):
-        geometry_to_save = new_polygon_feature if new_polygon_feature is not None else existing_boundary_feature
+        geometry_to_save = (
+            new_polygon_feature
+            if new_polygon_feature is not None
+            else existing_boundary_feature
+        )
 
         if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
@@ -747,27 +768,29 @@ elif page == "View Projects":
             try:
                 if not isinstance(geometry_to_save, dict):
                     raise ValueError("Geometry is not a dict")
-                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
-                    raise ValueError("Geometry must be a GeoJSON Feature with a geometry member")
+                if (
+                    geometry_to_save.get("type") != "Feature"
+                    or "geometry" not in geometry_to_save
+                ):
+                    raise ValueError(
+                        "Geometry must be a GeoJSON Feature with a geometry member"
+                    )
                 geom = geometry_to_save["geometry"]
-                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
-                    raise ValueError("Feature.geometry must contain type and coordinates")
+                if (
+                    not isinstance(geom, dict)
+                    or "type" not in geom
+                    or "coordinates" not in geom
+                ):
+                    raise ValueError(
+                        "Feature.geometry must contain type and coordinates"
+                    )
 
                 geometry_to_save = _to_native(geometry_to_save)
                 geojson_text = json.dumps(geometry_to_save)
 
-                # file path in storage: e.g. "boundaries/<project_name>.geojson"
-                file_path = f"boundaries/{selected}.geojson"
                 file_bytes = io.BytesIO(geojson_text.encode("utf-8"))
 
-                # delete old file if path changed
-                if existing_file_path and existing_file_path != file_path:
-                    try:
-                        supabase.storage.from_(BUCKET_NAME).remove([existing_file_path])
-                    except Exception:
-                        pass
-
-                # upload new file (upsert)
+                # Overwrite (upsert) the file in the bucket
                 upload_res = supabase.storage.from_(BUCKET_NAME).upload(
                     file_path,
                     file_bytes,
@@ -775,30 +798,10 @@ elif page == "View Projects":
                     upsert=True,
                 )
 
-                # optional: get public URL (if bucket policy allows)
-                try:
-                    public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_path).get("publicURL")
-                except Exception:
-                    public_url = None
-
-                # update project_boundaries table with new file path
-                try:
-                    existing = supabase.table("project_boundaries").select("*").eq("project", selected).execute()
-                    existing_rows = existing.data or []
-                    if existing_rows:
-                        res = supabase.table("project_boundaries").update(
-                            {"file_path": file_path, "file_url": public_url}
-                        ).eq("project", selected).execute()
-                    else:
-                        res = supabase.table("project_boundaries").insert(
-                            {"project": selected, "file_path": file_path, "file_url": public_url}
-                        ).execute()
-                except Exception as e_db:
-                    st.error(f"Failed to update project_boundaries: {e_db}")
-                    st.stop()
-
-                st.success("GeoJSON file saved and boundary updated. Reports and observations remain linked to this project.")
-
+                st.success(
+                    "GeoJSON file saved in storage. Old file replaced. "
+                    "Reports and observations remain linked to this project."
+                )
             except Exception as ex:
                 st.error(f"Error saving GeoJSON: {ex}")
 
