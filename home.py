@@ -761,49 +761,48 @@ elif page == "View Projects":
             if new_polygon_feature is not None
             else existing_boundary_feature
         )
-
+    
         if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
         else:
             try:
+                # Validate
                 if not isinstance(geometry_to_save, dict):
                     raise ValueError("Geometry is not a dict")
-                if (
-                    geometry_to_save.get("type") != "Feature"
-                    or "geometry" not in geometry_to_save
-                ):
-                    raise ValueError(
-                        "Geometry must be a GeoJSON Feature with a geometry member"
-                    )
+                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
+                    raise ValueError("Geometry must be a GeoJSON Feature")
                 geom = geometry_to_save["geometry"]
-                if (
-                    not isinstance(geom, dict)
-                    or "type" not in geom
-                    or "coordinates" not in geom
-                ):
-                    raise ValueError(
-                        "Feature.geometry must contain type and coordinates"
-                    )
-
+                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
+                    raise ValueError("Feature.geometry must contain type and coordinates")
+    
+                # Serialize
                 geometry_to_save = _to_native(geometry_to_save)
                 geojson_text = json.dumps(geometry_to_save)
-
                 file_bytes = io.BytesIO(geojson_text.encode("utf-8"))
-
-                # Overwrite (upsert) the file in the bucket
+    
+                # File path in bucket
+                file_path = f"{selected}.geojson"
+    
+                # Delete old file (if exists)
+                try:
+                    supabase.storage.from_(BUCKET_NAME).remove([file_path])
+                except Exception:
+                    pass  # ignore if file didn't exist
+    
+                # Upload new file (NO content_type, NO upsert)
                 upload_res = supabase.storage.from_(BUCKET_NAME).upload(
                     file_path,
-                    file_bytes,
-                    content_type="application/geo+json",
-                    upsert=True,
+                    file_bytes
                 )
-
+    
                 st.success(
                     "GeoJSON file saved in storage. Old file replaced. "
                     "Reports and observations remain linked to this project."
                 )
+    
             except Exception as ex:
                 st.error(f"Error saving GeoJSON: {ex}")
+
 
     # ---------------------------------------------------------
     # EDIT USERS
