@@ -511,13 +511,15 @@ if page == "Create Project":
 #     )
 
 # ---------------------------
-# VIEW PROJECTS (complete page)
+# PAGE 2 — VIEW PROJECTS
 # ---------------------------
 elif page == "View Projects":
     import json
     import folium
     from folium.plugins import Draw
     from streamlit_folium import st_folium
+    import pandas as pd
+    import streamlit as st
 
     st.title("View Projects")
 
@@ -544,7 +546,7 @@ elif page == "View Projects":
     project = next(p for p in projects if p["name"] == selected)
 
     st.subheader("Project Info")
-    st.write(f"**Name:** {project['name']}")
+    st.write(f"**Name:** {project.get('name')}")
     st.write(f"**Description:** {project.get('description', '')}")
 
     # --- Load all users from Supabase ---
@@ -580,38 +582,33 @@ elif page == "View Projects":
     st.subheader("Project Area")
 
     # -------------------------
-    # Helper: sanitize geometry
+    # Helpers: sanitize geometry and convert types
     # -------------------------
     def _to_native(obj):
         """
-        Recursively convert numpy types and other non-JSON-native types
-        to Python native types so supabase/json.dumps won't fail.
+        Convert numpy types and other non-JSON-native types to Python native types.
         """
         if isinstance(obj, dict):
             return {str(k): _to_native(v) for k, v in obj.items()}
         if isinstance(obj, (list, tuple)):
             return [_to_native(v) for v in obj]
-        if hasattr(obj, "item"):  # numpy scalar
+        if hasattr(obj, "item"):
             try:
                 return obj.item()
             except Exception:
                 pass
-        # primitives (int, float, str, bool, None)
         return obj
 
     def build_feature_from_shape(shape):
         """
         Accepts a Leaflet/Draw returned shape and returns a valid GeoJSON Feature
-        or None if invalid.
-        Handles:
-          - shape being a Feature (with 'geometry')
-          - shape being a geometry dict directly
-          - shape being a FeatureCollection (takes first feature)
+        or None if invalid. Handles FeatureCollection, Feature, geometry dicts,
+        and nested geometry under 'geometry'.
         """
         if not shape or not isinstance(shape, dict):
             return None
 
-        # If it's a FeatureCollection, take first feature
+        # FeatureCollection -> take first feature
         if shape.get("type") == "FeatureCollection":
             features = shape.get("features", [])
             if not features:
@@ -622,19 +619,19 @@ elif page == "View Projects":
                 return None
             return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
 
-        # If it's a Feature
+        # Feature with geometry
         if shape.get("type") == "Feature" and "geometry" in shape:
             geom = shape.get("geometry")
             if not geom:
                 return None
             return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
 
-        # If it looks like a geometry dict (has 'type' and 'coordinates')
+        # Geometry-like dict (has type and coordinates)
         if "type" in shape and "coordinates" in shape:
             geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
             return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
 
-        # Some Leaflet returns wrap geometry under 'geometry' key but empty; check nested
+        # Nested geometry under 'geometry'
         geom = shape.get("geometry")
         if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
             return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
@@ -649,7 +646,7 @@ elif page == "View Projects":
 
     # Basemaps
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
-    # Google Satellite (unofficial tile) - if you prefer another provider, replace tiles URL
+    # Google Satellite (unofficial tile) - replace if you prefer another provider
     folium.TileLayer(
         tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
         attr="Google Satellite",
@@ -688,7 +685,7 @@ elif page == "View Projects":
             "polyline": False,
             "rectangle": True,
             "polygon": True,
-            "circle": True,
+            "circle": False,
             "marker": False,
             "circlemarker": False,
         },
@@ -699,128 +696,141 @@ elif page == "View Projects":
     folium.LayerControl().add_to(m)
 
     # -------------------------
-    # Render map and capture edits (debugging version)
+    # Render map and capture edits (debugging output included)
     # -------------------------
     map_data = st_folium(
         m,
-        height=600,
+        height=650,
         use_container_width=True,
         returned_objects=["all_drawings", "last_active_drawing"],
     )
-    
-    # Show the entire map_data for debugging
+
+    # Debug: show raw map_data so you can inspect what Leaflet returned
     st.subheader("Debug: raw map_data from st_folium")
-    st.write("Type:", type(map_data))
-    st.write(map_data)            # full object
+    st.write(map_data)
     st.markdown("---")
-    
-    # Helper to convert numpy types etc.
-    def _to_native(obj):
-        if isinstance(obj, dict):
-            return {str(k): _to_native(v) for k, v in obj.items()}
-        if isinstance(obj, (list, tuple)):
-            return [_to_native(v) for v in obj]
-        if hasattr(obj, "item"):
-            try:
-                return obj.item()
-            except Exception:
-                pass
-        return obj
-    
-    def build_feature_from_shape(shape):
-        if not shape or not isinstance(shape, dict):
-            return None
-    
-        # FeatureCollection -> take first feature
-        if shape.get("type") == "FeatureCollection":
-            features = shape.get("features", [])
-            if not features:
-                return None
-            feat = features[0]
-            geom = feat.get("geometry")
-            if not geom:
-                return None
-            return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
-    
-        # Feature with geometry
-        if shape.get("type") == "Feature" and "geometry" in shape:
-            geom = shape.get("geometry")
-            if not geom:
-                return None
-            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
-    
-        # Geometry-like dict
-        if "type" in shape and "coordinates" in shape:
-            geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
-            return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
-    
-        # Nested geometry under 'geometry'
-        geom = shape.get("geometry")
-        if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
-            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
-    
-        return None
-    
-    # Try to get the most reliable shape
-    shape = None
+
+    # Try to get the most reliable shape:
+    # 1) last_active_drawing (preferred)
+    # 2) last element of all_drawings
+    # 3) fallback to None
+    new_polygon_feature = None
     if map_data:
         st.subheader("Debug: last_active_drawing")
         st.write(map_data.get("last_active_drawing"))
-        st.subheader("Debug: all_drawings (last element shown)")
-        drawings = map_data.get("all_drawings", [])
-        st.write(drawings)
-        if map_data.get("last_active_drawing"):
-            shape = map_data.get("last_active_drawing")
-        elif drawings:
-            shape = drawings[-1]
-    
-    # Show the raw selected shape
-    st.subheader("Debug: selected raw shape")
-    st.write(shape)
-    
-    # Build sanitized GeoJSON Feature and show it
-    new_polygon_feature = build_feature_from_shape(shape) if shape else None
-    st.subheader("Debug: sanitized GeoJSON Feature (what will be saved)")
-    st.write(new_polygon_feature)
-    if new_polygon_feature:
-        st.json(new_polygon_feature)
-    
-    st.markdown("---")
-    st.write("If the sanitized GeoJSON Feature above looks valid (type Feature, geometry.type Polygon/MultiPolygon, coordinates present), click Save Area to upsert it to Supabase.")
-    st.write("If it is None or empty, Leaflet returned an unexpected structure; try drawing again or inspect the raw map_data above.")
-    
-    # Save button (only saves the sanitized feature or existing boundary)
-    if st.button("Save Area (debug)"):
+        st.subheader("Debug: all_drawings (full list)")
+        st.write(map_data.get("all_drawings", []))
+
+        shape = map_data.get("last_active_drawing") or None
+        if not shape:
+            drawings = map_data.get("all_drawings", [])
+            if drawings:
+                shape = drawings[-1]
+
+        st.subheader("Debug: selected raw shape")
+        st.write(shape)
+
+        # Build sanitized GeoJSON Feature and show it
+        new_polygon_feature = build_feature_from_shape(shape) if shape else None
+        st.subheader("Debug: sanitized GeoJSON Feature (what will be saved)")
+        st.write(new_polygon_feature)
+        if new_polygon_feature:
+            st.json(new_polygon_feature)
+
+    st.markdown(
+        "You can draw, edit, or delete the project area. When you're happy, click **Save Area**. "
+        "The debug panels above show exactly what will be sent to Supabase."
+    )
+
+    # -------------------------
+    # Save Area button (safe replace logic)
+    # -------------------------
+    if st.button("Save Area"):
+        # Choose geometry to save: new drawn feature if present, otherwise existing boundary
         geometry_to_save = new_polygon_feature if new_polygon_feature is not None else boundary
-    
-        st.write("Geometry chosen to save (final check):")
-        st.write(geometry_to_save)
-        st.text("JSON dump attempt:")
-    
-        import json
-        try:
-            # ensure serializable
-            json_text = json.dumps(geometry_to_save)
-            st.text("JSON dump OK")
-            st.code(json_text[:1000] + ("..." if len(json_text) > 1000 else ""), language="json")
-        except Exception as ex:
-            st.error(f"JSON serialization failed: {ex}")
-            st.stop()
-    
-        # If we reach here, attempt to upsert
-        try:
-            res = supabase.table("project_boundaries").upsert(
-                {"project": selected, "geometry": geometry_to_save}
-            ).execute()
-            st.write("Supabase response object:")
-            st.write(res)
-            # If supabase returns an 'error' attribute, show it
-            if isinstance(res, dict) and res.get("error"):
-                st.error(f"Supabase error: {res.get('error')}")
+
+        if geometry_to_save is None:
+            st.error("No polygon found. Please draw a project area first.")
+        else:
+            # Final validation and serialization check
+            try:
+                # Ensure geometry_to_save is a dict and a GeoJSON Feature
+                if not isinstance(geometry_to_save, dict):
+                    raise ValueError("Geometry is not a dict")
+
+                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
+                    raise ValueError("Geometry must be a GeoJSON Feature with a geometry member")
+
+                geom = geometry_to_save["geometry"]
+                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
+                    raise ValueError("Feature.geometry must contain type and coordinates")
+
+                # Convert to native Python types (lists, floats)
+                geometry_to_save = _to_native(geometry_to_save)
+
+                # Quick JSON dump to catch serialization issues early
+                json_text = json.dumps(geometry_to_save)
+
+                # Debug: show the JSON that will be sent (first 2000 chars)
+                st.subheader("Debug: JSON payload to be sent to Supabase (truncated)")
+                st.code(json_text[:2000] + ("..." if len(json_text) > 2000 else ""), language="json")
+
+            except Exception as ex:
+                st.error(f"Invalid geometry: {ex}")
             else:
-                st.success("Project area updated successfully. Existing reports and observations remain linked.")
-        except Exception as e:
-            st.error(f"Error saving project area: {e}")
+                # Attempt to replace existing boundary row (UPDATE) or INSERT if none exists
+                try:
+                    existing = supabase.table("project_boundaries").select("*").eq("project", selected).execute()
+                    existing_rows = existing.data or []
+
+                    if existing_rows:
+                        # Update the existing row (replace geometry only)
+                        res = supabase.table("project_boundaries").update(
+                            {"geometry": geometry_to_save}
+                        ).eq("project", selected).execute()
+                    else:
+                        # Insert new row
+                        res = supabase.table("project_boundaries").insert(
+                            {"project": selected, "geometry": geometry_to_save}
+                        ).execute()
+
+                    # Show Supabase response for debugging
+                    st.subheader("Supabase response (jsonb path)")
+                    st.write(res)
+
+                    # If Supabase returns an error structure, show it
+                    if isinstance(res, dict) and res.get("error"):
+                        st.error(f"Supabase error: {res.get('error')}")
+                    else:
+                        st.success("Project area updated successfully. Existing reports and observations remain linked to this project.")
+                except Exception as e_jsonb:
+                    # If jsonb path fails, show error and attempt PostGIS RPC path (if available)
+                    st.error(f"jsonb update/insert failed: {e_jsonb}")
+                    st.write("Attempting PostGIS RPC path (if you have a server-side RPC to accept GeoJSON).")
+
+                    # Example RPC approach (requires a server-side function)
+                    # You must create a Postgres function like:
+                    # CREATE OR REPLACE FUNCTION update_project_boundary_geom(p_project text, p_geojson jsonb) RETURNS void AS $$
+                    # BEGIN
+                    #   UPDATE project_boundaries
+                    #   SET geom = ST_SetSRID(ST_GeomFromGeoJSON(p_geojson::text), 4326)
+                    #   WHERE project = p_project;
+                    #   IF NOT FOUND THEN
+                    #     INSERT INTO project_boundaries(project, geom) VALUES (p_project, ST_SetSRID(ST_GeomFromGeoJSON(p_geojson::text), 4326));
+                    #   END IF;
+                    # END;
+                    # $$ LANGUAGE plpgsql;
+                    try:
+                        geojson_text = json.dumps(geometry_to_save)
+                        rpc_res = supabase.rpc("update_project_boundary_geom", {"p_project": selected, "p_geojson": geojson_text}).execute()
+                        st.subheader("Supabase RPC response (PostGIS path)")
+                        st.write(rpc_res)
+                        st.success("Boundary saved via PostGIS RPC. Reports/observations unchanged.")
+                    except Exception as e_rpc:
+                        st.error("PostGIS RPC path failed as well.")
+                        st.write("jsonb error:", e_jsonb)
+                        st.write("rpc error:", e_rpc)
+                        st.error("Both jsonb and PostGIS save attempts failed. Inspect the debug JSON above and paste it here for further help.")
 
     # -------------------------
     # Edit Users Section
@@ -899,7 +909,8 @@ elif page == "View Projects":
             .order("date", desc=True)
             .execute()
         )
-        obs_df = pd.DataFrame(obs_res.data or [])
+        obs_df = pd.DataFrame(obs_res.data or []
+        )
     except Exception as e:
         obs_df = pd.DataFrame()
         st.error(f"Error loading observations: {e}")
