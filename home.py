@@ -1178,6 +1178,9 @@ import uuid
 import json
 import pandas as pd
 import re
+from streamlit.components.v1 import html
+from http.cookies import SimpleCookie
+from time import sleep
 
 # ----------------- CONFIG -----------------
 st.set_page_config(
@@ -1253,73 +1256,107 @@ COLOR_PALETTE = [
 ]
 SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
 
+# ----------------- BROWSER SESSION ISOLATION (CRITICAL FIX) -----------------
+def get_browser_session_id():
+    """
+    CRITICAL FIX: Use browser cookies to create a persistent, isolated session ID.
+    This ensures each browser/device gets its own session that survives refreshes
+    and is completely isolated from other users.
+    """
+    COOKIE_NAME = "batapp_session_id"
+    
+    # Try to read existing cookie from headers
+    try:
+        headers = st.context.headers
+        cookie_str = headers.get("Cookie", "")
+        if cookie_str:
+            cookie = SimpleCookie(cookie_str)
+            if COOKIE_NAME in cookie:
+                session_id = cookie[COOKIE_NAME].value
+                # Store in session_state for this run
+                st.session_state['_browser_session_id'] = session_id
+                return session_id
+    except Exception:
+        pass
+    
+    # Check if we already generated one this session
+    if '_browser_session_id' in st.session_state:
+        return st.session_state['_browser_session_id']
+    
+    # Generate new session ID and set cookie via JavaScript
+    new_session_id = uuid.uuid4().hex[:16]
+    st.session_state['_browser_session_id'] = new_session_id
+    
+    # Inject JavaScript to set the cookie
+    html(f'<script>document.cookie = "{COOKIE_NAME}={new_session_id}; path=/; max-age=31536000; SameSite=Lax";</script>', height=0)
+    sleep(0.1)  # Brief pause to ensure cookie is set
+    
+    return new_session_id
+
+# Get the isolated browser session ID
+BROWSER_SESSION_ID = get_browser_session_id()
+
+def session_key(key):
+    """Prefix any session key with the browser session ID for isolation."""
+    return f"{BROWSER_SESSION_ID}_{key}"
+
+def s_get(key, default=None):
+    """Get value from isolated session state."""
+    return st.session_state.get(session_key(key), default)
+
+def s_set(key, value):
+    """Set value in isolated session state."""
+    st.session_state[session_key(key)] = value
+
+def s_clear():
+    """
+    CRITICAL FIX: Only clear keys belonging to THIS browser session.
+    NEVER use st.session_state.clear() or st.session_state = {} 
+    as that breaks session isolation for all users!
+    """
+    keys_to_remove = []
+    for key in list(st.session_state.keys()):
+        if key.startswith(f"{BROWSER_SESSION_ID}_"):
+            keys_to_remove.append(key)
+        # Also clean up any old session keys that might be leaking
+        elif key in ['logged_in', 'user', 'session', 'project', 'changing_project',
+                     'observations', 'map_center', 'map_input_center', 'map_input_zoom',
+                     'show_signup', 'selected_obs_id', 'filter_species', 'filter_functions']:
+            keys_to_remove.append(key)
+    
+    for key in keys_to_remove:
+        if key in st.session_state:
+            del st.session_state[key]
+
+def init_defaults():
+    """Initialize defaults ONLY for this browser session."""
+    defaults = {
+        "logged_in": False,
+        "user": None,
+        "session": None,
+        "project": None,
+        "changing_project": False,
+        "observations": [],
+        "map_center": [52.0, 5.0],
+        "map_input_center": [52.0, 5.0],
+        "map_input_zoom": 6,
+        "show_signup": False,
+        "selected_obs_id": None,
+    }
+    for key, value in defaults.items():
+        sk = session_key(key)
+        if sk not in st.session_state:
+            st.session_state[sk] = value
+
+# Initialize on every run
+init_defaults()
+
 # ----------------- SUPABASE INIT -----------------
 @st.cache_resource
 def get_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 supabase = get_supabase()
-
-# ----------------- SESSION MANAGEMENT (FIXED) -----------------
-def get_device_id():
-    """
-    Get or create a device-specific ID stored in session_state.
-    This is simpler and more reliable than query_params for this use case.
-    Each browser tab gets its own session_state, so this naturally isolates devices.
-    """
-    if "device_id" not in st.session_state:
-        st.session_state.device_id = str(uuid.uuid4())[:16]
-    return st.session_state.device_id
-
-DEVICE_ID = get_device_id()
-
-def get_session_key(key):
-    """Prefix session keys with device ID to isolate different users."""
-    return f"{DEVICE_ID}_{key}"
-
-def get_state(key, default=None):
-    """Get value from device-isolated session state."""
-    session_key = get_session_key(key)
-    return st.session_state.get(session_key, default)
-
-def set_state(key, value):
-    """Set value in device-isolated session state."""
-    session_key = get_session_key(key)
-    st.session_state[session_key] = value
-
-def clear_device_state():
-    """Clear only this device's state."""
-    keys_to_clear = [
-        "logged_in", "user", "session", "project", "changing_project",
-        "observations", "map_center", "map_input_center", "map_input_zoom",
-        "show_signup", "selected_obs_id", "filter_species", "filter_functions"
-    ]
-    for key in keys_to_clear:
-        session_key = get_session_key(key)
-        if session_key in st.session_state:
-            del st.session_state[session_key]
-
-def init_defaults():
-    """Initialize default values only if they don't exist for this device."""
-    defaults = {
-        get_session_key("logged_in"): False,
-        get_session_key("user"): None,
-        get_session_key("session"): None,
-        get_session_key("project"): None,
-        get_session_key("changing_project"): False,
-        get_session_key("observations"): [],
-        get_session_key("map_center"): [52.0, 5.0],
-        get_session_key("map_input_center"): [52.0, 5.0],
-        get_session_key("map_input_zoom"): 6,
-        get_session_key("show_signup"): False,
-        get_session_key("selected_obs_id"): None,
-    }
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
-
-# Initialize defaults on every run
-init_defaults()
 
 # ----------------- AUTH FUNCTIONS -----------------
 def login(email: str, password: str):
@@ -1339,14 +1376,15 @@ def logout():
         supabase.auth.sign_out()
     except Exception:
         pass
-    clear_device_state()
-    # Re-initialize defaults after clearing
+    
+    # CRITICAL: Only clear this device's session, never global state
+    s_clear()
     init_defaults()
     st.rerun()
 
 # ----------------- DATA HELPERS -----------------
 def load_projects():
-    user = get_state("user")
+    user = s_get("user")
     if not user:
         return []
     res = (
@@ -1365,12 +1403,12 @@ def load_observations(project_name: str):
         .order("date", desc=False)
         .execute()
     )
-    set_state("observations", res.data or [])
+    s_set("observations", res.data or [])
     
     if res.data:
         last = res.data[-1]
-        set_state("map_center", [last["lat"], last["lon"]])
-        set_state("map_input_center", [last["lat"], last["lon"]])
+        s_set("map_center", [last["lat"], last["lon"]])
+        s_set("map_input_center", [last["lat"], last["lon"]])
 
 def load_project_boundary(project_name):
     filename = f"{project_name}.geojson"
@@ -1413,7 +1451,7 @@ def load_project_boundary(project_name):
         return None, None
 
 def download_observations_csv():
-    obs = get_state("observations", [])
+    obs = s_get("observations", [])
     if not obs:
         return None
     df = pd.DataFrame(obs)
@@ -1448,16 +1486,10 @@ def delete_photo_from_storage(photo_url):
     except Exception as e:
         st.warning(f"Could not delete photo: {e}")
 
-def extract_id_from_popup(popup_html):
-    if not popup_html:
-        return None
-    match = re.search(r"<span style=\"display:none\">(.*?)</span>", popup_html)
-    return match.group(1) if match else None
-
 def parse_time_safe(value):
     if not value:
         return time(0, 0)
-    value = value.strip()
+    value = value.strip() if isinstance(value, str) else value
     if isinstance(value, time):
         return value
     for fmt in ["%H:%M", "%H:%M:%S", "%H:%M:%S.%f"]:
@@ -1483,7 +1515,7 @@ def daily_report_dialog():
     
     start_time = st.time_input("Start Time")
     end_time = st.time_input("End Time")
-    operator = st.text_input("Operator", value=get_state("user", {}).get("email", ""))
+    operator = st.text_input("Operator", value=s_get("user", {}).get("email", ""))
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=1)
     wind = st.number_input("Wind", step=1)
@@ -1494,7 +1526,7 @@ def daily_report_dialog():
         existing = (
             supabase.table("report")
             .select("id")
-            .eq("project", get_state("project"))
+            .eq("project", s_get("project"))
             .eq("kind", kind)
             .execute()
         )
@@ -1513,7 +1545,7 @@ def daily_report_dialog():
             "wind": wind,
             "rain": rain,
             "comment": comment,
-            "project": get_state("project")
+            "project": s_get("project")
         }).execute()
         
         st.success("Report submitted.")
@@ -1525,7 +1557,7 @@ def show_reports_dialog():
     res = (
         supabase.table("report")
         .select("*")
-        .eq("project", get_state("project"))
+        .eq("project", s_get("project"))
         .order("date", desc=True)
         .execute()
     )
@@ -1568,8 +1600,8 @@ def show_reports_dialog():
         end_time = st.time_input("End Time", value=parse_time_safe(report.get("end_time")))
         operator = st.text_input("Operator", value=report["operator"])
         extra_operator = st.text_input("Extra Operator", value=report.get("extra_operator", ""))
-        temperature = st.number_input("Temperature (°C)", step=1, value=int(report.get("temperature")))
-        wind = st.number_input("Wind", step=1, value=int(report.get("wind")))
+        temperature = st.number_input("Temperature (°C)", step=1, value=int(report.get("temperature", 0)))
+        wind = st.number_input("Wind", step=1, value=int(report.get("wind", 0)))
         rain = st.selectbox("Rain", REPORT_RAIN, index=REPORT_RAIN.index(report["rain"]))
         comment = st.text_area("Comment", value=report.get("comment", ""))
         
@@ -1662,7 +1694,7 @@ def edit_observation_dialog(obs):
     
     species = st.selectbox("Species", species_list, index=species_list.index(species_value))
     function = st.selectbox("Function", func_list, index=func_list.index(function_value))
-    aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
+    aantal = st.number_input("amount", step=1, value=int(obs.get("aantal", 1)))
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
     new_photo = st.file_uploader("Replace Photo", type=["jpg", "jpeg", "png"])
@@ -1686,19 +1718,19 @@ def edit_observation_dialog(obs):
             "photo_url": photo_url,
         }).eq("id", obs["id"]).execute()
         
-        load_observations(get_state("project"))
+        load_observations(s_get("project"))
         st.rerun()
     
     if st.button("Delete", type="secondary", use_container_width=True):
         delete_photo_from_storage(obs.get("photo_url"))
         supabase.table(OBS_TABLE).delete().eq("id", obs["id"]).execute()
-        load_observations(get_state("project"))
+        load_observations(s_get("project"))
         st.rerun()
 
 @st.dialog("New Observation")
 def new_observation_dialog():
     st.write("Use the map center as the observation position.")
-    base_center = get_state("map_input_center")
+    base_center = s_get("map_input_center")
     zoom = 20
     
     m = folium.Map(location=base_center, zoom_start=zoom, zoom_control=False)
@@ -1732,7 +1764,7 @@ def new_observation_dialog():
     
     aantal = st.number_input("amount", step=1, value=1)
     behavior = st.text_area("Comments")
-    username = get_state("user", {}).get("email", "")
+    username = s_get("user", {}).get("email", "")
     photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
     
     if st.button("Save observation", use_container_width=True):
@@ -1745,15 +1777,15 @@ def new_observation_dialog():
             "behavior": behavior,
             "username": username,
             "date": str(obs_date),
-            "project": get_state("project"),
+            "project": s_get("project"),
             "lat": float(lat),
             "lon": float(lon),
             "photo_url": photo_url,
         }
         supabase.table(OBS_TABLE).insert(data).execute()
-        set_state("map_center", [float(lat), float(lon)])
-        set_state("map_input_center", [float(lat), float(lon)])
-        load_observations(get_state("project"))
+        s_set("map_center", [float(lat), float(lon)])
+        s_set("map_input_center", [float(lat), float(lon)])
+        load_observations(s_get("project"))
         st.rerun()
 
 # ----------------- UI FUNCTIONS -----------------
@@ -1767,15 +1799,15 @@ def show_login():
         if submitted:
             res = login(email, password)
             if res and res.user:
-                set_state("logged_in", True)
-                set_state("user", res.user)
-                set_state("session", res.session)
+                s_set("logged_in", True)
+                s_set("user", res.user)
+                s_set("session", res.session)
                 st.rerun()
             else:
                 st.sidebar.error("Invalid email or password")
     
     if st.sidebar.button("Create Account"):
-        set_state("show_signup", True)
+        s_set("show_signup", True)
         st.rerun()
 
 def show_signup():
@@ -1789,13 +1821,13 @@ def show_signup():
             res = signup(email, password)
             if res and res.user:
                 st.sidebar.success("Account created. Please log in.")
-                set_state("show_signup", False)
+                s_set("show_signup", False)
                 st.rerun()
             else:
                 st.sidebar.error("Sign-up failed")
     
     if st.sidebar.button("Back to Login", use_container_width=True):
-        set_state("show_signup", False)
+        s_set("show_signup", False)
         st.rerun()
 
 def show_project_selection():
@@ -1803,7 +1835,7 @@ def show_project_selection():
     res = (
         supabase.table("project_members")
         .select("project")
-        .eq("user_id", get_state("user").id)
+        .eq("user_id", s_get("user").id)
         .execute()
     )
     rows = res.data or []
@@ -1816,10 +1848,10 @@ def show_project_selection():
     selected = st.sidebar.selectbox("Project", project_names)
     
     if st.sidebar.button("Confirm project", use_container_width=True):
-        set_state("project", selected)
+        s_set("project", selected)
         supabase.auth.update_user({"data": {"project": selected}})
         load_observations(selected)
-        set_state("changing_project", False)
+        s_set("changing_project", False)
         st.rerun()
 
 def show_main_app():
@@ -1831,7 +1863,7 @@ def show_main_app():
             new_observation_dialog()
     
     if st.sidebar.button("Change Project", use_container_width=True, icon=":material/sync_alt:"):
-        set_state("changing_project", True)
+        s_set("changing_project", True)
         st.rerun()
     
     if st.sidebar.button("Logout", use_container_width=True, icon=":material/login:"):
@@ -1839,10 +1871,10 @@ def show_main_app():
     
     st.sidebar.divider()
     st.sidebar.header("Filters")
-    obs = get_state("observations", [])
+    obs = s_get("observations", [])
     
-    prev_species = get_state("filter_species", [])
-    prev_functions = get_state("filter_functions", [])
+    prev_species = s_get("filter_species", [])
+    prev_functions = s_get("filter_functions", [])
     
     filtered_for_options = obs
     if prev_species:
@@ -1856,16 +1888,16 @@ def show_main_app():
     prev_species = [s for s in prev_species if s in species_options]
     prev_functions = [f for f in prev_functions if f in function_options]
     
+    # Use session-keyed widget keys to prevent cross-user widget conflicts
     selected_species = st.sidebar.multiselect(
-        "Species", species_options, default=prev_species, key=get_session_key("filter_species")
+        "Species", species_options, default=prev_species, key=session_key("filter_species")
     )
     selected_functions = st.sidebar.multiselect(
-        "Function", function_options, default=prev_functions, key=get_session_key("filter_functions")
+        "Function", function_options, default=prev_functions, key=session_key("filter_functions")
     )
     
-    # Store back to state
-    set_state("filter_species", selected_species)
-    set_state("filter_functions", selected_functions)
+    s_set("filter_species", selected_species)
+    s_set("filter_functions", selected_functions)
     
     filtered = obs
     if selected_species:
@@ -1883,10 +1915,10 @@ def show_main_app():
         show_reports_dialog()
     
     # MAP
-    m = folium.Map(location=get_state("map_center"), zoom_start=12, zoom_control=False)
+    m = folium.Map(location=s_get("map_center"), zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
     
-    boundary, bounds = load_project_boundary(get_state("project"))
+    boundary, bounds = load_project_boundary(s_get("project"))
     if boundary:
         folium.GeoJson(
             boundary,
@@ -1908,7 +1940,6 @@ def show_main_app():
         icon = FUNCTION_ICONS.get(obs.get("function", ""), "info-sign")
         
         cluster = MarkerCluster().add_to(m)
-        species_name = obs.get("species", "").lower()
         
         if obs.get("photo_url"):
             image_block = f"""
@@ -1931,7 +1962,6 @@ def show_main_app():
         """
         
         tooltip_text = obs["id"]
-        text_color = "white" if color in ["darkred","darkblue","darkgreen","black","purple"] else "black"
         
         marker_icon = BeautifyIcon(
             icon=icon,
@@ -1957,16 +1987,16 @@ def show_main_app():
         map_data = st_folium(m, height=450, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
     
-    set_state("map_input_center", _get_center_from_map_data(map_data, get_state("map_center")))
+    s_set("map_input_center", _get_center_from_map_data(map_data, s_get("map_center")))
     
     if map_data and map_data.get("last_object_clicked_popup"):
         obs_id = map_data.get("last_object_clicked_tooltip")
         if obs_id:
-            set_state("selected_obs_id", obs_id)
+            s_set("selected_obs_id", obs_id)
     
     st.sidebar.divider()
     st.sidebar.header("Edit/Delete observation")
-    selected_id = get_state("selected_obs_id")
+    selected_id = s_get("selected_obs_id")
     selected_obs = None
     
     for obs in filtered:
@@ -1977,45 +2007,36 @@ def show_main_app():
     if selected_obs:
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
-        if st.sidebar.button(base_label, key=get_session_key(f"obs_{obs_id}"), use_container_width=True):
+        if st.sidebar.button(base_label, key=session_key(f"obs_{obs_id}"), use_container_width=True):
             edit_observation_dialog(selected_obs)
 
-# ----------------- SESSION RESTORE (FIXED) -----------------
+# ----------------- SESSION RESTORE -----------------
 def restore_session_after_functions():
     """
-    CRITICAL FIX: Only restore session if it belongs to THIS device.
-    Streamlit's session_state is per-browser-tab, so different devices
-    naturally get different session_state objects. We just need to ensure
-    we don't auto-login from Supabase's global session if it doesn't match.
+    Validate that the stored session still matches the current Supabase session.
+    If not, clear this device's state to prevent session bleeding.
     """
-    # If this device is already logged in, validate the session
-    if get_state("logged_in") and get_state("user"):
+    if s_get("logged_in") and s_get("user"):
         try:
             current_session = supabase.auth.get_session()
             if current_session and current_session.user:
-                stored_user_id = get_state("user", {}).get("id")
+                stored_user_id = s_get("user", {}).get("id") if s_get("user") else None
                 current_user_id = current_session.user.id
                 if stored_user_id == current_user_id:
-                    # Valid session, update it
-                    set_state("session", current_session)
-                    set_state("user", current_session.user)
+                    s_set("session", current_session)
+                    s_set("user", current_session.user)
                     return
         except Exception:
             pass
         
-        # Session invalid, clear this device's state
-        clear_device_state()
+        s_clear()
         init_defaults()
         return
     
-    # Not logged in on this device - check if Supabase has a session
-    # but DON'T auto-login. Force explicit login per device.
+    # Don't auto-login from Supabase global state
     try:
         sess = supabase.auth.get_session()
         if sess and sess.user:
-            # Supabase has a session but this device isn't logged in
-            # This means another device is logged in - sign out globally
-            # to prevent session bleeding
             supabase.auth.sign_out()
     except Exception:
         pass
@@ -2024,17 +2045,17 @@ restore_session_after_functions()
 
 # ----------------- MAIN -----------------
 def main():
-    if not get_state("logged_in"):
-        if get_state("show_signup"):
+    if not s_get("logged_in"):
+        if s_get("show_signup"):
             show_signup()
         else:
             show_login()
-    elif get_state("changing_project"):
+    elif s_get("changing_project"):
         show_project_selection()
         st.sidebar.divider()
         if st.sidebar.button("Logout", use_container_width=True, icon=":material/login:"):
             logout()
-    elif not get_state("project"):
+    elif not s_get("project"):
         show_project_selection()
         st.sidebar.divider()
         if st.sidebar.button("Logout", use_container_width=True, icon=":material/login:"):
@@ -2045,7 +2066,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
