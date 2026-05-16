@@ -514,6 +514,10 @@ if page == "Create Project":
 # PAGE 2 — VIEW PROJECTS
 # ---------------------------------------------------------
 elif page == "View Projects":
+    import folium
+    from folium.plugins import Draw
+    from streamlit_folium import st_folium
+
     st.title("View Projects")
 
     # --- Load all projects ---
@@ -545,7 +549,7 @@ elif page == "View Projects":
     # --- Load all users from Supabase ---
     try:
         users = supabase.rpc("get_all_users").execute().data or []
-    except:
+    except Exception:
         users = []
 
     id_to_email = {u["id"]: u["email"] for u in users}
@@ -567,14 +571,14 @@ elif page == "View Projects":
     else:
         st.write("No users assigned.")
 
-    # --- Load boundary using your working function ---
+    # --- Load boundary (your existing helper) ---
+    # boundary: GeoJSON Feature or None
+    # bounds: [[min_lat, min_lon], [max_lat, max_lon]] or None
     boundary, bounds = load_project_boundary(selected)
 
     st.subheader("Project Area")
 
     # --- Create map ---
-    from folium.plugins import Draw
-
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
     # Basemaps
@@ -597,14 +601,14 @@ elif page == "View Projects":
                 "color": "red",
                 "weight": 2.5,
                 "fillOpacity": 0.1,
-            }
+            },
         ).add_to(m)
 
     # Fit to bounds if valid
     if bounds:
         try:
             m.fit_bounds(bounds)
-        except:
+        except Exception:
             pass
 
     # Draw / edit tools
@@ -631,50 +635,58 @@ elif page == "View Projects":
         m,
         height=500,
         use_container_width=True,
-        returned_objects=["all_drawings"],
+        returned_objects=["all_drawings", "last_active_drawing"],
     )
-    
+
     new_polygon_feature = None
-    
-    if map_data and "all_drawings" in map_data:
-        drawings = map_data["all_drawings"]
-    
+
+    # 1. Try last_active_drawing first
+    shape = map_data.get("last_active_drawing") if map_data else None
+
+    # 2. If empty, fall back to all_drawings
+    if not shape and map_data:
+        drawings = map_data.get("all_drawings", [])
         if drawings:
-            last_shape = drawings[-1]
-    
-            # Ensure geometry exists and is valid
-            geom = last_shape.get("geometry", None)
-    
-            if geom and geom.get("type") in ["Polygon", "MultiPolygon"]:
-                # Build a full GeoJSON Feature
-                new_polygon_feature = {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": geom
-                }
-    
-    st.markdown("You can draw, edit, or delete the project area. When you're happy, click **Save Area**.")
-    
+            shape = drawings[-1]
+
+    # 3. Validate and build full GeoJSON Feature
+    if shape:
+        geom = shape.get("geometry")
+        if geom and geom.get("type") in ["Polygon", "MultiPolygon"]:
+            new_polygon_feature = {
+                "type": "Feature",
+                "properties": {},
+                "geometry": geom,
+            }
+
+    st.markdown(
+        "You can draw, edit, or delete the project area. "
+        "When you're happy, click **Save Area**."
+    )
+
     if st.button("Save Area"):
         # If user didn't draw anything new, keep the old boundary
         geometry_to_save = new_polygon_feature if new_polygon_feature else boundary
-    
+
         if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
         else:
             try:
+                # Upsert boundary for this project
+                # Adjust table/column names if needed
                 supabase.table("project_boundaries").upsert(
                     {
                         "project": selected,
                         "geometry": geometry_to_save,
                     }
                 ).execute()
-    
-                st.success("Project area updated successfully. Existing reports and observations remain linked to this project.")
-    
+
+                st.success(
+                    "Project area updated successfully. "
+                    "Existing reports and observations remain linked to this project."
+                )
             except Exception as e:
                 st.error(f"Error saving project area: {e}")
-
 
     # --- Edit Users Section ---
     st.markdown("---")
@@ -764,6 +776,3 @@ elif page == "View Projects":
         mime="text/csv",
         icon=":material/download:",
     )
-
-
-
