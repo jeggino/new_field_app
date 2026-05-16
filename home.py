@@ -510,9 +510,9 @@ if page == "Create Project":
 #         icon=":material/download:"
 #     )
 
-# ---------------------------
-# PAGE 2 — VIEW PROJECTS (store geojson as file, replace old)
-# ---------------------------
+# ---------------------------------------------------------
+# PAGE 2 — VIEW PROJECTS
+# ---------------------------------------------------------
 elif page == "View Projects":
     import json
     import io
@@ -521,6 +521,8 @@ elif page == "View Projects":
     from streamlit_folium import st_folium
     import pandas as pd
     import streamlit as st
+
+    BUCKET_NAME = "observation_photos"   # your storage bucket
 
     st.title("View Projects")
 
@@ -575,53 +577,53 @@ elif page == "View Projects":
     else:
         st.write("No users assigned.")
 
-    # --- Load boundary file path from project_boundaries (if any) ---
-    # We expect project_boundaries to store the file path to the geojson in storage
+    # ---------------------------------------------------------
+    # LOAD EXISTING GEOJSON FILE FROM STORAGE (IF ANY)
+    # ---------------------------------------------------------
     try:
         pb_res = supabase.table("project_boundaries").select("*").eq("project", selected).execute()
         pb_rows = pb_res.data or []
-        existing_file_path = pb_rows[0].get("file_path") if pb_rows else None
+        existing_file_path = pb_rows[0].get("file_path") if pb_rows else None  # change if your column differs
     except Exception:
         existing_file_path = None
 
-    # If there is an existing file, try to fetch and display it as GeoJSON on the map
     existing_boundary_feature = None
     bounds = None
+
     if existing_file_path:
         try:
-            # Download file bytes from storage
-            download_res = supabase.storage.from_("project-geojsons").download(existing_file_path)
-            if download_res:
-                # download_res is bytes-like; decode and parse
-                geojson_text = download_res.decode("utf-8") if isinstance(download_res, (bytes, bytearray)) else download_res
-                existing_boundary_feature = json.loads(geojson_text)
-                # compute bounds if polygon present (simple bounding box)
-                try:
-                    coords = existing_boundary_feature.get("geometry", {}).get("coordinates", [])
-                    # handle Polygon or MultiPolygon
-                    flat_coords = []
-                    if existing_boundary_feature.get("geometry", {}).get("type") == "Polygon":
-                        for ring in coords:
-                            flat_coords.extend(ring)
-                    elif existing_boundary_feature.get("geometry", {}).get("type") == "MultiPolygon":
-                        for poly in coords:
-                            for ring in poly:
-                                flat_coords.extend(ring)
-                    if flat_coords:
-                        lats = [pt[1] for pt in flat_coords]
-                        lons = [pt[0] for pt in flat_coords]
-                        bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
-                except Exception:
-                    bounds = None
-        except Exception:
+            download_res = supabase.storage.from_(BUCKET_NAME).download(existing_file_path)
+            geojson_text = download_res.decode("utf-8") if isinstance(download_res, (bytes, bytearray)) else download_res
+            existing_boundary_feature = json.loads(geojson_text)
+
+            # compute bounds
+            try:
+                geom = existing_boundary_feature.get("geometry", {})
+                coords = geom.get("coordinates", [])
+                flat = []
+                if geom.get("type") == "Polygon":
+                    for ring in coords:
+                        flat.extend(ring)
+                elif geom.get("type") == "MultiPolygon":
+                    for poly in coords:
+                        for ring in poly:
+                            flat.extend(ring)
+                if flat:
+                    lats = [pt[1] for pt in flat]
+                    lons = [pt[0] for pt in flat]
+                    bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
+            except Exception:
+                bounds = None
+        except Exception as e:
+            st.warning(f"Could not load existing boundary file: {e}")
             existing_boundary_feature = None
             bounds = None
 
     st.subheader("Project Area")
 
-    # -------------------------
-    # Helpers: sanitize geometry and convert types
-    # -------------------------
+    # ---------------------------------------------------------
+    # HELPERS
+    # ---------------------------------------------------------
     def _to_native(obj):
         if isinstance(obj, dict):
             return {str(k): _to_native(v) for k, v in obj.items()}
@@ -637,7 +639,6 @@ elif page == "View Projects":
     def build_feature_from_shape(shape):
         if not shape or not isinstance(shape, dict):
             return None
-        # FeatureCollection -> take first feature
         if shape.get("type") == "FeatureCollection":
             features = shape.get("features", [])
             if not features:
@@ -647,28 +648,24 @@ elif page == "View Projects":
             if not geom:
                 return None
             return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
-        # Feature with geometry
         if shape.get("type") == "Feature" and "geometry" in shape:
             geom = shape.get("geometry")
             if not geom:
                 return None
             return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
-        # Geometry-like dict
         if "type" in shape and "coordinates" in shape:
             geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
             return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
-        # Nested geometry under 'geometry'
         geom = shape.get("geometry")
         if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
             return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
         return None
 
-    # -------------------------
-    # Create map and layers
-    # -------------------------
+    # ---------------------------------------------------------
+    # CREATE MAP
+    # ---------------------------------------------------------
     m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
 
-    # Basemaps
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap").add_to(m)
     folium.TileLayer(
         tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
@@ -678,7 +675,6 @@ elif page == "View Projects":
         control=True,
     ).add_to(m)
 
-    # Add existing polygon if exists
     if existing_boundary_feature:
         try:
             folium.GeoJson(
@@ -694,14 +690,12 @@ elif page == "View Projects":
         except Exception:
             pass
 
-    # Fit to bounds if valid
     if bounds:
         try:
             m.fit_bounds(bounds)
         except Exception:
             pass
 
-    # Draw / edit tools
     draw = Draw(
         draw_options={
             "polyline": False,
@@ -717,9 +711,9 @@ elif page == "View Projects":
 
     folium.LayerControl().add_to(m)
 
-    # -------------------------
-    # Render map and capture edits (debugging output included)
-    # -------------------------
+    # ---------------------------------------------------------
+    # CAPTURE DRAWN / EDITED POLYGON
+    # ---------------------------------------------------------
     map_data = st_folium(
         m,
         height=650,
@@ -727,12 +721,6 @@ elif page == "View Projects":
         returned_objects=["all_drawings", "last_active_drawing"],
     )
 
-    # Debug: show raw map_data so you can inspect what Leaflet returned
-    st.subheader("Debug: raw map_data from st_folium")
-    st.write(map_data)
-    st.markdown("---")
-
-    # Build sanitized GeoJSON Feature from the drawing
     new_polygon_feature = None
     if map_data:
         shape = map_data.get("last_active_drawing") or None
@@ -740,30 +728,23 @@ elif page == "View Projects":
             drawings = map_data.get("all_drawings", [])
             if drawings:
                 shape = drawings[-1]
-        st.subheader("Debug: selected raw shape")
-        st.write(shape)
         new_polygon_feature = build_feature_from_shape(shape) if shape else None
-        st.subheader("Debug: sanitized GeoJSON Feature (what will be uploaded)")
-        st.write(new_polygon_feature)
-        if new_polygon_feature:
-            st.json(new_polygon_feature)
 
     st.markdown(
-        "Draw or edit the project area. When you're happy, click **Save Area** to upload the GeoJSON file and replace the old one."
+        "Draw or edit the project area. When you're happy, click **Save Area**. "
+        "The old GeoJSON file will be replaced, but reports and observations stay linked to this project."
     )
 
-    # -------------------------
-    # Save Area button: upload file to Supabase Storage and update project_boundaries.file_path
-    # -------------------------
+    # ---------------------------------------------------------
+    # SAVE AREA: UPLOAD GEOJSON FILE AND UPDATE project_boundaries
+    # ---------------------------------------------------------
     if st.button("Save Area"):
-        # Choose geometry to save: new drawn feature if present, otherwise existing boundary loaded from file
         geometry_to_save = new_polygon_feature if new_polygon_feature is not None else existing_boundary_feature
 
         if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
         else:
             try:
-                # Validate and serialize
                 if not isinstance(geometry_to_save, dict):
                     raise ValueError("Geometry is not a dict")
                 if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
@@ -775,51 +756,32 @@ elif page == "View Projects":
                 geometry_to_save = _to_native(geometry_to_save)
                 geojson_text = json.dumps(geometry_to_save)
 
-                # Prepare file path and bytes
-                # We'll store files under a folder named by project, filename project.geojson
-                bucket_name = "project-geojsons"   # change if your bucket name differs
-                file_path = f"{selected}/{selected}.geojson"  # e.g., "MyProject/MyProject.geojson"
+                # file path in storage: e.g. "boundaries/<project_name>.geojson"
+                file_path = f"boundaries/{selected}.geojson"
                 file_bytes = io.BytesIO(geojson_text.encode("utf-8"))
 
-                # If an old file exists, delete it first (optional)
+                # delete old file if path changed
                 if existing_file_path and existing_file_path != file_path:
                     try:
-                        supabase.storage.from_(bucket_name).remove([existing_file_path])
-                        st.write(f"Deleted old file: {existing_file_path}")
-                    except Exception as e_del:
-                        # Not fatal; continue to upload new file
-                        st.write(f"Warning: could not delete old file: {e_del}")
+                        supabase.storage.from_(BUCKET_NAME).remove([existing_file_path])
+                    except Exception:
+                        pass
 
-                # Upload new file (upsert behavior)
-                # supabase-py upload signature: storage.from_(bucket).upload(path, file, content_type=..., upsert=True)
-                try:
-                    upload_res = supabase.storage.from_(bucket_name).upload(
-                        file_path,
-                        file_bytes,
-                        content_type="application/geo+json",
-                        upsert=True
-                    )
-                    st.write("Upload response:", upload_res)
-                except Exception as e_upload:
-                    # Some supabase clients return bytes on download but raise on upload; show error
-                    st.error(f"Upload failed: {e_upload}")
-                    raise
+                # upload new file (upsert)
+                upload_res = supabase.storage.from_(BUCKET_NAME).upload(
+                    file_path,
+                    file_bytes,
+                    content_type="application/geo+json",
+                    upsert=True,
+                )
 
-                # Optionally make the file public and get public URL (if your bucket is private, skip or generate signed URL)
+                # optional: get public URL (if bucket policy allows)
                 try:
-                    # Make public (if your bucket policy allows)
-                    supabase.storage.from_(bucket_name).update_public(file_path)
-                except Exception:
-                    # update_public may not be available or allowed; ignore
-                    pass
-
-                try:
-                    public_url = supabase.storage.from_(bucket_name).get_public_url(file_path).get("publicURL")
+                    public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_path).get("publicURL")
                 except Exception:
                     public_url = None
 
-                # Update project_boundaries table to point to the new file path
-                # If a row exists, update file_path; otherwise insert
+                # update project_boundaries table with new file path
                 try:
                     existing = supabase.table("project_boundaries").select("*").eq("project", selected).execute()
                     existing_rows = existing.data or []
@@ -831,17 +793,18 @@ elif page == "View Projects":
                         res = supabase.table("project_boundaries").insert(
                             {"project": selected, "file_path": file_path, "file_url": public_url}
                         ).execute()
-                    st.write("DB update response:", res)
-                    st.success("GeoJSON file uploaded and project boundary record updated. Reports and observations remain linked to the project.")
                 except Exception as e_db:
-                    st.error(f"Failed to update project_boundaries table: {e_db}")
-                    st.write("Uploaded file remains in storage at:", file_path)
-            except Exception as ex:
-                st.error(f"Error preparing or uploading GeoJSON: {ex}")
+                    st.error(f"Failed to update project_boundaries: {e_db}")
+                    st.stop()
 
-    # -------------------------
-    # Edit Users Section
-    # -------------------------
+                st.success("GeoJSON file saved and boundary updated. Reports and observations remain linked to this project.")
+
+            except Exception as ex:
+                st.error(f"Error saving GeoJSON: {ex}")
+
+    # ---------------------------------------------------------
+    # EDIT USERS
+    # ---------------------------------------------------------
     st.markdown("---")
     st.subheader("Edit Users")
 
@@ -870,20 +833,20 @@ elif page == "View Projects":
         except Exception as e:
             st.error(f"Error updating users: {e}")
 
-    # -------------------------
+    # ---------------------------------------------------------
     # DELETE PROJECT
-    # -------------------------
+    # ---------------------------------------------------------
     st.markdown("---")
     if st.button("DELETE PROJECT", type="primary"):
         confirm_delete_dialog(selected)
 
-    # -------------------------
+    # ---------------------------------------------------------
     # DOWNLOAD REPORTS + OBSERVATIONS
-    # -------------------------
+    # ---------------------------------------------------------
     st.markdown("---")
     st.subheader("Download Data")
 
-    # --- Download Reports ---
+    # Reports
     try:
         report_res = (
             supabase.table("report")
@@ -905,7 +868,7 @@ elif page == "View Projects":
         icon=":material/sim_card_download:",
     )
 
-    # --- Download Observations ---
+    # Observations
     try:
         obs_res = (
             supabase.table("observations")
