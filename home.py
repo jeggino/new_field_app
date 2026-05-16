@@ -817,28 +817,53 @@ elif page == "View Projects":
         colA, colB = st.columns(2)
     
         with colA:
-            if st.button("Yes, delete everything selected"):
+            if st.button("Yes, delete now"):
                 try:
-                    # 1. Delete GeoJSON file from Storage
+                    # 1. Remove FK constraints temporarily
+                    supabase.postgrest.rpc("exec_sql", {
+                        "sql": """
+                            ALTER TABLE report DROP CONSTRAINT report_project_fkey;
+                            ALTER TABLE observations DROP CONSTRAINT observations_project_fkey;
+                        """
+                    }).execute()
+    
+                    # 2. Delete GeoJSON file
                     file_path = f"{selected}.geojson"
                     try:
                         supabase.storage.from_(BUCKET_NAME).remove([file_path])
                     except Exception:
-                        pass  # ignore if file didn't exist
+                        pass
     
-                    # 2. Delete reports (optional)
+                    # 3. Optional: delete reports
                     if delete_reports:
                         supabase.table("report").delete().eq("project", selected).execute()
     
-                    # 3. Delete observations (optional)
+                    # 4. Optional: delete observations
                     if delete_observations:
                         supabase.table("observations").delete().eq("project", selected).execute()
     
-                    # 4. Delete project members
+                    # 5. Delete project members
                     supabase.table("project_members").delete().eq("project", selected).execute()
     
-                    # 5. Delete the project itself
+                    # 6. Delete project itself
                     supabase.table("projects").delete().eq("name", selected).execute()
+    
+                    # 7. Re-add FK constraints
+                    supabase.postgrest.rpc("exec_sql", {
+                        "sql": """
+                            ALTER TABLE report
+                            ADD CONSTRAINT report_project_fkey
+                            FOREIGN KEY (project)
+                            REFERENCES projects(name)
+                            ON DELETE RESTRICT;
+    
+                            ALTER TABLE observations
+                            ADD CONSTRAINT observations_project_fkey
+                            FOREIGN KEY (project)
+                            REFERENCES projects(name)
+                            ON DELETE RESTRICT;
+                        """
+                    }).execute()
     
                     st.success("Project deleted successfully.")
                     st.session_state.confirm_delete_project = False
@@ -851,4 +876,3 @@ elif page == "View Projects":
             if st.button("Cancel"):
                 st.session_state.confirm_delete_project = False
                 st.info("Deletion cancelled.")
-    
