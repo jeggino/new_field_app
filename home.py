@@ -819,13 +819,8 @@ elif page == "View Projects":
         with colA:
             if st.button("Yes, delete now"):
                 try:
-                    # 1. Remove FK constraints temporarily
-                    supabase.postgrest.rpc("exec_sql", {
-                        "sql": """
-                            ALTER TABLE report DROP CONSTRAINT report_project_fkey;
-                            ALTER TABLE observations DROP CONSTRAINT observations_project_fkey;
-                        """
-                    }).execute()
+                    # 1. Drop FK constraints
+                    supabase.rpc("drop_project_fks").execute()
     
                     # 2. Delete GeoJSON file
                     file_path = f"{selected}.geojson"
@@ -849,21 +844,7 @@ elif page == "View Projects":
                     supabase.table("projects").delete().eq("name", selected).execute()
     
                     # 7. Re-add FK constraints
-                    supabase.postgrest.rpc("exec_sql", {
-                        "sql": """
-                            ALTER TABLE report
-                            ADD CONSTRAINT report_project_fkey
-                            FOREIGN KEY (project)
-                            REFERENCES projects(name)
-                            ON DELETE RESTRICT;
-    
-                            ALTER TABLE observations
-                            ADD CONSTRAINT observations_project_fkey
-                            FOREIGN KEY (project)
-                            REFERENCES projects(name)
-                            ON DELETE RESTRICT;
-                        """
-                    }).execute()
+                    supabase.rpc("add_project_fks").execute()
     
                     st.success("Project deleted successfully.")
                     st.session_state.confirm_delete_project = False
