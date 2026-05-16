@@ -633,39 +633,48 @@ elif page == "View Projects":
         use_container_width=True,
         returned_objects=["all_drawings"],
     )
-
-    # Keep track of the "current" polygon geometry
-    new_polygon_geojson = None
-
+    
+    new_polygon_feature = None
+    
     if map_data and "all_drawings" in map_data:
         drawings = map_data["all_drawings"]
+    
         if drawings:
-            # Take the last drawn/edited polygon or rectangle
             last_shape = drawings[-1]
-            if last_shape.get("geometry", {}).get("type") in ["Polygon", "MultiPolygon"]:
-                new_polygon_geojson = last_shape["geometry"]
-
+    
+            # Ensure geometry exists and is valid
+            geom = last_shape.get("geometry", None)
+    
+            if geom and geom.get("type") in ["Polygon", "MultiPolygon"]:
+                # Build a full GeoJSON Feature
+                new_polygon_feature = {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": geom
+                }
+    
     st.markdown("You can draw, edit, or delete the project area. When you're happy, click **Save Area**.")
-
+    
     if st.button("Save Area"):
-        if new_polygon_geojson is None and not boundary:
+        # If user didn't draw anything new, keep the old boundary
+        geometry_to_save = new_polygon_feature if new_polygon_feature else boundary
+    
+        if geometry_to_save is None:
             st.error("No polygon found. Please draw a project area first.")
         else:
-            # If user didn't draw anything new, keep the old boundary
-            geometry_to_save = new_polygon_geojson if new_polygon_geojson is not None else boundary
-
             try:
-                # Upsert boundary for this project
                 supabase.table("project_boundaries").upsert(
                     {
                         "project": selected,
                         "geometry": geometry_to_save,
                     }
                 ).execute()
-
+    
                 st.success("Project area updated successfully. Existing reports and observations remain linked to this project.")
+    
             except Exception as e:
                 st.error(f"Error saving project area: {e}")
+
 
     # --- Edit Users Section ---
     st.markdown("---")
