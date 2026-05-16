@@ -658,7 +658,7 @@ elif page == "View Projects":
             "polygon": True,
             "circle": False,
             "marker": False,
-            "circlemarker": False,
+            "circlemarker": True,
         },
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
