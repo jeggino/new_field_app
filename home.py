@@ -794,3 +794,61 @@ elif page == "View Projects":
         file_name=f"{selected}_observations.csv",
         mime="text/csv",
     )
+
+    # ---------------------------------------------------------
+    # DELETE PROJECT (with optional deletion of reports & observations)
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("Delete Project")
+    
+    if "confirm_delete_project" not in st.session_state:
+        st.session_state.confirm_delete_project = False
+    
+    if st.button("DELETE PROJECT", type="primary"):
+        st.session_state.confirm_delete_project = True
+    
+    if st.session_state.confirm_delete_project:
+    
+        st.error(f"⚠️ You are about to delete the project **{selected}**.")
+    
+        delete_reports = st.checkbox("Also delete all reports for this project")
+        delete_observations = st.checkbox("Also delete all observations for this project")
+    
+        colA, colB = st.columns(2)
+    
+        with colA:
+            if st.button("Yes, delete everything selected"):
+                try:
+                    # 1. Delete GeoJSON file from Storage
+                    file_path = f"{selected}.geojson"
+                    try:
+                        supabase.storage.from_(BUCKET_NAME).remove([file_path])
+                    except Exception:
+                        pass  # ignore if file didn't exist
+    
+                    # 2. Delete reports (optional)
+                    if delete_reports:
+                        supabase.table("report").delete().eq("project", selected).execute()
+    
+                    # 3. Delete observations (optional)
+                    if delete_observations:
+                        supabase.table("observations").delete().eq("project", selected).execute()
+    
+                    # 4. Delete project members
+                    supabase.table("project_members").delete().eq("project", selected).execute()
+    
+                    # 5. Delete the project itself
+                    supabase.table("projects").delete().eq("name", selected).execute()
+    
+                    st.success("Project deleted successfully.")
+                    st.session_state.confirm_delete_project = False
+                    st.rerun()
+    
+                except Exception as e:
+                    st.error(f"Error deleting project: {e}")
+    
+        with colB:
+            if st.button("Cancel"):
+                st.session_state.confirm_delete_project = False
+                st.info("Deletion cancelled.")
+    
