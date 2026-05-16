@@ -688,7 +688,7 @@ elif page == "View Projects":
             "polyline": False,
             "rectangle": True,
             "polygon": True,
-            "circle": False,
+            "circle": True,
             "marker": False,
             "circlemarker": False,
         },
@@ -699,7 +699,7 @@ elif page == "View Projects":
     folium.LayerControl().add_to(m)
 
     # -------------------------
-    # Render map and capture edits
+    # Render map and capture edits (debugging version)
     # -------------------------
     map_data = st_folium(
         m,
@@ -707,75 +707,120 @@ elif page == "View Projects":
         use_container_width=True,
         returned_objects=["all_drawings", "last_active_drawing"],
     )
-
-    # Try to get the most reliable shape:
-    # 1) last_active_drawing (preferred)
-    # 2) last element of all_drawings
-    # 3) fallback to None
-    new_polygon_feature = None
-    if map_data:
-        shape = map_data.get("last_active_drawing") or None
-        if not shape:
-            drawings = map_data.get("all_drawings", [])
-            if drawings:
-                shape = drawings[-1]
-        # Build a sanitized GeoJSON Feature if possible
-        new_polygon_feature = build_feature_from_shape(shape) if shape else None
-
-    st.markdown(
-        "You can draw, edit, or delete the project area. "
-        "When you're happy, click **Save Area**. Existing reports and observations will remain linked to the project."
-    )
-
-    # -------------------------
-    # Save Area button
-    # -------------------------
-    if st.button("Save Area"):
-        # Choose geometry to save: new drawn feature if present, otherwise existing boundary
-        geometry_to_save = new_polygon_feature if new_polygon_feature is not None else boundary
-
-        if geometry_to_save is None:
-            st.error("No polygon found. Please draw a project area first.")
-        else:
-            # Final validation: ensure geometry_to_save is a valid Feature with geometry.type and coordinates
+    
+    # Show the entire map_data for debugging
+    st.subheader("Debug: raw map_data from st_folium")
+    st.write("Type:", type(map_data))
+    st.write(map_data)            # full object
+    st.markdown("---")
+    
+    # Helper to convert numpy types etc.
+    def _to_native(obj):
+        if isinstance(obj, dict):
+            return {str(k): _to_native(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [_to_native(v) for v in obj]
+        if hasattr(obj, "item"):
             try:
-                if not isinstance(geometry_to_save, dict):
-                    raise ValueError("Geometry is not a dict")
-
-                if geometry_to_save.get("type") != "Feature" or "geometry" not in geometry_to_save:
-                    raise ValueError("Geometry must be a GeoJSON Feature with a geometry member")
-
-                geom = geometry_to_save["geometry"]
-                if not isinstance(geom, dict) or "type" not in geom or "coordinates" not in geom:
-                    raise ValueError("Feature.geometry must contain type and coordinates")
-
-                # Ensure coordinates are JSON-serializable native Python lists/floats
-                geometry_to_save = _to_native(geometry_to_save)
-
-                # Optional: quick JSON dump to catch serialization issues early
-                _ = json.dumps(geometry_to_save)
-
-            except Exception as ex:
-                st.error(f"Invalid geometry: {ex}")
+                return obj.item()
+            except Exception:
+                pass
+        return obj
+    
+    def build_feature_from_shape(shape):
+        if not shape or not isinstance(shape, dict):
+            return None
+    
+        # FeatureCollection -> take first feature
+        if shape.get("type") == "FeatureCollection":
+            features = shape.get("features", [])
+            if not features:
+                return None
+            feat = features[0]
+            geom = feat.get("geometry")
+            if not geom:
+                return None
+            return {"type": "Feature", "properties": feat.get("properties", {}), "geometry": _to_native(geom)}
+    
+        # Feature with geometry
+        if shape.get("type") == "Feature" and "geometry" in shape:
+            geom = shape.get("geometry")
+            if not geom:
+                return None
+            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+    
+        # Geometry-like dict
+        if "type" in shape and "coordinates" in shape:
+            geom = {"type": shape["type"], "coordinates": shape["coordinates"]}
+            return {"type": "Feature", "properties": {}, "geometry": _to_native(geom)}
+    
+        # Nested geometry under 'geometry'
+        geom = shape.get("geometry")
+        if geom and isinstance(geom, dict) and "type" in geom and "coordinates" in geom:
+            return {"type": "Feature", "properties": shape.get("properties", {}), "geometry": _to_native(geom)}
+    
+        return None
+    
+    # Try to get the most reliable shape
+    shape = None
+    if map_data:
+        st.subheader("Debug: last_active_drawing")
+        st.write(map_data.get("last_active_drawing"))
+        st.subheader("Debug: all_drawings (last element shown)")
+        drawings = map_data.get("all_drawings", [])
+        st.write(drawings)
+        if map_data.get("last_active_drawing"):
+            shape = map_data.get("last_active_drawing")
+        elif drawings:
+            shape = drawings[-1]
+    
+    # Show the raw selected shape
+    st.subheader("Debug: selected raw shape")
+    st.write(shape)
+    
+    # Build sanitized GeoJSON Feature and show it
+    new_polygon_feature = build_feature_from_shape(shape) if shape else None
+    st.subheader("Debug: sanitized GeoJSON Feature (what will be saved)")
+    st.write(new_polygon_feature)
+    if new_polygon_feature:
+        st.json(new_polygon_feature)
+    
+    st.markdown("---")
+    st.write("If the sanitized GeoJSON Feature above looks valid (type Feature, geometry.type Polygon/MultiPolygon, coordinates present), click Save Area to upsert it to Supabase.")
+    st.write("If it is None or empty, Leaflet returned an unexpected structure; try drawing again or inspect the raw map_data above.")
+    
+    # Save button (only saves the sanitized feature or existing boundary)
+    if st.button("Save Area (debug)"):
+        geometry_to_save = new_polygon_feature if new_polygon_feature is not None else boundary
+    
+        st.write("Geometry chosen to save (final check):")
+        st.write(geometry_to_save)
+        st.text("JSON dump attempt:")
+    
+        import json
+        try:
+            # ensure serializable
+            json_text = json.dumps(geometry_to_save)
+            st.text("JSON dump OK")
+            st.code(json_text[:1000] + ("..." if len(json_text) > 1000 else ""), language="json")
+        except Exception as ex:
+            st.error(f"JSON serialization failed: {ex}")
+            st.stop()
+    
+        # If we reach here, attempt to upsert
+        try:
+            res = supabase.table("project_boundaries").upsert(
+                {"project": selected, "geometry": geometry_to_save}
+            ).execute()
+            st.write("Supabase response object:")
+            st.write(res)
+            # If supabase returns an 'error' attribute, show it
+            if isinstance(res, dict) and res.get("error"):
+                st.error(f"Supabase error: {res.get('error')}")
             else:
-                try:
-                    # Upsert boundary for this project
-                    # NOTE: adjust table/column names if your schema differs
-                    res = supabase.table("project_boundaries").upsert(
-                        {
-                            "project": selected,
-                            "geometry": geometry_to_save,
-                        }
-                    ).execute()
-
-                    # Check response for errors
-                    if hasattr(res, "error") and res.error:
-                        st.error(f"Error saving project area: {res.error}")
-                    else:
-                        st.success("Project area updated successfully. Existing reports and observations remain linked to this project.")
-                except Exception as e:
-                    # Provide the raw exception message but avoid exposing internal traces
-                    st.error(f"Error saving project area: {e}")
+                st.success("Project area updated successfully. Existing reports and observations remain linked.")
+        except Exception as e:
+            st.error(f"Error saving project area: {e}")
 
     # -------------------------
     # Edit Users Section
