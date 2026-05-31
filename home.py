@@ -714,7 +714,6 @@ def new_observation_dialog():
 # ----------------- UI: LOGIN -----------------
 def show_login():
     st.sidebar.title("Login")
-    st.sidebar.image("https://copilot.microsoft.com/th/id/BCO.ff419fb6-2ffe-4d66-99ac-8482a0d94e32.png")
 
     with st.sidebar.form("login_form"):
         email = st.text_input("Email")
@@ -762,7 +761,6 @@ def show_signup():
 # ----------------- UI: PROJECT SELECT -----------------
 def show_project_selection():
     st.sidebar.title("Select Project")
-    st.sidebar.image("https://copilot.microsoft.com/th/id/BCO.ff419fb6-2ffe-4d66-99ac-8482a0d94e32.png")
 
     # Fetch projects the user is a member of
     res = (
