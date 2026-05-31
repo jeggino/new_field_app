@@ -906,7 +906,7 @@ def show_main_app():
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
-    cluster = MarkerCluster().add_to(m)
+    
 
     # # Satellite (Esri)
     # folium.TileLayer(
@@ -938,7 +938,7 @@ def show_main_app():
         if bounds:
             m.fit_bounds(bounds)
 
-
+    cluster = MarkerCluster().add_to(m)
     for obs in filtered:
         animal_type = obs.get("animal_type", "bat")
         species = obs.get("species", "")
