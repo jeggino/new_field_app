@@ -1115,6 +1115,18 @@ def show_main_app():
             edit_observation_dialog(selected_obs)
 
 
+        # GOOGLE MAPS BUTTON
+        lat = selected_obs.get("lat")
+        lon = selected_obs.get("lon")
+    
+        if lat and lon:
+            maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+            st.sidebar.markdown(
+                f"[📍 Open in Google Maps]({maps_url})",
+                unsafe_allow_html=True
+            )
+
+
 
 
 # ----------------- RESTORE SESSION -----------------
