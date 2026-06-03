@@ -797,7 +797,7 @@ elif page == "View Projects":
     
     # Path inside the bucket
     # Download file from storage
-    boundary_path = f"{selected}/boundary.geojson"
+    boundary_path = f"{selected}.geojson"
     try:
         boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
     
