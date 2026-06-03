@@ -1118,15 +1118,15 @@ def show_main_app():
         if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
             edit_observation_dialog(selected_obs)
     
-        # GOOGLE MAPS BUTTON
-        lat = selected_obs.get("lat")
-        lon = selected_obs.get("lon")
+        # # GOOGLE MAPS BUTTON
+        # lat = selected_obs.get("lat")
+        # lon = selected_obs.get("lon")
     
-        if lat and lon:
-            maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+        # if lat and lon:
+        #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
     
-            if st.sidebar.button("📍 Open in Google Maps", key=f"maps_{obs_id}", use_container_width=True):
-                webbrowser.open_new_tab(maps_url)
+        #     if st.sidebar.button("📍 Open in Google Maps", key=f"maps_{obs_id}", use_container_width=True):
+        #         webbrowser.open_new_tab(maps_url)
 
 
 
