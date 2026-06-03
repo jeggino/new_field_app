@@ -1106,6 +1106,8 @@ def show_main_app():
             break
     
     # If found, show only that button
+    import webbrowser
+    
     if selected_obs:
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
@@ -1122,25 +1124,9 @@ def show_main_app():
         if lat and lon:
             maps_url = f"https://www.google.com/maps?q={lat},{lon}"
     
-            st.sidebar.markdown(
-                f"""
-                <a href="{maps_url}" target="_blank">
-                    <button style="
-                        width: 100%;
-                        padding: 0.6rem;
-                        background-color: #4285F4;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        font-size: 0.9rem;
-                    ">
-                        📍 Open in Google Maps
-                    </button>
-                </a>
-                """,
-                unsafe_allow_html=True
-            )
+            if st.sidebar.button("📍 Open in Google Maps", key=f"maps_{obs_id}", use_container_width=True):
+                webbrowser.open_new_tab(maps_url)
+
 
 
 
