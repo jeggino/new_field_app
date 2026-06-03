@@ -1114,9 +1114,8 @@ def show_main_app():
         label = f"{base_label}"
 
         # GOOGLE MAPS BUTTON
-        lat = selected_obs.get("lat")
-        lon = selected_obs.get("lon")
-        st.write(lat)
+        lat = selected_obs["lat"]
+        lon = selected_obs["lon"]
     
         if lat and lon:
             maps_url = f"https://www.google.com/maps?q={lat},{lon}"
