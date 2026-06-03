@@ -5,7 +5,7 @@ import json
 from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
-
+import base64
 
 
 
@@ -794,6 +794,22 @@ elif page == "View Projects":
         mime="text/csv",
     )
 
+    
+    # Path inside the bucket
+    # Download file from storage
+    boundary_path = f"{selected}/boundary.geojson"
+    try:
+        boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
+    
+        st.download_button(
+            label="Download Boundary (GeoJSON)",
+            data=boundary_file,
+            file_name=f"{selected}_boundary.geojson",
+            mime="application/geo+json",
+        )
+    
+    except Exception as e:
+        st.warning(f"No boundary file found for {selected}.")
     # ---------------------------------------------------------
     # DELETE PROJECT (with optional deletion of reports & observations)
     # ---------------------------------------------------------
