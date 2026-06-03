@@ -1112,11 +1112,7 @@ def show_main_app():
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
         label = f"{base_label}"
-    
-        # EDIT BUTTON
-        if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
-            edit_observation_dialog(selected_obs)
-    
+
         # GOOGLE MAPS BUTTON
         lat = selected_obs.get("lat")
         lon = selected_obs.get("lon")
@@ -1127,6 +1123,12 @@ def show_main_app():
     
             if st.sidebar.button("📍 Open in Google Maps", key=f"maps_{obs_id}", use_container_width=True):
                 webbrowser.open_new_tab(maps_url)
+    
+        # EDIT BUTTON
+        if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
+            edit_observation_dialog(selected_obs)
+    
+
 
 
 
