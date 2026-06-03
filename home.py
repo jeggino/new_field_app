@@ -1111,20 +1111,37 @@ def show_main_app():
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
         label = f"{base_label}"
     
-        if st.sidebar.button(label, key=f"obs_{obs_id}", width="stretch"):
+        # EDIT BUTTON
+        if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
             edit_observation_dialog(selected_obs)
-
-
+    
         # GOOGLE MAPS BUTTON
         lat = selected_obs.get("lat")
         lon = selected_obs.get("lon")
     
         if lat and lon:
             maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+    
             st.sidebar.markdown(
-                f"[📍 Open in Google Maps]({maps_url})",
+                f"""
+                <a href="{maps_url}" target="_blank">
+                    <button style="
+                        width: 100%;
+                        padding: 0.6rem;
+                        background-color: #4285F4;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                    ">
+                        📍 Open in Google Maps
+                    </button>
+                </a>
+                """,
                 unsafe_allow_html=True
             )
+
 
 
 
