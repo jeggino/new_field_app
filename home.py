@@ -1112,6 +1112,7 @@ def show_main_app():
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
         label = f"{base_label}"
+        st.write(selected_obs)
 
         # GOOGLE MAPS BUTTON
         lat = selected_obs["lat"]
