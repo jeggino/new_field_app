@@ -1120,6 +1120,7 @@ def show_main_app():
         # GOOGLE MAPS BUTTON
         lat = selected_obs.get("lat")
         lon = selected_obs.get("lon")
+        st.write(lat)
     
         if lat and lon:
             maps_url = f"https://www.google.com/maps?q={lat},{lon}"
