@@ -1106,9 +1106,7 @@ def show_main_app():
         if str(obs["id"]) == selected_id:
             selected_obs = obs
             break
-    
-    import webbrowser
-    
+        
     if selected_obs:
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
@@ -1118,15 +1116,33 @@ def show_main_app():
         if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
             edit_observation_dialog(selected_obs)
     
-        # # GOOGLE MAPS BUTTON
-        # lat = selected_obs.get("lat")
-        # lon = selected_obs.get("lon")
+        # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
+        lat = selected_obs.get("lat")
+        lon = selected_obs.get("lon")
     
-        # if lat and lon:
-        #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+        if lat and lon:
+            maps_url = f"https://www.google.com/maps?q={lat},{lon}"
     
-        #     if st.sidebar.button("📍 Open in Google Maps", key=f"maps_{obs_id}", use_container_width=True):
-        #         webbrowser.open_new_tab(maps_url)
+            st.sidebar.markdown(
+                f"""
+                <a href="{maps_url}" target="_blank">
+                    <div style="
+                        background-color:#4285F4;
+                        color:white;
+                        padding:0.6rem;
+                        border-radius:5px;
+                        text-align:center;
+                        font-weight:500;
+                        margin-top:0.5rem;
+                        cursor:pointer;
+                    ">
+                        📍 Open in Google Maps
+                    </div>
+                </a>
+                """,
+                unsafe_allow_html=True
+            )
+
 
 
 
