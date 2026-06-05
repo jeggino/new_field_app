@@ -78,34 +78,43 @@ def dagverslagen_overview():
         .reset_index(name="report_count")
     )
 
-    # Merge on project name
-    merged = report_counts.merge(df_projects, left_on="project", right_on="name")
+    # Ensure integer counts
+    report_counts["report_count"] = report_counts["report_count"].astype(int)
 
-    # Sort by highest → lowest
+    # --- Merge so ALL projects appear, even with 0 reports ---
+    merged = df_projects.merge(
+        report_counts,
+        left_on="name",
+        right_on="project",
+        how="left"
+    )
+
+    # Replace NaN with 0 for projects with no reports
+    merged["report_count"] = merged["report_count"].fillna(0).astype(int)
+
+    # Sort by report_count descending
     merged = merged.sort_values("report_count", ascending=False)
 
-    # --- Two-column layout ---
-    col1, col2 = st.columns([2, 1])
+    # --- Wide layout: full-width chart ---
+    st.subheader("Aantal dagverslagen per project")
 
-    # --- LEFT COLUMN: Horizontal bar chart ---
-    with col1:
-        st.subheader("Aantal dagverslagen per project")
-
-        chart = (
-            alt.Chart(merged)
-            .mark_bar()
-            .encode(
-                y=alt.Y("name:N", title="Project", sort='-x'),
-                x=alt.X("report_count:Q", title="Aantal dagverslagen"),
-                tooltip=["name", "report_count"]
-            )
-            .properties(height=500)
+    chart = (
+        alt.Chart(merged)
+        .mark_bar()
+        .encode(
+            y=alt.Y("name:N", title="Project", sort='-x'),
+            x=alt.X("report_count:Q", title="Aantal dagverslagen"),
+            tooltip=["name", "report_count"]
         )
+        .properties(height=600, width="container")
+    )
 
-        st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, use_container_width=True)
 
-    # --- RIGHT COLUMN: Report viewer ---
-    with col2:
+    # --- Two-column layout for dropdown + report list ---
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
         st.subheader("Bekijk dagverslagen per project")
 
         project_choice = st.selectbox(
@@ -113,6 +122,7 @@ def dagverslagen_overview():
             merged["name"].tolist()
         )
 
+    with col2:
         # Filter reports by project name
         project_reports = df_reports[df_reports["project"] == project_choice]
 
@@ -121,9 +131,10 @@ def dagverslagen_overview():
         else:
             project_reports = project_reports.sort_values("date", ascending=False)
 
-            st.write("### Dagverslagen")
+            st.write(f"### Dagverslagen voor **{project_choice}**")
             for _, row in project_reports.iterrows():
                 st.write(f"- **{row['kind']}** — {row['date']}")
+
 
 
 def load_project_boundary(project_name):
