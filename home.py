@@ -61,6 +61,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def dagverslagen_overview():
+    st.set_page_config(layout="wide")
 
     st.title("Dagverslagen Overview")
 
