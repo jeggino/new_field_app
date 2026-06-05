@@ -100,13 +100,28 @@ def dagverslagen_overview():
 
     chart = (
         alt.Chart(merged)
-        .mark_bar()
+        .mark_bar(size=25)  # Bigger bars
         .encode(
-            y=alt.Y("name:N", title="Project", sort='-x'),
-            x=alt.X("report_count:Q", title="Aantal dagverslagen"),
-            tooltip=["name", "report_count"]
+            y=alt.Y(
+                "name:N",
+                title="Project",
+                sort='-x',
+                axis=alt.Axis(labelLimit=500)  # Show full project names
+            ),
+            x=alt.X(
+                "report_count:Q",
+                title="Aantal dagverslagen",
+                scale=alt.Scale(nice=True, zero=True)
+            ),
+            tooltip=[
+                alt.Tooltip("name:N", title="Project"),
+                alt.Tooltip("report_count:Q", title="Aantal dagverslagen", format="d")
+            ]
         )
-        .properties(height=600, width="container")
+        .properties(
+            height=max(300, len(merged) * 28),  # Dynamic height so all projects show
+            width="container"
+        )
     )
 
     st.altair_chart(chart, use_container_width=True)
@@ -134,6 +149,7 @@ def dagverslagen_overview():
             st.write(f"### Dagverslagen voor **{project_choice}**")
             for _, row in project_reports.iterrows():
                 st.write(f"- **{row['kind']}** — {row['date']}")
+
 
 
 
