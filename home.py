@@ -71,18 +71,19 @@ def dagverslagen_overview():
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
 
-    # --- Count reports per project ---
+    # Count reports per project
     report_counts = (
         df_reports.groupby("project")
         .size()
         .reset_index(name="report_count")
     )
-
-    # Merge project names
-    merged = report_counts.merge(df_projects, left_on="project", right_on="id")
-
-    # Sort by highest → lowest
+    
+    # Merge on project name
+    merged = report_counts.merge(df_projects, left_on="project", right_on="name")
+    
+    # Sort
     merged = merged.sort_values("report_count", ascending=False)
+
 
     # --- Bar chart ---
     st.subheader("Aantal dagverslagen per project")
