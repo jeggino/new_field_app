@@ -6,6 +6,8 @@ from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
 import base64
+import altair as alt
+
 
 
 
@@ -56,6 +58,72 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ---------------------------------------------------------
 # HELPERS
 # ---------------------------------------------------------
+
+
+def dagverslagen_overview():
+
+    st.title("Dagverslagen Overview")
+
+    # --- Fetch data ---
+    projects = supabase.table("projects").select("*").execute().data
+    reports = supabase.table("report").select("*").execute().data
+
+    df_projects = pd.DataFrame(projects)
+    df_reports = pd.DataFrame(reports)
+
+    # --- Count reports per project ---
+    report_counts = (
+        df_reports.groupby("project")
+        .size()
+        .reset_index(name="report_count")
+    )
+
+    # Merge project names
+    merged = report_counts.merge(df_projects, left_on="project", right_on="id")
+
+    # Sort by highest → lowest
+    merged = merged.sort_values("report_count", ascending=False)
+
+    # --- Bar chart ---
+    st.subheader("Aantal dagverslagen per project")
+
+    chart = (
+        alt.Chart(merged)
+        .mark_bar()
+        .encode(
+            x=alt.X("name:N", title="Project"),
+            y=alt.Y("report_count:Q", title="Aantal dagverslagen"),
+            tooltip=["name", "report_count"]
+        )
+        .properties(height=400)
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+    # --- Dropdown to inspect reports ---
+    st.subheader("Bekijk dagverslagen per project")
+
+    project_choice = st.selectbox(
+        "Selecteer een project",
+        merged["name"].tolist()
+    )
+
+    # Get selected project ID
+    selected_id = merged.loc[merged["name"] == project_choice, "project_id"].iloc[0]
+
+    # Filter reports for this project
+    project_reports = df_reports[df_reports["project"] == selected_id]
+
+    if project_reports.empty:
+        st.info("Geen dagverslagen voor dit project.")
+    else:
+        # Sort by date descending
+        project_reports = project_reports.sort_values("date", ascending=False)
+
+        st.write("### Dagverslagen")
+        for _, row in project_reports.iterrows():
+            st.write(f"- **{row['kind']}** — {row['date']}")
+
 def load_project_boundary(project_name):
     """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
 
@@ -171,7 +239,7 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects"])
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Dagverslagen overview"])
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -872,3 +940,9 @@ elif page == "View Projects":
             if st.button("Cancel"):
                 st.session_state.confirm_delete_project = False
                 st.info("Deletion cancelled.")
+
+#------------------------------------------
+#---PAGE 3---------------------------------
+#------------------------------------------
+if page == "Dagverslagen overview":
+    dagverslagen_overview()
