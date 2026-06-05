@@ -128,20 +128,22 @@ def dagverslagen_overview():
         )
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    
 
     # --- Two-column layout for dropdown + report list ---
-    col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([3, 1])
 
     with col1:
+        st.altair_chart(chart, use_container_width=True)
+
+
+    with col2:
         st.subheader("Bekijk dagverslagen per project")
 
         project_choice = st.selectbox(
             "Selecteer een project",
             sorted(merged["name"].tolist())  # Sorted alphabetically
         )
-
-    with col2:
         # Filter reports by project name
         project_reports = df_reports[df_reports["project"] == project_choice]
 
