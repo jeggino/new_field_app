@@ -71,59 +71,60 @@ def dagverslagen_overview():
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
 
-    # Count reports per project
+    # --- Count reports per project ---
     report_counts = (
         df_reports.groupby("project")
         .size()
         .reset_index(name="report_count")
     )
-    
+
     # Merge on project name
     merged = report_counts.merge(df_projects, left_on="project", right_on="name")
-    
-    # Sort
+
+    # Sort by highest → lowest
     merged = merged.sort_values("report_count", ascending=False)
 
+    # --- Two-column layout ---
+    col1, col2 = st.columns([2, 1])
 
-    # --- Bar chart ---
-    st.subheader("Aantal dagverslagen per project")
+    # --- LEFT COLUMN: Horizontal bar chart ---
+    with col1:
+        st.subheader("Aantal dagverslagen per project")
 
-    chart = (
-        alt.Chart(merged)
-        .mark_bar()
-        .encode(
-            x=alt.X("name:N", title="Project"),
-            y=alt.Y("report_count:Q", title="Aantal dagverslagen"),
-            tooltip=["name", "report_count"]
+        chart = (
+            alt.Chart(merged)
+            .mark_bar()
+            .encode(
+                y=alt.Y("name:N", title="Project", sort='-x'),
+                x=alt.X("report_count:Q", title="Aantal dagverslagen"),
+                tooltip=["name", "report_count"]
+            )
+            .properties(height=500)
         )
-        .properties(height=400)
-    )
 
-    st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, use_container_width=True)
 
-    # --- Dropdown to inspect reports ---
-    st.subheader("Bekijk dagverslagen per project")
+    # --- RIGHT COLUMN: Report viewer ---
+    with col2:
+        st.subheader("Bekijk dagverslagen per project")
 
-    project_choice = st.selectbox(
-        "Selecteer een project",
-        merged["name"].tolist()
-    )
+        project_choice = st.selectbox(
+            "Selecteer een project",
+            merged["name"].tolist()
+        )
 
-    # Get selected project ID
-    selected_id = merged.loc[merged["name"] == project_choice, "project_id"].iloc[0]
+        # Filter reports by project name
+        project_reports = df_reports[df_reports["project"] == project_choice]
 
-    # Filter reports for this project
-    project_reports = df_reports[df_reports["project"] == selected_id]
+        if project_reports.empty:
+            st.info("Geen dagverslagen voor dit project.")
+        else:
+            project_reports = project_reports.sort_values("date", ascending=False)
 
-    if project_reports.empty:
-        st.info("Geen dagverslagen voor dit project.")
-    else:
-        # Sort by date descending
-        project_reports = project_reports.sort_values("date", ascending=False)
+            st.write("### Dagverslagen")
+            for _, row in project_reports.iterrows():
+                st.write(f"- **{row['kind']}** — {row['date']}")
 
-        st.write("### Dagverslagen")
-        for _, row in project_reports.iterrows():
-            st.write(f"- **{row['kind']}** — {row['date']}")
 
 def load_project_boundary(project_name):
     """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
