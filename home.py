@@ -60,148 +60,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ---------------------------------------------------------
 
 
-# def dagverslagen_overview():
-#     st.set_page_config(layout="wide")
-
-#     st.title("Dagverslagen Overview")
-
-#     # --- Fetch data ---
-#     projects = supabase.table("projects").select("*").execute().data
-#     reports = supabase.table("report").select("*").execute().data
-
-#     df_projects = pd.DataFrame(projects)
-#     df_reports = pd.DataFrame(reports)
-
-#     # --- Count reports per project ---
-#     report_counts = (
-#         df_reports.groupby("project")
-#         .size()
-#         .reset_index(name="report_count")
-#     )
-
-#     # Ensure integer counts
-#     report_counts["report_count"] = report_counts["report_count"].astype(int)
-
-#     # --- Merge so ALL projects appear, even with 0 reports ---
-#     merged = df_projects.merge(
-#         report_counts,
-#         left_on="name",
-#         right_on="project",
-#         how="left"
-#     )
-
-#     # Replace NaN with 0 for projects with no reports
-#     merged["report_count"] = merged["report_count"].fillna(0).astype(int)
-
-#     # Sort by report_count descending
-#     merged = merged.sort_values("report_count", ascending=False)
-
-#     # --- Wide layout: full-width chart ---
-#     st.subheader("Aantal dagverslagen per project")
-
-#     max_reports = merged["report_count"].max()
-
-#     chart = (
-#         alt.Chart(merged)
-#         .mark_bar(size=25)  # Bigger bars
-#         .encode(
-#             y=alt.Y(
-#                 "name:N",
-#                 title="Project",
-#                 sort='-x',
-#                 axis=alt.Axis(labelLimit=500)  # Show full project names
-#             ),
-#             x=alt.X(
-#                 "report_count:Q",
-#                 title="Aantal dagverslagen",
-#                 scale=alt.Scale(nice=False, domain=[0, max_reports]),
-#                 axis=alt.Axis(values=list(range(0, max_reports + 1)))  # Force integers
-#             ),
-#             tooltip=[
-#                 alt.Tooltip("name:N", title="Project"),
-#                 alt.Tooltip("report_count:Q", title="Aantal dagverslagen", format="d")
-#             ]
-#         )
-#         .properties(
-#             height=max(300, len(merged) * 28),  # Dynamic height so all projects show
-#             width="container"
-#         )
-#     )
-
-    
-
-#     # --- Two-column layout for dropdown + report list ---
-#     col1, col2 = st.columns([3, 1])
-
-#     with col1:
-#         st.altair_chart(chart, use_container_width=True)
-
-
-#     with col2:
-#         st.subheader("Bekijk dagverslagen per project")
-
-#         project_choice = st.selectbox(
-#             "Selecteer een project",
-#             sorted(merged["name"].tolist())  # Sorted alphabetically
-#         )
-#         # Filter reports by project name
-#         project_reports = df_reports[df_reports["project"] == project_choice]
-
-#         if project_reports.empty:
-#             st.info("Geen dagverslagen voor dit project.")
-#         else:
-#             project_reports = project_reports.sort_values("date", ascending=False)
-
-#             st.write(f"### Dagverslagen voor **{project_choice}**")
-#             for _, row in project_reports.iterrows():
-#                 st.write(f"- **{row['kind']}** — {row['date']}")
-
-
-#             # ---------------------------------------------------------
-#             # DOWNLOAD REPORTS + OBSERVATIONS
-#             # ---------------------------------------------------------
-#             st.markdown("---")
-#             st.subheader("Download Data")
-        
-#             # Reports
-#             report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
-#             report_df = pd.DataFrame(report_res.data or [])
-        
-#             st.download_button(
-#                 label="Download Reports (CSV)",
-#                 data=report_df.to_csv(index=False).encode("utf-8"),
-#                 file_name=f"{project_choice}_reports.csv",
-#                 mime="text/csv",
-#             )
-        
-#             # Observations
-#             obs_res = supabase.table("observations").select("*").eq("project", project_choice).order("date", desc=True).execute()
-#             obs_df = pd.DataFrame(obs_res.data or [])
-        
-#             st.download_button(
-#                 label="Download Observations (CSV)",
-#                 data=obs_df.to_csv(index=False).encode("utf-8"),
-#                 file_name=f"{project_choice}_observations.csv",
-#                 mime="text/csv",
-#             )
-        
-            
-#             # Path inside the bucket
-#             # Download file from storage
-#             boundary_path = f"{project_choice}.geojson"
-#             try:
-#                 boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
-            
-#                 st.download_button(
-#                     label="Download Boundary (GeoJSON)",
-#                     data=boundary_file,
-#                     file_name=f"{project_choice}_boundary.geojson",
-#                     mime="application/geo+json",
-#                 )
-            
-#             except Exception as e:
-#                 st.warning(f"No boundary file found for {project_choice}.")
-
 def dagverslagen_overview():
     st.set_page_config(layout="wide")
 
@@ -221,9 +79,10 @@ def dagverslagen_overview():
         .reset_index(name="report_count")
     )
 
+    # Ensure integer counts
     report_counts["report_count"] = report_counts["report_count"].astype(int)
 
-    # --- Merge so ALL projects appear ---
+    # --- Merge so ALL projects appear, even with 0 reports ---
     merged = df_projects.merge(
         report_counts,
         left_on="name",
@@ -231,160 +90,119 @@ def dagverslagen_overview():
         how="left"
     )
 
+    # Replace NaN with 0 for projects with no reports
     merged["report_count"] = merged["report_count"].fillna(0).astype(int)
+
+    # Sort by report_count descending
     merged = merged.sort_values("report_count", ascending=False)
 
-    # --- Chart ---
+    # --- Wide layout: full-width chart ---
     st.subheader("Aantal dagverslagen per project")
 
     max_reports = merged["report_count"].max()
 
     chart = (
         alt.Chart(merged)
-        .mark_bar(size=25)
+        .mark_bar(size=25)  # Bigger bars
         .encode(
-            y=alt.Y("name:N", title="Project", sort='-x',
-                    axis=alt.Axis(labelLimit=500)),
-            x=alt.X("report_count:Q", title="Aantal dagverslagen",
-                    scale=alt.Scale(nice=False, domain=[0, max_reports]),
-                    axis=alt.Axis(values=list(range(0, max_reports + 1)))),
+            y=alt.Y(
+                "name:N",
+                title="Project",
+                sort='-x',
+                axis=alt.Axis(labelLimit=500)  # Show full project names
+            ),
+            x=alt.X(
+                "report_count:Q",
+                title="Aantal dagverslagen",
+                scale=alt.Scale(nice=False, domain=[0, max_reports]),
+                axis=alt.Axis(values=list(range(0, max_reports + 1)))  # Force integers
+            ),
             tooltip=[
                 alt.Tooltip("name:N", title="Project"),
                 alt.Tooltip("report_count:Q", title="Aantal dagverslagen", format="d")
             ]
         )
         .properties(
-            height=max(300, len(merged) * 28),
+            height=max(300, len(merged) * 28),  # Dynamic height so all projects show
             width="container"
         )
     )
 
+    
+
+    # --- Two-column layout for dropdown + report list ---
     col1, col2 = st.columns([3, 1])
 
     with col1:
         st.altair_chart(chart, use_container_width=True)
+
 
     with col2:
         st.subheader("Bekijk dagverslagen per project")
 
         project_choice = st.selectbox(
             "Selecteer een project",
-            sorted(merged["name"].tolist())
+            sorted(merged["name"].tolist())  # Sorted alphabetically
         )
-
+        # Filter reports by project name
         project_reports = df_reports[df_reports["project"] == project_choice]
 
         if project_reports.empty:
             st.info("Geen dagverslagen voor dit project.")
-            return
+        else:
+            project_reports = project_reports.sort_values("date", ascending=False)
 
-        project_reports = project_reports.sort_values("date", ascending=False)
+            st.write(f"### Dagverslagen voor **{project_choice}**")
+            for _, row in project_reports.iterrows():
+                st.write(f"- **{row['kind']}** — {row['date']}")
 
-        st.write(f"### Dagverslagen voor **{project_choice}**")
-        for _, row in project_reports.iterrows():
-            st.write(f"- **{row['kind']}** — {row['date']}")
 
-        # ---------------------------------------------------------
-        # DOWNLOAD REPORTS + OBSERVATIONS
-        # ---------------------------------------------------------
-        st.markdown("---")
-        st.subheader("Download Data")
-
-        report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
-        report_df = pd.DataFrame(report_res.data or [])
-
-        st.download_button(
-            label="Download Reports (CSV)",
-            data=report_df.to_csv(index=False).encode("utf-8"),
-            file_name=f"{project_choice}_reports.csv",
-            mime="text/csv",
-        )
-
-        obs_res = supabase.table("observations").select("*").eq("project", project_choice).order("date", desc=True).execute()
-        obs_df = pd.DataFrame(obs_res.data or [])
-
-        st.download_button(
-            label="Download Observations (CSV)",
-            data=obs_df.to_csv(index=False).encode("utf-8"),
-            file_name=f"{project_choice}_observations.csv",
-            mime="text/csv",
-        )
-
-        # Boundary file
-        boundary_path = f"{project_choice}.geojson"
-        try:
-            boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
-
+            # ---------------------------------------------------------
+            # DOWNLOAD REPORTS + OBSERVATIONS
+            # ---------------------------------------------------------
+            st.markdown("---")
+            st.subheader("Download Data")
+        
+            # Reports
+            report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
+            report_df = pd.DataFrame(report_res.data or [])
+        
             st.download_button(
-                label="Download Boundary (GeoJSON)",
-                data=boundary_file,
-                file_name=f"{project_choice}_boundary.geojson",
-                mime="application/geo+json",
+                label="Download Reports (CSV)",
+                data=report_df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{project_choice}_reports.csv",
+                mime="text/csv",
             )
+        
+            # Observations
+            obs_res = supabase.table("observations").select("*").eq("project", project_choice).order("date", desc=True).execute()
+            obs_df = pd.DataFrame(obs_res.data or [])
+        
+            st.download_button(
+                label="Download Observations (CSV)",
+                data=obs_df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{project_choice}_observations.csv",
+                mime="text/csv",
+            )
+        
+            
+            # Path inside the bucket
+            # Download file from storage
+            boundary_path = f"{project_choice}.geojson"
+            try:
+                boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
+            
+                st.download_button(
+                    label="Download Boundary (GeoJSON)",
+                    data=boundary_file,
+                    file_name=f"{project_choice}_boundary.geojson",
+                    mime="application/geo+json",
+                )
+            
+            except Exception as e:
+                st.warning(f"No boundary file found for {project_choice}.")
 
-        except Exception:
-            st.warning(f"No boundary file found for {project_choice}.")
 
-        # ---------------------------------------------------------
-        # AI SUMMARIES PER DATE + EXPORT
-        # ---------------------------------------------------------
-        st.markdown("---")
-        st.subheader("AI Summary per Date")
-
-        from gpt4all import GPT4All
-        model = GPT4All("mistral-7b-instruct.gguf")
-
-        # Ensure datetime
-        report_df["date"] = pd.to_datetime(report_df["date"])
-        obs_df["date"] = pd.to_datetime(obs_df["date"])
-
-        all_dates = sorted(set(
-            report_df["date"].dt.date.tolist() +
-            obs_df["date"].dt.date.tolist()
-        ))
-
-        summaries = []
-
-        for d in all_dates:
-            st.write(f"### {d}")
-
-            rep_day = report_df[report_df["date"].dt.date == d]
-            obs_day = obs_df[obs_df["date"].dt.date == d]
-
-            rep_md = rep_day.to_markdown(index=False) if not rep_day.empty else "No reports"
-            obs_md = obs_day.to_markdown(index=False) if not obs_day.empty else "No observations"
-
-            prompt = f"""
-You are an analyst. Summarize the following information for the date {d}.
-
-### Reports
-{rep_md}
-
-### Observations
-{obs_md}
-
-Write a clear, concise summary in English.
-"""
-
-            with st.spinner(f"Generating summary for {d}..."):
-                summary = model.generate(prompt, max_tokens=300)
-
-            st.write(summary)
-
-            summaries.append(f"DATE: {d}\n{summary}\n\n")
-
-        # Export summaries
-        st.markdown("---")
-        st.subheader("Download All Summaries")
-
-        summary_text = "".join(summaries)
-
-        st.download_button(
-            label="Download Summaries (TXT)",
-            data=summary_text.encode("utf-8"),
-            file_name=f"{project_choice}_summaries.txt",
-            mime="text/plain",
-        )
 
 
 
