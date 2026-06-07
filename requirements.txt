@@ -13,5 +13,5 @@ plotly
 streamlit_cookies_manager 
 
 
-gpt4all
-llama-cpp-python
+gpt4all==2.8.0
+llama-cpp-python==0.2.90
