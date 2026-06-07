@@ -157,6 +157,53 @@ def dagverslagen_overview():
                 st.write(f"- **{row['kind']}** — {row['date']}")
 
 
+            # ---------------------------------------------------------
+            # DOWNLOAD REPORTS + OBSERVATIONS
+            # ---------------------------------------------------------
+            st.markdown("---")
+            st.subheader("Download Data")
+        
+            # Reports
+            report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
+            report_df = pd.DataFrame(report_res.data or [])
+        
+            st.download_button(
+                label="Download Reports (CSV)",
+                data=report_df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{project_choice}_reports.csv",
+                mime="text/csv",
+            )
+        
+            # Observations
+            obs_res = supabase.table("observations").select("*").eq("project", project_choice).order("date", desc=True).execute()
+            obs_df = pd.DataFrame(obs_res.data or [])
+        
+            st.download_button(
+                label="Download Observations (CSV)",
+                data=obs_df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{project_choice}_observations.csv",
+                mime="text/csv",
+            )
+        
+            
+            # Path inside the bucket
+            # Download file from storage
+            boundary_path = f"{project_choice}.geojson"
+            try:
+                boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
+            
+                st.download_button(
+                    label="Download Boundary (GeoJSON)",
+                    data=boundary_file,
+                    file_name=f"{project_choice}_boundary.geojson",
+                    mime="application/geo+json",
+                )
+            
+            except Exception as e:
+                st.warning(f"No boundary file found for {project_choice}.")
+
+
+
 
 def load_project_boundary(project_name):
     """Load <project>.geojson from Supabase and return (geojson_dict, bounds)."""
