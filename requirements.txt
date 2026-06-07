@@ -11,3 +11,7 @@ geocoder
 uuid
 plotly
 streamlit_cookies_manager 
+
+
+gpt4all
+llama-cpp-python
