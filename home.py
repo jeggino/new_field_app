@@ -339,6 +339,53 @@ def dagverslagen_overview():
         obs_df["date"] = pd.to_datetime(obs_df["date"])
 
         all_dates = sorted(set(
+            report_df["date"].dt.date.tolist() +
+            obs_df["date"].dt.date.tolist()
+        ))
+
+        summaries = []
+
+        for d in all_dates:
+            st.write(f"### {d}")
+
+            rep_day = report_df[report_df["date"].dt.date == d]
+            obs_day = obs_df[obs_df["date"].dt.date == d]
+
+            rep_md = rep_day.to_markdown(index=False) if not rep_day.empty else "No reports"
+            obs_md = obs_day.to_markdown(index=False) if not obs_day.empty else "No observations"
+
+            prompt = f"""
+You are an analyst. Summarize the following information for the date {d}.
+
+### Reports
+{rep_md}
+
+### Observations
+{obs_md}
+
+Write a clear, concise summary in English.
+"""
+
+            with st.spinner(f"Generating summary for {d}..."):
+                summary = model.generate(prompt, max_tokens=300)
+
+            st.write(summary)
+
+            summaries.append(f"DATE: {d}\n{summary}\n\n")
+
+        # Export summaries
+        st.markdown("---")
+        st.subheader("Download All Summaries")
+
+        summary_text = "".join(summaries)
+
+        st.download_button(
+            label="Download Summaries (TXT)",
+            data=summary_text.encode("utf-8"),
+            file_name=f"{project_choice}_summaries.txt",
+            mime="text/plain",
+        )
+
 
 
 
