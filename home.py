@@ -202,10 +202,7 @@ def dagverslagen_overview():
         )
     )
 
-    st.altair_chart(chart, use_container_width=True)
 
-
-    
 
     # --- Two-column layout for dropdown + report list ---
     col1, col2 = st.columns([3, 1])
