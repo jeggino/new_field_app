@@ -142,7 +142,7 @@ def dagverslagen_overview():
 
     # --- Clean report type (remove brackets) ---
     df_reports["report_type"] = (
-        df_reports["type"]
+        df_reports["kind"]                     # <-- FIXED COLUMN NAME
         .str.replace(r"\s*\(.*?\)", "", regex=True)
         .str.strip()
     )
@@ -171,8 +171,6 @@ def dagverslagen_overview():
     # --- Wide layout: full-width chart ---
     st.subheader("Aantal dagverslagen per project (per soort verslag)")
 
-    max_reports = merged["total_reports"].max()
-
     chart = (
         alt.Chart(merged)
         .mark_bar()
@@ -186,7 +184,7 @@ def dagverslagen_overview():
             x=alt.X(
                 "count:Q",
                 title="Aantal dagverslagen",
-                stack="normalize",  # or "zero" for absolute stacked
+                stack="zero"   # "zero" = absolute stacked, "normalize" = % stacked
             ),
             color=alt.Color(
                 "report_type:N",
@@ -205,6 +203,7 @@ def dagverslagen_overview():
     )
 
     st.altair_chart(chart, use_container_width=True)
+
 
     
 
