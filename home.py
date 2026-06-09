@@ -60,6 +60,74 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ---------------------------------------------------------
 
 
+# def dagverslagen_overview():
+#     st.set_page_config(layout="wide")
+
+#     st.title("Dagverslagen Overview")
+
+#     # --- Fetch data ---
+#     projects = supabase.table("projects").select("*").execute().data
+#     reports = supabase.table("report").select("*").execute().data
+
+#     df_projects = pd.DataFrame(projects)
+#     df_reports = pd.DataFrame(reports)
+
+#     # --- Count reports per project ---
+#     report_counts = (
+#         df_reports.groupby("project")
+#         .size()
+#         .reset_index(name="report_count")
+#     )
+
+#     # Ensure integer counts
+#     report_counts["report_count"] = report_counts["report_count"].astype(int)
+
+#     # --- Merge so ALL projects appear, even with 0 reports ---
+#     merged = df_projects.merge(
+#         report_counts,
+#         left_on="name",
+#         right_on="project",
+#         how="left"
+#     )
+
+#     # Replace NaN with 0 for projects with no reports
+#     merged["report_count"] = merged["report_count"].fillna(0).astype(int)
+
+#     # Sort by report_count descending
+#     merged = merged.sort_values("report_count", ascending=False)
+
+#     # --- Wide layout: full-width chart ---
+#     st.subheader("Aantal dagverslagen per project")
+
+#     max_reports = merged["report_count"].max()
+
+#     chart = (
+#         alt.Chart(merged)
+#         .mark_bar(size=25)  # Bigger bars
+#         .encode(
+#             y=alt.Y(
+#                 "name:N",
+#                 title="Project",
+#                 sort='-x',
+#                 axis=alt.Axis(labelLimit=500)  # Show full project names
+#             ),
+#             x=alt.X(
+#                 "report_count:Q",
+#                 title="Aantal dagverslagen",
+#                 scale=alt.Scale(nice=False, domain=[0, max_reports]),
+#                 axis=alt.Axis(values=list(range(0, max_reports + 1)))  # Force integers
+#             ),
+#             tooltip=[
+#                 alt.Tooltip("name:N", title="Project"),
+#                 alt.Tooltip("report_count:Q", title="Aantal dagverslagen", format="d")
+#             ]
+#         )
+#         .properties(
+#             height=max(300, len(merged) * 28),  # Dynamic height so all projects show
+#             width="container"
+#         )
+#     )
+
 def dagverslagen_overview():
     st.set_page_config(layout="wide")
 
@@ -72,15 +140,19 @@ def dagverslagen_overview():
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
 
-    # --- Count reports per project ---
-    report_counts = (
-        df_reports.groupby("project")
-        .size()
-        .reset_index(name="report_count")
+    # --- Clean report type (remove brackets) ---
+    df_reports["report_type"] = (
+        df_reports["type"]
+        .str.replace(r"\s*\(.*?\)", "", regex=True)
+        .str.strip()
     )
 
-    # Ensure integer counts
-    report_counts["report_count"] = report_counts["report_count"].astype(int)
+    # --- Count reports per project + type ---
+    report_counts = (
+        df_reports.groupby(["project", "report_type"])
+        .size()
+        .reset_index(name="count")
+    )
 
     # --- Merge so ALL projects appear, even with 0 reports ---
     merged = df_projects.merge(
@@ -90,43 +162,49 @@ def dagverslagen_overview():
         how="left"
     )
 
-    # Replace NaN with 0 for projects with no reports
-    merged["report_count"] = merged["report_count"].fillna(0).astype(int)
+    merged["count"] = merged["count"].fillna(0).astype(int)
 
-    # Sort by report_count descending
-    merged = merged.sort_values("report_count", ascending=False)
+    # Sort by total reports
+    merged["total_reports"] = merged.groupby("name")["count"].transform("sum")
+    merged = merged.sort_values("total_reports", ascending=False)
 
     # --- Wide layout: full-width chart ---
-    st.subheader("Aantal dagverslagen per project")
+    st.subheader("Aantal dagverslagen per project (per soort verslag)")
 
-    max_reports = merged["report_count"].max()
+    max_reports = merged["total_reports"].max()
 
     chart = (
         alt.Chart(merged)
-        .mark_bar(size=25)  # Bigger bars
+        .mark_bar()
         .encode(
             y=alt.Y(
                 "name:N",
                 title="Project",
                 sort='-x',
-                axis=alt.Axis(labelLimit=500)  # Show full project names
+                axis=alt.Axis(labelLimit=500)
             ),
             x=alt.X(
-                "report_count:Q",
+                "count:Q",
                 title="Aantal dagverslagen",
-                scale=alt.Scale(nice=False, domain=[0, max_reports]),
-                axis=alt.Axis(values=list(range(0, max_reports + 1)))  # Force integers
+                stack="normalize",  # or "zero" for absolute stacked
+            ),
+            color=alt.Color(
+                "report_type:N",
+                title="Soort verslag"
             ),
             tooltip=[
                 alt.Tooltip("name:N", title="Project"),
-                alt.Tooltip("report_count:Q", title="Aantal dagverslagen", format="d")
+                alt.Tooltip("report_type:N", title="Soort verslag"),
+                alt.Tooltip("count:Q", title="Aantal", format="d")
             ]
         )
         .properties(
-            height=max(300, len(merged) * 28),  # Dynamic height so all projects show
+            height=max(300, len(merged) * 28),
             width="container"
         )
     )
+
+    st.altair_chart(chart, use_container_width=True)
 
     
 
