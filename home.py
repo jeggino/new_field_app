@@ -332,30 +332,68 @@ def dagverslagen_overview():
                 st.warning(f"No boundary file found for {project_choice}.")
 
     # ---------------------------------------------------------
-    # EXTRA: NEST & VERBLIJFPLAATS OVERZICHT
+    # NEST & VERBLIJFPLAATS OVERZICHT (STACKED BAR)
     # ---------------------------------------------------------
     st.markdown("---")
     st.header("Nest & Verblijfplaats Overzicht per Project")
-
-    project_choice2 = st.selectbox(
-        "Selecteer project voor nest/verblijfplaats overzicht",
-        sorted(df_projects["name"].unique()),
-        key="nest_select"
-    )
-
-    obs_filtered = df_obs[df_obs["project"] == project_choice2]
-
-    if obs_filtered.empty:
-        st.info("Geen nest/verblijfplaats data voor dit project.")
+    
+    # Only projects that actually have observations
+    projects_with_obs = sorted(df_obs["project"].dropna().unique())
+    
+    if len(projects_with_obs) == 0:
+        st.info("Geen nest/verblijfplaats data beschikbaar.")
     else:
-        obs_summary = (
-            obs_filtered.groupby(["species", "type"])
+        # Count per project + function
+        obs_counts = (
+            df_obs.groupby(["project", "function"])
             .size()
-            .reset_index(name="aantal")
+            .reset_index(name="count")
         )
+    
+        # Chart
+        obs_chart = (
+            alt.Chart(obs_counts)
+            .mark_bar()
+            .encode(
+                y=alt.Y("project:N", title="Project", sort='-x'),
+                x=alt.X("count:Q", title="Aantal", stack="zero"),
+                color=alt.Color("function:N", title="Functie"),
+                tooltip=[
+                    alt.Tooltip("project:N", title="Project"),
+                    alt.Tooltip("function:N", title="Functie"),
+                    alt.Tooltip("count:Q", title="Aantal", format="d")
+                ]
+            )
+            .properties(
+                height=max(300, len(obs_counts["project"].unique()) * 28),
+                width="container"
+            )
+        )
+    
+        st.altair_chart(obs_chart, use_container_width=True)
+    
+        # Select project for detailed table
+        project_choice2 = st.selectbox(
+            "Selecteer project voor detailoverzicht",
+            projects_with_obs,
+            key="nest_select"
+        )
+    
+        obs_filtered = df_obs[df_obs["project"] == project_choice2]
+    
+        if obs_filtered.empty:
+            st.info("Geen data voor dit project.")
+        else:
+            obs_summary = (
+                obs_filtered.groupby(["species", "function"])
+                .size()
+                .reset_index(name="aantal")
+                .sort_values("aantal", ascending=False)
+            )
+    
+            st.subheader(f"Details voor **{project_choice2}**")
+            st.dataframe(obs_summary)
 
-        st.subheader(f"Overzicht voor **{project_choice2}**")
-        st.dataframe(obs_summary)
 
 
 
