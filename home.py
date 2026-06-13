@@ -326,7 +326,6 @@ def dagverslagen_overview():
     # TAB 2 — NEST & VERBLIJFPLAATS
     # ---------------------------------------------------------
     with tab2:
-        df_obs["project_clean"] = df_obs["project"].str.replace("_", " ")
 
         st.subheader("Nest & Verblijfplaats Overzicht per Project")
 
@@ -337,31 +336,36 @@ def dagverslagen_overview():
             st.info("Geen nest- of verblijfplaatsdata beschikbaar.")
             return
 
+        # Clean project names
+        df_obs["project_clean"] = df_obs["project"].str.replace("_", " ")
+        
         # Count per project + function
         obs_counts = (
-            df_obs.groupby(["project", "function"])
+            df_obs.groupby(["project_clean", "function"])
             .size()
             .reset_index(name="count")
         )
-
+        
         # Species breakdown
         species_summary = (
-            df_obs.groupby(["project", "function", "species"])
+            df_obs.groupby(["project_clean", "function", "species"])
             .size()
             .reset_index(name="count")
         )
-
+        
         # Combine species into tooltip text
         species_text = (
             species_summary
-            .groupby(["project", "function"])
-            .apply(lambda x: "; ".join([f"{row['count']}× {row['species']}" for _, row in x.iterrows()]))
+            .groupby(["project_clean", "function"])
+            .apply(lambda x: "\n".join([
+                f"• {row['species']} : {row['count']}"
+                for _, row in x.iterrows()
+            ]))
             .reset_index(name="species_info")
         )
-
-        obs_counts = obs_counts.merge(species_text, on=["project", "function"], how="left")
-
-        # Chart
+        
+        obs_counts = obs_counts.merge(species_text, on=["project_clean", "function"], how="left")
+        
         chart2 = (
             alt.Chart(obs_counts)
             .mark_bar()
@@ -370,17 +374,16 @@ def dagverslagen_overview():
                 x=alt.X("count:Q", title="Aantal", stack="zero"),
                 color=alt.Color("function:N", title="Functie"),
                 tooltip=[
-                    alt.Tooltip("project:N", title="Project"),
-                    alt.Tooltip("function:N", title="Functie"),
-                    alt.Tooltip("count:Q", title="Aantal", format="d"),
-                    alt.Tooltip("species_info:N", title="Soorten")
+                    alt.Tooltip("project_clean:N", title="Project"),
+                    alt.Tooltip("species_info:N", title="Soorten", format="")
                 ]
             )
             .properties(
-                height=max(300, len(obs_counts["project"].unique()) * 28),
+                height=max(300, len(obs_counts["project_clean"].unique()) * 28),
                 width="container"
             )
         )
+
 
         st.altair_chart(chart2, use_container_width=True)
 
