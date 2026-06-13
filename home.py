@@ -326,6 +326,8 @@ def dagverslagen_overview():
     # TAB 2 — NEST & VERBLIJFPLAATS
     # ---------------------------------------------------------
     with tab2:
+        df_obs["project_clean"] = df_obs["project"].str.replace("_", " ")
+
         st.subheader("Nest & Verblijfplaats Overzicht per Project")
 
         # Only projects with observations
@@ -364,7 +366,7 @@ def dagverslagen_overview():
             alt.Chart(obs_counts)
             .mark_bar()
             .encode(
-                y=alt.Y("project:N", title="Project", sort='-x'),
+                y=alt.Y("project_clean:N", title="Project", sort='-x'),
                 x=alt.X("count:Q", title="Aantal", stack="zero"),
                 color=alt.Color("function:N", title="Functie"),
                 tooltip=[
