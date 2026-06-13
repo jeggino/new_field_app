@@ -531,7 +531,7 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Dagverslagen overview"])
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht"])
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -1236,5 +1236,5 @@ elif page == "View Projects":
 #------------------------------------------
 #---PAGE 3---------------------------------
 #------------------------------------------
-if page == "Dagverslagen overview":
+if page == "Projectoverzicht":
     dagverslagen_overview()
