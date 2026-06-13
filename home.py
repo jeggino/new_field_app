@@ -266,7 +266,7 @@ def dagverslagen_overview():
             .sort_values("date")
             .groupby(["project", "report_type"])
             .apply(lambda x: " | ".join([
-                f"• {row['kind']} : {pd.to_datetime(row['date']).strftime('%d %B %Y')}"
+                f"{row['kind']} : {pd.to_datetime(row['date']).strftime('%d %B %Y')}"
                 for _, row in x.iterrows()
             ]))
             .reset_index(name="details_text")
@@ -315,6 +315,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
