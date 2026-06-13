@@ -208,7 +208,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def dagverslagen_overview():
     st.set_page_config(layout="wide")
-    st.title("Dagverslagen Overview")
+    st.title("Projectoverzicht")
 
     # --- Fetch data ---
     projects = supabase.table("projects").select("*").execute().data
@@ -245,43 +245,48 @@ def dagverslagen_overview():
     merged["total_reports"] = merged.groupby("name")["count"].transform("sum")
     merged = merged.sort_values("total_reports", ascending=False)
 
-    # --- Chart ---
-    st.subheader("Aantal dagverslagen per project (per soort verslag)")
+    # --- Tabs ---
+    tab1, tab2 = st.tabs([
+        "📘 Aantal dagverslagen per project (per soort verslag)",
+        "🪺 Nest & Verblijfplaats Overzicht per Project"
+    ])
 
-    chart = (
-        alt.Chart(merged)
-        .mark_bar()
-        .encode(
-            y=alt.Y("name:N", title="Project", sort='-x'),
-            x=alt.X("count:Q", title="Aantal dagverslagen", stack="zero"),
-            color=alt.Color("report_type:N", title="Soort verslag"),
-            tooltip=[
-                alt.Tooltip("name:N", title="Project"),
-                alt.Tooltip("report_type:N", title="Soort verslag"),
-                alt.Tooltip("count:Q", title="Aantal", format="d")
-            ]
+    # ---------------------------------------------------------
+    # TAB 1 — DAGVERSLAGEN
+    # ---------------------------------------------------------
+    with tab1:
+        st.subheader("Aantal dagverslagen per project (per soort verslag)")
+
+        chart1 = (
+            alt.Chart(merged)
+            .mark_bar()
+            .encode(
+                y=alt.Y("name:N", title="Project", sort='-x'),
+                x=alt.X("count:Q", title="Aantal dagverslagen", stack="zero"),
+                color=alt.Color("report_type:N", title="Soort verslag"),
+                tooltip=[
+                    alt.Tooltip("name:N", title="Project"),
+                    alt.Tooltip("report_type:N", title="Soort verslag"),
+                    alt.Tooltip("count:Q", title="Aantal", format="d")
+                ]
+            )
+            .properties(
+                height=max(300, len(merged["name"].unique()) * 28),
+                width="container"
+            )
         )
-        .properties(height=max(300, len(merged) * 28), width="container")
-    )
 
-    col1, col2 = st.columns([3, 1])
+        st.altair_chart(chart1, use_container_width=True)
 
-    with col1:
-        st.altair_chart(chart, use_container_width=True)
-
-    # ---------------------------------------------------------
-    # RIGHT COLUMN: PROJECT SELECTIE
-    # ---------------------------------------------------------
-    with col2:
+        # --- Select project ---
+        st.markdown("---")
         st.subheader("Bekijk dagverslagen per project")
 
-        # FIX: unique project names
         project_choice = st.selectbox(
             "Selecteer een project",
             sorted(df_projects["name"].unique())
         )
 
-        # Filter reports
         project_reports = df_reports[df_reports["project"] == project_choice]
 
         if project_reports.empty:
@@ -295,7 +300,7 @@ def dagverslagen_overview():
 
             # --- DOWNLOAD REPORTS ---
             st.markdown("---")
-            st.subheader("Download Data")
+            st.subheader("Download dagverslagen")
 
             report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
             report_df = pd.DataFrame(report_res.data or [])
@@ -307,70 +312,45 @@ def dagverslagen_overview():
                 mime="text/csv",
             )
 
-            # --- Observations download ---
-            obs_res = supabase.table("observations").select("*").eq("project", project_choice).order("date", desc=True).execute()
-            obs_df = pd.DataFrame(obs_res.data or [])
-
-            st.download_button(
-                label="Download Observations (CSV)",
-                data=obs_df.to_csv(index=False).encode("utf-8"),
-                file_name=f"{project_choice}_observations.csv",
-                mime="text/csv",
-            )
-
-            # --- Boundary file ---
-            boundary_path = f"{project_choice}.geojson"
-            try:
-                boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
-                st.download_button(
-                    label="Download Boundary (GeoJSON)",
-                    data=boundary_file,
-                    file_name=f"{project_choice}_boundary.geojson",
-                    mime="application/geo+json",
-                )
-            except Exception:
-                st.warning(f"No boundary file found for {project_choice}.")
-
     # ---------------------------------------------------------
-    # NEST & VERBLIJFPLAATS OVERZICHT (STACKED BAR + SPECIES TOOLTIP)
+    # TAB 2 — NEST & VERBLIJFPLAATS
     # ---------------------------------------------------------
-    st.markdown("---")
-    st.header("Nest & Verblijfplaats Overzicht per Project")
-    
-    # Only projects that actually have observations
-    projects_with_obs = sorted(df_obs["project"].dropna().unique())
-    
-    if len(projects_with_obs) == 0:
-        st.info("Geen nest- of verblijfplaatsdata beschikbaar.")
-    else:
-    
+    with tab2:
+        st.subheader("Nest & Verblijfplaats Overzicht per Project")
+
+        # Only projects with observations
+        projects_with_obs = sorted(df_obs["project"].dropna().unique())
+
+        if len(projects_with_obs) == 0:
+            st.info("Geen nest- of verblijfplaatsdata beschikbaar.")
+            return
+
         # Count per project + function
         obs_counts = (
             df_obs.groupby(["project", "function"])
             .size()
             .reset_index(name="count")
         )
-    
-        # Species breakdown per project + function
+
+        # Species breakdown
         species_summary = (
             df_obs.groupby(["project", "function", "species"])
             .size()
             .reset_index(name="count")
         )
-    
-        # Combine species into one text field for tooltip
+
+        # Combine species into tooltip text
         species_text = (
             species_summary
             .groupby(["project", "function"])
             .apply(lambda x: "; ".join([f"{row['count']}× {row['species']}" for _, row in x.iterrows()]))
             .reset_index(name="species_info")
         )
-    
-        # Merge species info into main dataset
+
         obs_counts = obs_counts.merge(species_text, on=["project", "function"], how="left")
-    
+
         # Chart
-        obs_chart = (
+        chart2 = (
             alt.Chart(obs_counts)
             .mark_bar()
             .encode(
@@ -385,22 +365,25 @@ def dagverslagen_overview():
                 ]
             )
             .properties(
-                height=max(300, len(obs_counts['project'].unique()) * 28),
+                height=max(300, len(obs_counts["project"].unique()) * 28),
                 width="container"
             )
         )
-    
-        st.altair_chart(obs_chart, use_container_width=True)
-    
-        # Select project for detailed table
+
+        st.altair_chart(chart2, use_container_width=True)
+
+        # --- Select project ---
+        st.markdown("---")
+        st.subheader("Details per project")
+
         project_choice2 = st.selectbox(
-            "Selecteer project voor detailoverzicht",
+            "Selecteer project",
             projects_with_obs,
             key="nest_select"
         )
-    
+
         obs_filtered = df_obs[df_obs["project"] == project_choice2]
-    
+
         if obs_filtered.empty:
             st.info("Geen data voor dit project.")
         else:
@@ -410,9 +393,23 @@ def dagverslagen_overview():
                 .reset_index(name="aantal")
                 .sort_values("aantal", ascending=False)
             )
-    
-            st.subheader(f"Details voor **{project_choice2}**")
+
             st.dataframe(obs_summary)
+
+            # --- DOWNLOAD OBSERVATIONS ---
+            st.markdown("---")
+            st.subheader("Download observaties")
+
+            obs_res = supabase.table("observations").select("*").eq("project", project_choice2).order("date", desc=True).execute()
+            obs_df = pd.DataFrame(obs_res.data or [])
+
+            st.download_button(
+                label="Download Observations (CSV)",
+                data=obs_df.to_csv(index=False).encode("utf-8"),
+                file_name=f"{project_choice2}_observations.csv",
+                mime="text/csv",
+            )
+
 
 
 
