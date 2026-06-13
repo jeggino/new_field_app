@@ -256,9 +256,29 @@ def dagverslagen_overview():
     # ---------------------------------------------------------
     with tab1:
         st.subheader("Aantal dagverslagen per project (per soort verslag)")
-
+    
+        # Create detailed text for tooltip: list of reports per project + type
+        report_details = (
+            df_reports
+            .sort_values("date")
+            .groupby(["project", "report_type"])
+            .apply(lambda x: "; ".join([
+                f"{row['kind']} ({i+1}/{len(x)}) {{{pd.to_datetime(row['date']).strftime('%d-%b-%Y')}}}"
+                for i, (_, row) in enumerate(x.iterrows())
+            ]))
+            .reset_index(name="details_text")
+        )
+    
+        # Merge into main dataset
+        merged_with_details = merged.merge(
+            report_details,
+            left_on=["name", "report_type"],
+            right_on=["project", "report_type"],
+            how="left"
+        )
+    
         chart1 = (
-            alt.Chart(merged)
+            alt.Chart(merged_with_details)
             .mark_bar()
             .encode(
                 y=alt.Y("name:N", title="Project", sort='-x'),
@@ -267,7 +287,8 @@ def dagverslagen_overview():
                 tooltip=[
                     alt.Tooltip("name:N", title="Project"),
                     alt.Tooltip("report_type:N", title="Soort verslag"),
-                    alt.Tooltip("count:Q", title="Aantal", format="d")
+                    alt.Tooltip("count:Q", title="Aantal", format="d"),
+                    alt.Tooltip("details_text:N", title="Details")
                 ]
             )
             .properties(
@@ -275,22 +296,22 @@ def dagverslagen_overview():
                 width="container"
             )
         )
-
+    
         st.altair_chart(chart1, use_container_width=True)
-
+    
         # --- DOWNLOAD REPORTS ---
         st.markdown("---")
         st.subheader("Download dagverslagen")
-
-        # All reports (not per project)
+    
         report_df = pd.DataFrame(reports)
-
+    
         st.download_button(
             label="Download alle dagverslagen (CSV)",
             data=report_df.to_csv(index=False).encode("utf-8"),
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
     # ---------------------------------------------------------
     # TAB 2 — NEST & VERBLIJFPLAATS
