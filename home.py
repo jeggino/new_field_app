@@ -260,13 +260,13 @@ def dagverslagen_overview():
         # Replace underscores in project names
         merged["name_clean"] = merged["name"].str.replace("_", " ")
     
-        # Create detailed text for tooltip: each report on its own line
+        # Create detailed text for tooltip: bullet points + NL date
         report_details = (
             df_reports
             .sort_values("date")
             .groupby(["project", "report_type"])
             .apply(lambda x: "\n".join([
-                f"{row['kind']} : {pd.to_datetime(row['date']).strftime('%d-%b-%Y')}"
+                f"• {row['kind']} : {pd.to_datetime(row['date']).strftime('%d %B %Y')}"
                 for _, row in x.iterrows()
             ]))
             .reset_index(name="details_text")
@@ -315,6 +315,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
