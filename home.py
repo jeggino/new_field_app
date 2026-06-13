@@ -278,39 +278,19 @@ def dagverslagen_overview():
 
         st.altair_chart(chart1, use_container_width=True)
 
-        # --- Select project ---
+        # --- DOWNLOAD REPORTS ---
         st.markdown("---")
-        st.subheader("Bekijk dagverslagen per project")
+        st.subheader("Download dagverslagen")
 
-        project_choice = st.selectbox(
-            "Selecteer een project",
-            sorted(df_projects["name"].unique())
+        # All reports (not per project)
+        report_df = pd.DataFrame(reports)
+
+        st.download_button(
+            label="Download alle dagverslagen (CSV)",
+            data=report_df.to_csv(index=False).encode("utf-8"),
+            file_name="alle_dagverslagen.csv",
+            mime="text/csv",
         )
-
-        project_reports = df_reports[df_reports["project"] == project_choice]
-
-        if project_reports.empty:
-            st.info("Geen dagverslagen voor dit project.")
-        else:
-            project_reports = project_reports.sort_values("date", ascending=False)
-            st.write(f"### Dagverslagen voor **{project_choice}**")
-
-            for _, row in project_reports.iterrows():
-                st.write(f"- **{row['kind']}** — {row['date']}")
-
-            # --- DOWNLOAD REPORTS ---
-            st.markdown("---")
-            st.subheader("Download dagverslagen")
-
-            report_res = supabase.table("report").select("*").eq("project", project_choice).order("date", desc=True).execute()
-            report_df = pd.DataFrame(report_res.data or [])
-
-            st.download_button(
-                label="Download Reports (CSV)",
-                data=report_df.to_csv(index=False).encode("utf-8"),
-                file_name=f"{project_choice}_reports.csv",
-                mime="text/csv",
-            )
 
     # ---------------------------------------------------------
     # TAB 2 — NEST & VERBLIJFPLAATS
@@ -372,43 +352,19 @@ def dagverslagen_overview():
 
         st.altair_chart(chart2, use_container_width=True)
 
-        # --- Select project ---
+        # --- DOWNLOAD OBSERVATIONS ---
         st.markdown("---")
-        st.subheader("Details per project")
+        st.subheader("Download observaties")
 
-        project_choice2 = st.selectbox(
-            "Selecteer project",
-            projects_with_obs,
-            key="nest_select"
+        obs_df = pd.DataFrame(observations)
+
+        st.download_button(
+            label="Download alle observaties (CSV)",
+            data=obs_df.to_csv(index=False).encode("utf-8"),
+            file_name="alle_observaties.csv",
+            mime="text/csv",
         )
 
-        obs_filtered = df_obs[df_obs["project"] == project_choice2]
-
-        if obs_filtered.empty:
-            st.info("Geen data voor dit project.")
-        else:
-            obs_summary = (
-                obs_filtered.groupby(["species", "function"])
-                .size()
-                .reset_index(name="aantal")
-                .sort_values("aantal", ascending=False)
-            )
-
-            st.dataframe(obs_summary)
-
-            # --- DOWNLOAD OBSERVATIONS ---
-            st.markdown("---")
-            st.subheader("Download observaties")
-
-            obs_res = supabase.table("observations").select("*").eq("project", project_choice2).order("date", desc=True).execute()
-            obs_df = pd.DataFrame(obs_res.data or [])
-
-            st.download_button(
-                label="Download Observations (CSV)",
-                data=obs_df.to_csv(index=False).encode("utf-8"),
-                file_name=f"{project_choice2}_observations.csv",
-                mime="text/csv",
-            )
 
 
 
