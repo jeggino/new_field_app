@@ -262,7 +262,7 @@ def dagverslagen_overview():
             df_reports
             .sort_values("date")
             .groupby(["project", "report_type"])
-            .apply(lambda x: "; ".join([
+            .apply(lambda x: "\n".join([
                 f"{row['kind']} ({i+1}/{len(x)}) {{{pd.to_datetime(row['date']).strftime('%d-%b-%Y')}}}"
                 for i, (_, row) in enumerate(x.iterrows())
             ]))
@@ -311,6 +311,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
     # ---------------------------------------------------------
