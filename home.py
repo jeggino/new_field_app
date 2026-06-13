@@ -375,6 +375,8 @@ def dagverslagen_overview():
                 color=alt.Color("function:N", title="Functie"),
                 tooltip=[
                     alt.Tooltip("project_clean:N", title="Project"),
+                    alt.Tooltip("function:N", title="Functie"),
+                    alt.Tooltip("count:Q", title="Aantal", format="d"),
                     alt.Tooltip("species_info:N", title="Soorten", format="")
                 ]
             )
