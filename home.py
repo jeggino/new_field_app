@@ -260,21 +260,31 @@ def dagverslagen_overview():
         # Replace underscores in project names
         merged["name_clean"] = merged["name"].str.replace("_", " ")
     
-        # Create detailed text for tooltip: bullet points + NL date + real line breaks
-        report_details = (
-            df_reports
-            .sort_values("date")
-            .    groupby(["project", "report_type"])
-            .apply(lambda x: "<pre>" + "\n".join([
-                f"• {row['kind']} : {pd.to_datetime(row['date']).strftime('%d %B %Y')}"
-                for _, row in x.iterrows()
-            ]) + "</pre>")
-            .reset_index(name="details_text")
+        # Build list of detail strings per (project, report_type)
+        def build_details(group):
+            rows = []
+            for _, row in group.sort_values("date").iterrows():
+                date_str = pd.to_datetime(row["date"]).strftime("%d %B %Y")  # NL-style month name
+                rows.append(f"• {row['kind']} : {date_str}")
+            return rows
+    
+        grouped = df_reports.groupby(["project", "report_type"])
+        details_series = grouped.apply(build_details)
+    
+        # Turn list into multiple columns: detail_1, detail_2, ...
+        max_len = details_series.map(len).max() if len(details_series) > 0 else 0
+        details_df = (
+            details_series
+            .apply(lambda lst: lst + [""] * (max_len - len(lst)))  # pad with empty strings
+            .apply(pd.Series)
         )
+        # Rename columns to detail_1, detail_2, ...
+        details_df.columns = [f"detail_{i+1}" for i in range(max_len)]
+        details_df = details_df.reset_index()  # bring project, report_type back as columns
     
         # Merge into main dataset
         merged_with_details = merged.merge(
-            report_details,
+            details_df,
             left_on=["name", "report_type"],
             right_on=["project", "report_type"],
             how="left"
@@ -283,6 +293,16 @@ def dagverslagen_overview():
         # Use cleaned project name
         merged_with_details["project_display"] = merged_with_details["name_clean"]
     
+        # Build tooltip fields dynamically (one per detail_n)
+        tooltip_fields = [
+            alt.Tooltip("project_display:N", title="Project"),
+        ]
+        for i in range(max_len):
+            col = f"detail_{i+1}"
+            tooltip_fields.append(
+                alt.Tooltip(f"{col}:N", title="Details dagverslagen")
+            )
+    
         chart1 = (
             alt.Chart(merged_with_details)
             .mark_bar()
@@ -290,10 +310,7 @@ def dagverslagen_overview():
                 y=alt.Y("project_display:N", title="Project", sort='-x'),
                 x=alt.X("count:Q", title="Aantal dagverslagen", stack="zero"),
                 color=alt.Color("report_type:N", title="Soort verslag"),
-                tooltip=[
-                    alt.Tooltip("project_display:N", title="Project"),
-                    alt.Tooltip("details_text:N", title="Details dagverslagen", format="")
-                ]
+                tooltip=tooltip_fields
             )
             .properties(
                 height=max(300, len(merged["name"].unique()) * 28),
@@ -315,6 +332,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
