@@ -294,8 +294,6 @@ def dagverslagen_overview():
                 color=alt.Color("report_type:N", title="Soort verslag"),
                 tooltip=[
                     alt.Tooltip("name:N", title="Project"),
-                    alt.Tooltip("report_type:N", title="Soort verslag"),
-                    alt.Tooltip("count:Q", title="Aantal", format="d"),
                     alt.Tooltip("details_text:N", title="Details dagverslagen")
                 ]
             )
@@ -319,6 +317,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
