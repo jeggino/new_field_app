@@ -257,22 +257,17 @@ def dagverslagen_overview():
     with tab1:
         st.subheader("Aantal dagverslagen per project (per soort verslag)")
     
-        # Clean 'kind' so it never contains (1/2) etc.
-        df_reports["kind_clean"] = (
-            df_reports["kind"]
-            .str.replace(r"\s*\(.*?\)", "", regex=True)
-            .str.strip()
-        )
+        # Replace underscores in project names
+        merged["name_clean"] = merged["name"].str.replace("_", " ")
     
-        # Create detailed text for tooltip: list of reports per project + type
+        # Create detailed text for tooltip: each report on its own line
         report_details = (
             df_reports
             .sort_values("date")
             .groupby(["project", "report_type"])
             .apply(lambda x: "\n".join([
-                f"{row['kind_clean']} ({i+1}/{len(x)}) "
-                f"{{{pd.to_datetime(row['date']).strftime('%d-%b-%Y')}}}"
-                for i, (_, row) in enumerate(x.iterrows())
+                f"{row['kind']} : {pd.to_datetime(row['date']).strftime('%d-%b-%Y')}"
+                for _, row in x.iterrows()
             ]))
             .reset_index(name="details_text")
         )
@@ -285,16 +280,19 @@ def dagverslagen_overview():
             how="left"
         )
     
+        # Use cleaned project name
+        merged_with_details["project_display"] = merged_with_details["name_clean"]
+    
         chart1 = (
             alt.Chart(merged_with_details)
             .mark_bar()
             .encode(
-                y=alt.Y("name:N", title="Project", sort='-x'),
+                y=alt.Y("project_display:N", title="Project", sort='-x'),
                 x=alt.X("count:Q", title="Aantal dagverslagen", stack="zero"),
                 color=alt.Color("report_type:N", title="Soort verslag"),
                 tooltip=[
-                    alt.Tooltip("name:N", title="Project"),
-                    alt.Tooltip("details_text:N", title="Details dagverslagen")
+                    alt.Tooltip("project_display:N", title="Project"),
+                    alt.Tooltip("details_text:N", title="Details dagverslagen", format="")
                 ]
             )
             .properties(
@@ -317,6 +315,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
