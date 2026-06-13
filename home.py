@@ -257,13 +257,21 @@ def dagverslagen_overview():
     with tab1:
         st.subheader("Aantal dagverslagen per project (per soort verslag)")
     
+        # Clean 'kind' so it never contains (1/2) etc.
+        df_reports["kind_clean"] = (
+            df_reports["kind"]
+            .str.replace(r"\s*\(.*?\)", "", regex=True)
+            .str.strip()
+        )
+    
         # Create detailed text for tooltip: list of reports per project + type
         report_details = (
             df_reports
             .sort_values("date")
             .groupby(["project", "report_type"])
             .apply(lambda x: "\n".join([
-                f"{row['kind']} ({i+1}/{len(x)}) {{{pd.to_datetime(row['date']).strftime('%d-%b-%Y')}}}"
+                f"{row['kind_clean']} ({i+1}/{len(x)}) "
+                f"{{{pd.to_datetime(row['date']).strftime('%d-%b-%Y')}}}"
                 for i, (_, row) in enumerate(x.iterrows())
             ]))
             .reset_index(name="details_text")
@@ -288,7 +296,7 @@ def dagverslagen_overview():
                     alt.Tooltip("name:N", title="Project"),
                     alt.Tooltip("report_type:N", title="Soort verslag"),
                     alt.Tooltip("count:Q", title="Aantal", format="d"),
-                    alt.Tooltip("details_text:N", title="Details")
+                    alt.Tooltip("details_text:N", title="Details dagverslagen")
                 ]
             )
             .properties(
@@ -311,6 +319,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
