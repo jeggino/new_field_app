@@ -264,7 +264,7 @@ def dagverslagen_overview():
         def build_details(group):
             rows = []
             for _, row in group.sort_values("date").iterrows():
-                date_str = pd.to_datetime(row["date"]).strftime("%d %B %Y")  # NL-style month name
+                date_str = pd.to_datetime(row["date"]).strftime("%d %B %Y")  # NL date
                 rows.append(f"• {row['kind']} : {date_str}")
             return rows
     
@@ -278,9 +278,8 @@ def dagverslagen_overview():
             .apply(lambda lst: lst + [""] * (max_len - len(lst)))  # pad with empty strings
             .apply(pd.Series)
         )
-        # Rename columns to detail_1, detail_2, ...
         details_df.columns = [f"detail_{i+1}" for i in range(max_len)]
-        details_df = details_df.reset_index()  # bring project, report_type back as columns
+        details_df = details_df.reset_index()
     
         # Merge into main dataset
         merged_with_details = merged.merge(
@@ -290,17 +289,15 @@ def dagverslagen_overview():
             how="left"
         )
     
-        # Use cleaned project name
         merged_with_details["project_display"] = merged_with_details["name_clean"]
     
-        # Build tooltip fields dynamically (one per detail_n)
+        # Build tooltip fields dynamically
         tooltip_fields = [
-            alt.Tooltip("project_display:N", title="Project"),
+            alt.Tooltip("project_display:N", title="Project")
         ]
         for i in range(max_len):
-            col = f"detail_{i+1}"
             tooltip_fields.append(
-                alt.Tooltip(f"{col}:N", title="Details dagverslagen")
+                alt.Tooltip(f"detail_{i+1}:N", title="Details dagverslagen")
             )
     
         chart1 = (
@@ -332,6 +329,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
