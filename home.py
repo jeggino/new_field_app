@@ -332,7 +332,7 @@ def dagverslagen_overview():
                 st.warning(f"No boundary file found for {project_choice}.")
 
     # ---------------------------------------------------------
-    # NEST & VERBLIJFPLAATS OVERZICHT (STACKED BAR)
+    # NEST & VERBLIJFPLAATS OVERZICHT (STACKED BAR + SPECIES TOOLTIP)
     # ---------------------------------------------------------
     st.markdown("---")
     st.header("Nest & Verblijfplaats Overzicht per Project")
@@ -341,14 +341,33 @@ def dagverslagen_overview():
     projects_with_obs = sorted(df_obs["project"].dropna().unique())
     
     if len(projects_with_obs) == 0:
-        st.info("Geen nest/verblijfplaats data beschikbaar.")
+        st.info("Geen nest- of verblijfplaatsdata beschikbaar.")
     else:
+    
         # Count per project + function
         obs_counts = (
             df_obs.groupby(["project", "function"])
             .size()
             .reset_index(name="count")
         )
+    
+        # Species breakdown per project + function
+        species_summary = (
+            df_obs.groupby(["project", "function", "species"])
+            .size()
+            .reset_index(name="count")
+        )
+    
+        # Combine species into one text field for tooltip
+        species_text = (
+            species_summary
+            .groupby(["project", "function"])
+            .apply(lambda x: "; ".join([f"{row['count']}× {row['species']}" for _, row in x.iterrows()]))
+            .reset_index(name="species_info")
+        )
+    
+        # Merge species info into main dataset
+        obs_counts = obs_counts.merge(species_text, on=["project", "function"], how="left")
     
         # Chart
         obs_chart = (
@@ -361,11 +380,12 @@ def dagverslagen_overview():
                 tooltip=[
                     alt.Tooltip("project:N", title="Project"),
                     alt.Tooltip("function:N", title="Functie"),
-                    alt.Tooltip("count:Q", title="Aantal", format="d")
+                    alt.Tooltip("count:Q", title="Aantal", format="d"),
+                    alt.Tooltip("species_info:N", title="Soorten")
                 ]
             )
             .properties(
-                height=max(300, len(obs_counts["project"].unique()) * 28),
+                height=max(300, len(obs_counts['project'].unique()) * 28),
                 width="container"
             )
         )
@@ -393,6 +413,7 @@ def dagverslagen_overview():
     
             st.subheader(f"Details voor **{project_choice2}**")
             st.dataframe(obs_summary)
+
 
 
 
