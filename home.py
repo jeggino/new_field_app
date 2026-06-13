@@ -1136,23 +1136,23 @@ elif page == "View Projects":
     report_res = supabase.table("report").select("*").eq("project", selected).order("date", desc=True).execute()
     report_df = pd.DataFrame(report_res.data or [])
 
-    st.download_button(
-        label="Download Reports (CSV)",
-        data=report_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{selected}_reports.csv",
-        mime="text/csv",
-    )
+    # st.download_button(
+    #     label="Download Reports (CSV)",
+    #     data=report_df.to_csv(index=False).encode("utf-8"),
+    #     file_name=f"{selected}_reports.csv",
+    #     mime="text/csv",
+    # )
 
     # Observations
     obs_res = supabase.table("observations").select("*").eq("project", selected).order("date", desc=True).execute()
     obs_df = pd.DataFrame(obs_res.data or [])
 
-    st.download_button(
-        label="Download Observations (CSV)",
-        data=obs_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"{selected}_observations.csv",
-        mime="text/csv",
-    )
+    # st.download_button(
+    #     label="Download Observations (CSV)",
+    #     data=obs_df.to_csv(index=False).encode("utf-8"),
+    #     file_name=f"{selected}_observations.csv",
+    #     mime="text/csv",
+    # )
 
     
     # Path inside the bucket
