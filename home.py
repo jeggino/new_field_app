@@ -260,7 +260,7 @@ def dagverslagen_overview():
         # Replace underscores in project names
         merged["name_clean"] = merged["name"].str.replace("_", " ")
     
-        # Create detailed text for tooltip: bullet points + NL date
+        # Create detailed text for tooltip: bullet points + NL date + real line breaks
         report_details = (
             df_reports
             .sort_values("date")
@@ -315,6 +315,7 @@ def dagverslagen_overview():
             file_name="alle_dagverslagen.csv",
             mime="text/csv",
         )
+
 
 
 
