@@ -429,24 +429,31 @@ def dagverslagen_overview():
         st.markdown("### Filter op functie")
     
         available_functions = sorted(df_obs["function"].dropna().unique())
-        selected_function = st.selectbox("Kies een functie", available_functions)
-    
-        # Filter dataframe
-        df_filtered = df_obs[df_obs["function"] == selected_function]
-    
-        # --- PIVOT TABLE: PROJECT × SPECIES ---
-        pivot_table = (
-            df_filtered
-            .groupby(["project_clean", "species"])
-            .size()
-            .reset_index(name="count")
-            .pivot(index="project_clean", columns="species", values="count")
-            .fillna(0)
-            .astype(int)
+        selected_function = st.selectbox(
+            "Kies een functie…",
+            ["-- Kies een functie --"] + available_functions
         )
     
-        st.markdown("### Overzicht per project en soort")
-        st.dataframe(pivot_table, use_container_width=True)
+        # Only show table if a real function is selected
+        if selected_function != "-- Kies een functie --":
+    
+            df_filtered = df_obs[df_obs["function"] == selected_function]
+    
+            # --- PIVOT TABLE: PROJECT × SPECIES ---
+            pivot_table = (
+                df_filtered
+                .groupby(["project", "species"])
+                .size()
+                .reset_index(name="count")
+                .pivot(index="project", columns="species", values="count")
+                .fillna("–")
+            )
+    
+            st.markdown("### Overzicht per project en soort")
+            st.dataframe(pivot_table, use_container_width=True)
+    
+        # Separator before chart
+        st.markdown("---")
     
         # --- ORIGINAL CHART (STAYS BELOW) ---
     
@@ -510,7 +517,8 @@ def dagverslagen_overview():
             data=obs_df.to_csv(index=False).encode("utf-8"),
             file_name="alle_observaties.csv",
             mime="text/csv",
-        )
+        )    
+
 
 
 
