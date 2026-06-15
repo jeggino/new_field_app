@@ -452,7 +452,66 @@ def dagverslagen_overview():
     
         # Count per project + function
         obs_counts = (
-            df_obs
+            df_obs.groupby(["project_clean", "function"])
+            .size()
+            .reset_index(name="count")
+        )
+    
+        # Species breakdown
+        species_summary = (
+            df_obs.groupby(["project_clean", "function", "species"])
+            .size()
+            .reset_index(name="count")
+        )
+    
+        # Combine species into tooltip text
+        species_text = (
+            species_summary
+            .groupby(["project_clean", "function"])
+            .apply(lambda x: "\n".join([
+                f"• {row['species']} : {row['count']}"
+                for _, row in x.iterrows()
+            ]))
+            .reset_index(name="species_info")
+        )
+    
+        obs_counts = obs_counts.merge(species_text, on=["project_clean", "function"], how="left")
+    
+        chart2 = (
+            alt.Chart(obs_counts)
+            .mark_bar()
+            .encode(
+                y=alt.Y("project_clean:N", title="Project", sort='-x'),
+                x=alt.X("count:Q", title="Aantal", stack="zero"),
+                color=alt.Color("function:N", title="Functie"),
+                tooltip=[
+                    alt.Tooltip("project_clean:N", title="Project"),
+                    alt.Tooltip("function:N", title="Functie"),
+                    alt.Tooltip("count:Q", title="Aantal", format="d"),
+                    alt.Tooltip("species_info:N", title="Soorten", format="")
+                ]
+            )
+            .properties(
+                height=max(300, len(obs_counts["project_clean"].unique()) * 28),
+                width="container"
+            )
+        )
+    
+        st.altair_chart(chart2, use_container_width=True)
+    
+        # --- DOWNLOAD OBSERVATIONS ---
+        st.markdown("---")
+        st.subheader("Download observaties")
+    
+        obs_df = pd.DataFrame(observations)
+    
+        st.download_button(
+            label="Download alle observaties (CSV)",
+            data=obs_df.to_csv(index=False).encode("utf-8"),
+            file_name="alle_observaties.csv",
+            mime="text/csv",
+        )
+
 
 
 
