@@ -448,9 +448,17 @@ def dagverslagen_overview():
                 .pivot(index="project_clean", columns="species", values="count")
             )
     
-            # Convert to int, replace NaN with "–"
+            # Replace NaN with "–"
             pivot_table = pivot_table.fillna("–")
-            pivot_table = pivot_table.applymap(lambda x: int(x) if isinstance(x, (int, float)) else x)
+    
+            # Convert numeric values to int (no floats)
+            for col in pivot_table.columns:
+                pivot_table[col] = pivot_table[col].map(
+                    lambda x: int(x) if isinstance(x, (int, float)) else x
+                )
+    
+            # Remove index name "project_clean"
+            pivot_table.index.name = None
     
             st.markdown("### Overzicht per project en soort")
             st.dataframe(pivot_table, use_container_width=True)
@@ -521,6 +529,7 @@ def dagverslagen_overview():
             file_name="alle_observaties.csv",
             mime="text/csv",
         )
+
 
 
 
