@@ -439,15 +439,18 @@ def dagverslagen_overview():
     
             df_filtered = df_obs[df_obs["function"] == selected_function]
     
-            # --- PIVOT TABLE: PROJECT × SPECIES ---
+            # --- PIVOT TABLE: PROJECT_CLEAN × SPECIES ---
             pivot_table = (
                 df_filtered
-                .groupby(["project", "species"])
+                .groupby(["project_clean", "species"])
                 .size()
                 .reset_index(name="count")
-                .pivot(index="project", columns="species", values="count")
-                .fillna("–")
+                .pivot(index="project_clean", columns="species", values="count")
             )
+    
+            # Convert to int, replace NaN with "–"
+            pivot_table = pivot_table.fillna("–")
+            pivot_table = pivot_table.applymap(lambda x: int(x) if isinstance(x, (int, float)) else x)
     
             st.markdown("### Overzicht per project en soort")
             st.dataframe(pivot_table, use_container_width=True)
@@ -517,7 +520,8 @@ def dagverslagen_overview():
             data=obs_df.to_csv(index=False).encode("utf-8"),
             file_name="alle_observaties.csv",
             mime="text/csv",
-        )    
+        )
+
 
 
 
