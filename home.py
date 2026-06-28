@@ -24,6 +24,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+from streamlit_pwa import pwa
+
+pwa(
+    app_name="New Field App",
+    app_short_name="FieldApp",
+    description="Installable Android version of the New Field App",
+    theme_color="#0A84FF",
+    background_color="#FFFFFF",
+    icons=[
+        {
+            "src": "icons/Copilot_20260502_183444.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+
+    ]
+)
+
+
+
 IMAGE_URL = "https://copilot.microsoft.com/th/id/BCO.2d3fe0e2-f66f-41f7-bc5f-c4b3f53ee37e.png"
 
 st.markdown(
