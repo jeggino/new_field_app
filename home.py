@@ -45,41 +45,41 @@ st.set_page_config(
 
 
 
-IMAGE_URL = "https://copilot.microsoft.com/th/id/BCO.2d3fe0e2-f66f-41f7-bc5f-c4b3f53ee37e.png"
+# IMAGE_URL = "https://copilot.microsoft.com/th/id/BCO.2d3fe0e2-f66f-41f7-bc5f-c4b3f53ee37e.png"
 
-st.markdown(
-    f"""
-    <style>
-        /* Remove Streamlit default header background */
-        header[data-testid="stHeader"] {{
-            background: none;
-        }}
+# st.markdown(
+#     f"""
+#     <style>
+#         /* Remove Streamlit default header background */
+#         header[data-testid="stHeader"] {{
+#             background: none;
+#         }}
 
-        /* Add your background image */
-        header[data-testid="stHeader"]::before {{
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 65px; /* increase until full image fits */
-            background-image: url("{IMAGE_URL}");
-            background-size: contain;   /* <<< THIS SHOWS THE FULL IMAGE */
-            background-position: left;
-            background-repeat: no-repeat;
-            background-color: black;    /* optional: fill behind image */
-            z-index: 0;
-        }}
+#         /* Add your background image */
+#         header[data-testid="stHeader"]::before {{
+#             content: "";
+#             position: absolute;
+#             top: 0;
+#             left: 0;
+#             width: 100%;
+#             height: 65px; /* increase until full image fits */
+#             background-image: url("{IMAGE_URL}");
+#             background-size: contain;   /* <<< THIS SHOWS THE FULL IMAGE */
+#             background-position: left;
+#             background-repeat: no-repeat;
+#             background-color: black;    /* optional: fill behind image */
+#             z-index: 0;
+#         }}
 
-        /* Keep menu buttons clickable */
-        header[data-testid="stHeader"] > div {{
-            position: relative;
-            z-index: 1;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+#         /* Keep menu buttons clickable */
+#         header[data-testid="stHeader"] > div {{
+#             position: relative;
+#             z-index: 1;
+#         }}
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 
 
