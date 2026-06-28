@@ -34,12 +34,12 @@ import re
 # st.stop()
 
 
-# # ----------------- CONFIG -----------------
-# st.set_page_config(
-#     page_title="",
-#     layout="wide",
-#     initial_sidebar_state="expanded"
-# )
+# ----------------- CONFIG -----------------
+st.set_page_config(
+    page_title="",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 
 
