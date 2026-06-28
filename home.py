@@ -9,21 +9,6 @@ import json
 import pandas as pd
 import re
 
-
-# st.image(
-#     "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg", width = "stretch"
-# )
-
-# st.stop()
-
-
-# ----------------- CONFIG -----------------
-st.set_page_config(
-    page_title="",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
 from streamlit_pwa import pwa
 
 pwa(
@@ -41,6 +26,22 @@ pwa(
 
     ]
 )
+
+# st.image(
+#     "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg", width = "stretch"
+# )
+
+# st.stop()
+
+
+# ----------------- CONFIG -----------------
+st.set_page_config(
+    page_title="",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+
 
 
 
