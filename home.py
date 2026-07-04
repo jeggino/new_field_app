@@ -1139,23 +1139,23 @@ def show_main_app():
 
     # map_data = st_folium(m, height=550, width="100%")
 
-# Use CSS to make the map full screen
-st.markdown(
-    """
-    <style>
-        /* Target the folium map container and make it full screen */
-        [data-testid="stFolium"] {
-            height: 100vh !important;
-            width: 100vw !important;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 999;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+    # Use CSS to make the map full screen
+    st.markdown(
+        """
+        <style>
+            /* Target the folium map container and make it full screen */
+            [data-testid="stFolium"] {
+                height: 100vh !important;
+                width: 100vw !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 999;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
