@@ -9,6 +9,23 @@ import json
 import pandas as pd
 import re
 
+# from streamlit_pwa import pwa
+
+# pwa(
+#     app_name="New Field App",
+#     app_short_name="FieldApp",
+#     description="Installable Android version of the New Field App",
+#     theme_color="#0A84FF",
+#     background_color="#FFFFFF",
+#     icons=[
+#         {
+#             "src": "icons/Copilot_20260502_183444.png",
+#             "sizes": "192x192",
+#             "type": "image/png"
+#         },
+
+#     ]
+# )
 
 # st.image(
 #     "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg", width = "stretch"
@@ -23,6 +40,46 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+
+
+
+# IMAGE_URL = "https://copilot.microsoft.com/th/id/BCO.2d3fe0e2-f66f-41f7-bc5f-c4b3f53ee37e.png"
+
+# st.markdown(
+#     f"""
+#     <style>
+#         /* Remove Streamlit default header background */
+#         header[data-testid="stHeader"] {{
+#             background: none;
+#         }}
+
+#         /* Add your background image */
+#         header[data-testid="stHeader"]::before {{
+#             content: "";
+#             position: absolute;
+#             top: 0;
+#             left: 0;
+#             width: 100%;
+#             height: 65px; /* increase until full image fits */
+#             background-image: url("{IMAGE_URL}");
+#             background-size: contain;   /* <<< THIS SHOWS THE FULL IMAGE */
+#             background-position: left;
+#             background-repeat: no-repeat;
+#             background-color: black;    /* optional: fill behind image */
+#             z-index: 0;
+#         }}
+
+#         /* Keep menu buttons clickable */
+#         header[data-testid="stHeader"] > div {{
+#             position: relative;
+#             z-index: 1;
+#         }}
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 
 
@@ -1082,6 +1139,24 @@ def show_main_app():
 
     # map_data = st_folium(m, height=550, width="100%")
 
+    # # Use CSS to make the map full screen
+    # st.markdown(
+    #     """
+    #     <style>
+    #         /* Target the folium map container and make it full screen */
+    #         [data-testid="stFolium"] {
+    #             height: 100vh !important;
+    #             width: 100vw !important;
+    #             position: fixed;
+    #             top: 0;
+    #             left: 0;
+    #             z-index: 999;
+    #         }
+    #     </style>
+    #     """,
+    #     unsafe_allow_html=True
+    # )
+
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
 
     # Use last_object_clicked_popup from st_folium
@@ -1106,15 +1181,44 @@ def show_main_app():
         if str(obs["id"]) == selected_id:
             selected_obs = obs
             break
-    
-    # If found, show only that button
+        
     if selected_obs:
         obs_id = str(selected_obs["id"])
         base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
         label = f"{base_label}"
     
-        if st.sidebar.button(label, key=f"obs_{obs_id}", width="stretch"):
+        # EDIT BUTTON
+        if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
             edit_observation_dialog(selected_obs)
+    
+        # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
+        lat = selected_obs.get("lat")
+        lon = selected_obs.get("lon")
+    
+        if lat and lon:
+            maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+    
+            st.sidebar.markdown(
+                f"""
+                <a href="{maps_url}" target="_blank">
+                    <div style="
+                        background-color:#4285F4;
+                        color:white;
+                        padding:0.6rem;
+                        border-radius:5px;
+                        text-align:center;
+                        font-weight:500;
+                        margin-top:0.5rem;
+                        cursor:pointer;
+                    ">
+                        📍 Open in Google Maps
+                    </div>
+                </a>
+                """,
+                unsafe_allow_html=True
+            )
+
+
 
 
 
@@ -1162,6 +1266,55 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
 
 
 
