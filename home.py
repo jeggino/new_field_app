@@ -414,8 +414,8 @@ def daily_report_dialog():
     with st.expander("Choose date"):
         date = st.date_input("Date", value=datetime.utcnow().date())
 
-    start_time = st.time_input("Start Time")
-    end_time = st.time_input("End Time")
+    start_time = st.time_input("Start Time",value=None)
+    end_time = st.time_input("End Time",value=None)
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=1)
