@@ -9,29 +9,6 @@ import json
 import pandas as pd
 import re
 
-# from streamlit_pwa import pwa
-
-# pwa(
-#     app_name="New Field App",
-#     app_short_name="FieldApp",
-#     description="Installable Android version of the New Field App",
-#     theme_color="#0A84FF",
-#     background_color="#FFFFFF",
-#     icons=[
-#         {
-#             "src": "icons/Copilot_20260502_183444.png",
-#             "sizes": "192x192",
-#             "type": "image/png"
-#         },
-
-#     ]
-# )
-
-# st.image(
-#     "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg", width = "stretch"
-# )
-
-# st.stop()
 
 
 # ----------------- CONFIG -----------------
