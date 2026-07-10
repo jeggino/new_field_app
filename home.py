@@ -5,7 +5,6 @@ import json
 from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
-import base64
 import altair as alt
 
 
