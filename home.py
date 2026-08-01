@@ -880,6 +880,8 @@ def show_main_app():
     col1, col2 = st.columns([0.7, 0.3])
     with col1:
         st.write("")  # empty, no title
+        if st.button("New Observation",width="stretch",icon=":material/add_location_alt:"):
+            new_observation_dialog()
     with col2:
         if st.button("New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog()
