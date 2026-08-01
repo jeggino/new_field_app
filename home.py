@@ -879,7 +879,7 @@ def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
     col1, col2 = st.columns([0.5, 0.5])
     with col1:
-        if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/add_location_alt:"):
+        if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region_alt:"):
             new_polygon_dialog()
     with col2:
         if st.button("New Observation",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
