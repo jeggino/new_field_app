@@ -9,29 +9,7 @@ import json
 import pandas as pd
 import re
 
-# from streamlit_pwa import pwa
 
-# pwa(
-#     app_name="New Field App",
-#     app_short_name="FieldApp",
-#     description="Installable Android version of the New Field App",
-#     theme_color="#0A84FF",
-#     background_color="#FFFFFF",
-#     icons=[
-#         {
-#             "src": "icons/Copilot_20260502_183444.png",
-#             "sizes": "192x192",
-#             "type": "image/png"
-#         },
-
-#     ]
-# )
-
-# st.image(
-#     "https://image.shutterstock.com/image-illustration/work-progress-red-sign-isolated-260nw-87217798.jpg", width = "stretch"
-# )
-
-# st.stop()
 
 
 # ----------------- CONFIG -----------------
@@ -40,48 +18,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-
-
-
-
-# IMAGE_URL = "https://copilot.microsoft.com/th/id/BCO.2d3fe0e2-f66f-41f7-bc5f-c4b3f53ee37e.png"
-
-# st.markdown(
-#     f"""
-#     <style>
-#         /* Remove Streamlit default header background */
-#         header[data-testid="stHeader"] {{
-#             background: none;
-#         }}
-
-#         /* Add your background image */
-#         header[data-testid="stHeader"]::before {{
-#             content: "";
-#             position: absolute;
-#             top: 0;
-#             left: 0;
-#             width: 100%;
-#             height: 65px; /* increase until full image fits */
-#             background-image: url("{IMAGE_URL}");
-#             background-size: contain;   /* <<< THIS SHOWS THE FULL IMAGE */
-#             background-position: left;
-#             background-repeat: no-repeat;
-#             background-color: black;    /* optional: fill behind image */
-#             z-index: 0;
-#         }}
-
-#         /* Keep menu buttons clickable */
-#         header[data-testid="stHeader"] > div {{
-#             position: relative;
-#             z-index: 1;
-#         }}
-#     </style>
-#     """,
-#     unsafe_allow_html=True
-# )
-
-
 
 
 
