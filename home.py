@@ -704,18 +704,11 @@ def new_observation_dialog():
         st.rerun()
 
 
-#-----------------
-from folium.plugins import Draw
-import folium
-import streamlit as st
-from streamlit_folium import st_folium
-from datetime import datetime
-
 # ----------------- NEW POLYGON -----------------
 @st.dialog("New Polygon")
-def new_polygon_dialog():
-
+def new_polygon_dialog():    
     st.write("Draw a polygon on the map and save it.")
+    
 
     base_center = st.session_state.map_input_center
     zoom = 20
@@ -884,15 +877,12 @@ def show_project_selection():
 # ----------------- MAIN APP -----------------
 def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
-    col1, col2 = st.columns([0.5, 0.5])
+    col1, col2 = st.columns([0.7, 0.3])
     with col1:
         st.write("")  # empty, no title
-        if st.button("New Polygon",width="stretch",icon=":material/screenshot_region_alt:"):
-            new_polygon_dialog()
-        
     with col2:
         if st.button("New Observation",width="stretch",icon=":material/add_location_alt:"):
-            new_observation_dialog()
+            new_observation_dialog(
 
     # # Sidebar menu (no observations title, no new observation button)
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
