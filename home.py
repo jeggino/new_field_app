@@ -69,6 +69,13 @@ BIRD_FUNCTIONS = [
     'vogel waarneming','nestlocatie','mogelijke nestlocatie'
 ]
 
+BAT_FUNCTIONS_POLYGON = [
+    'foerageergebied','paarterritorium'
+]
+
+BIRD_FUNCTIONS_POLYGON = [
+    'dekking','Foerageergebied','slaapplaats', 'water als dronk en/of badderplaats', 'zandplekken'
+]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
 FUNCTION_ICONS = {
@@ -765,11 +772,11 @@ def new_polygon_dialog():
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
-        function = st.selectbox("Function", BAT_FUNCTIONS)
+        function = st.selectbox("Function", BAT_FUNCTIONS_POLYGON)
         
     elif animal_type == "bird":
         species = st.selectbox("Species", BIRD_SPECIES)
-        function = st.selectbox("Function", BIRD_FUNCTIONS)
+        function = st.selectbox("Function", BIRD_FUNCTIONS_POLYGON)
 
     else:
         species = None
