@@ -884,9 +884,12 @@ def show_project_selection():
 # ----------------- MAIN APP -----------------
 def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
-    col1, col2 = st.columns([0.7, 0.3])
+    col1, col2 = st.columns([0.5, 0.5])
     with col1:
         st.write("")  # empty, no title
+        if st.button("New Polygon",width="stretch",icon=":material/screenshot_region_alt:"):
+            new_polygon_dialog()
+        
     with col2:
         if st.button("New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog()
