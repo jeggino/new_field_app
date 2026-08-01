@@ -704,6 +704,100 @@ def new_observation_dialog():
         st.rerun()
 
 
+#-----------------
+from folium.plugins import Draw
+import folium
+import streamlit as st
+from streamlit_folium import st_folium
+from datetime import datetime
+
+# ----------------- NEW POLYGON -----------------
+@st.dialog("New Polygon")
+def new_polygon_dialog():
+
+    st.write("Draw a polygon on the map and save it.")
+
+    base_center = st.session_state.map_input_center
+    zoom = 20
+
+    m = folium.Map(
+        location=base_center,
+        zoom_start=zoom,
+        zoom_control=False
+    )
+
+    LocateControl(auto_start=False).add_to(m)
+
+    Draw(
+        export=False,
+        draw_options={
+            "polyline": False,
+            "rectangle": False,
+            "circle": False,
+            "circlemarker": False,
+            "marker": False,
+            "polygon": True,
+        },
+        edit_options={
+            "edit": True,
+            "remove": True,
+        },
+    ).add_to(m)
+
+    map_data = st_folium(
+        m,
+        width="100%",
+        height=500,
+        returned_objects=["all_drawings"]
+    )
+
+    polygon_coords = None
+
+    try:
+        drawings = map_data.get("all_drawings", [])
+
+        if drawings:
+            polygon_coords = drawings[0]["geometry"]["coordinates"][0]
+
+    except Exception:
+        polygon_coords = None
+
+    with st.expander("Choose date"):
+        polygon_date = st.date_input(
+            "Date",
+            value=datetime.utcnow().date()
+        )
+
+    polygon_name = st.text_input("Polygon name")
+    comments = st.text_area("Comments")
+
+    username = st.session_state.user.email
+
+    if st.button("Save polygon", width="stretch"):
+
+        if not polygon_coords:
+            st.warning("Please draw a polygon first.")
+            return
+
+        data = {
+            "name": polygon_name,
+            "comments": comments,
+            "username": username,
+            "date": str(polygon_date),
+            "project": st.session_state.project,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [polygon_coords]
+            }
+        }
+
+        supabase.table("polygons_app").insert(data).execute()
+
+        st.success("Polygon saved.")
+
+        st.rerun()
+
+
 # ----------------- UI: LOGIN -----------------
 def show_login():
     st.sidebar.title("Login")
