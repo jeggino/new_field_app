@@ -766,6 +766,8 @@ def new_polygon_dialog():
 
     username = st.session_state.user.email
 
+    
+
     if st.button("Save polygon", width="stretch"):
 
         if not polygon_coords:
@@ -783,6 +785,8 @@ def new_polygon_dialog():
                 "coordinates": [polygon_coords]
             }
         }
+
+        st.write(data)
 
         supabase.table("polygons_app").insert(data).execute()
 
