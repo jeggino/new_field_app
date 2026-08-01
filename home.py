@@ -779,7 +779,7 @@ def new_polygon_dialog():
         function = st.selectbox("Function", BIRD_FUNCTIONS_POLYGON)
 
     else:
-        species = None
+        species = st.text_area("Write a species")
         function = None        
     
 
