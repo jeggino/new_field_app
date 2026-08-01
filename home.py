@@ -90,6 +90,8 @@ FUNCTION_ICONS = {
     "vogel waarneming": "binoculars",
     "nestlocatie": "egg",
     "mogelijke nestlocatie": "question",
+
+    "plant": "pagelines"
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
@@ -669,15 +671,19 @@ def new_observation_dialog():
     with st.expander("Choose date"):
          obs_date = st.date_input("Date", value=datetime.utcnow().date())
    
-    animal_type = st.radio("Is it a bat or a bird?", ["bat", "bird"])
+    animal_type = st.radio("", ["bat", "bird", "plant"])
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
         function = st.selectbox("Function", BAT_FUNCTIONS)
         
-    else:
+    elif animal_type == "bird":
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS)
+    
+    else:
+        species = st.text_input("Species")
+        function = "plant"        
 
     aantal = st.number_input("amount", step=1, value=1)
     behavior = st.text_area("Comments")
@@ -779,8 +785,8 @@ def new_polygon_dialog():
         function = st.selectbox("Function", BIRD_FUNCTIONS_POLYGON)
 
     else:
-        species = st.text_area("Write a species")
-        function = None        
+        species = st.text_input("Write a species")
+        function = "plant"        
     
 
     aantal = st.number_input("amount", step=1, value=1)
