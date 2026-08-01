@@ -74,7 +74,7 @@ BAT_FUNCTIONS_POLYGON = [
 ]
 
 BIRD_FUNCTIONS_POLYGON = [
-    'dekking','Foerageergebied','slaapplaats', 'water als dronk en/of badderplaats', 'zandplekken'
+    'dekking','foerageergebied','slaapplaats/broedgebied', 'water als dronk en/of badderplaats', 'zandplekken'
 ]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
