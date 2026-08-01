@@ -774,17 +774,17 @@ def new_polygon_dialog():
             st.warning("Please draw a polygon first.")
             return
 
-    data = {
-        "name": polygon_name,
-        "comments": comments,
-        "username": username,
-        "project": st.session_state.project,
-        "observation_date": str(polygon_date),
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [polygon_coords]
+        data = {
+            "name": polygon_name,
+            "comments": comments,
+            "username": username,
+            "project": st.session_state.project,
+            "observation_date": str(polygon_date),
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [polygon_coords]
+            }
         }
-    }
 
 
         supabase.table("polygons_app").insert(data).execute()
