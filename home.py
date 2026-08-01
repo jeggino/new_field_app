@@ -91,7 +91,7 @@ FUNCTION_ICONS = {
     "nestlocatie": "egg",
     "mogelijke nestlocatie": "question",
 
-    "plant": "pagelines"
+    "plant": "leave"
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
@@ -1084,8 +1084,10 @@ def show_main_app():
             # Choose emoji based on species type
             if "bat" in obs.get('animal_type', ''):
                 emoji = "🦇"
-            else:
+            elif "bird" in obs.get('animal_type', ''):
                 emoji = "🪶"  # default feather for birds or unknown
+            else:
+                emoji = "🍃"
         
             image_block = f"""
                 <div style="
