@@ -91,7 +91,7 @@ FUNCTION_ICONS = {
     "nestlocatie": "egg",
     "mogelijke nestlocatie": "question",
 
-    "plant": "fa-solid fa-leaf"
+    "plant": "fa-brands fa-pagelines"
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
