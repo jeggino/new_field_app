@@ -761,10 +761,26 @@ def new_polygon_dialog():
             value=datetime.utcnow().date()
         )
 
-    polygon_name = st.text_input("Polygon name")
-    comments = st.text_area("Comments")
+    animal_type = st.radio("", ["bat", "bird", "plant"])
 
+    if animal_type == "bat":
+        species = st.selectbox("Species", BAT_SPECIES)
+        function = st.selectbox("Function", BAT_FUNCTIONS)
+        
+    elif animal_type == "bird":
+        species = st.selectbox("Species", BIRD_SPECIES)
+        function = st.selectbox("Function", BIRD_FUNCTIONS)
+
+    else:
+        species = None
+        function = None        
+    
+
+    aantal = st.number_input("amount", step=1, value=1)
+    comments = st.text_area("Comments")
     username = st.session_state.user.email
+    
+    photo = st.file_uploader("Photo (optional)", type=["jpg", "jpeg", "png"])
 
     
 
@@ -774,16 +790,24 @@ def new_polygon_dialog():
             st.warning("Please draw a polygon first.")
             return
 
+        photo_url = upload_photo(photo)
+        
         data = {
-            "name": polygon_name,
-            "comments": comments,
-            "username": username,
             "project": st.session_state.project,
-            "observation_date": str(polygon_date),
+            "username": st.session_state.user.email,
+            "date": str(polygon_date),
+        
+            "group": animal_type,
+            "species": species,
+            "function": function,
+            "comments": comments,
+        
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [polygon_coords]
-            }
+            },
+        
+            "photo_url": photo_url,
         }
 
 
