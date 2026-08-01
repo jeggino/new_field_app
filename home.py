@@ -882,7 +882,7 @@ def show_main_app():
         st.write("")  # empty, no title
     with col2:
         if st.button("New Observation",width="stretch",icon=":material/add_location_alt:"):
-            new_observation_dialog(
+            new_observation_dialog()
 
     # # Sidebar menu (no observations title, no new observation button)
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
