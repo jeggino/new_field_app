@@ -1133,6 +1133,7 @@ def edit_polygon_dialog(obs):
         supabase.table("polygons_app").update({
 
             "group": animal_type,
+            "username": "lekker lekker",
             "species": species,
             "function": function,
             "aantal": aantal,
