@@ -1119,6 +1119,8 @@ def edit_polygon_dialog(obs):
                 "type": "Polygon",
                 "coordinates": [new_polygon_coords]
             }
+        st.write(obs['properties']["id"])
+        st.write(geometry_to_save)
 
         supabase.table("polygons_app").update({
 
