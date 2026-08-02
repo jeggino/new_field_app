@@ -1397,8 +1397,12 @@ def show_project_selection():
 # ----------------- MAIN APP -----------------
 def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
-    with st.expander("New Observation",width="stretch",icon=":material/add_circle:"):
-        col1, col2 = st.columns([0.5, 0.5])
+    # with st.expander("New Observation",width="stretch",icon=":material/add_circle:"):
+    #     col1, col2 = st.columns([0.5, 0.5])
+
+    with st.bottom:
+        with st.expander("New Observation",width="stretch",icon=":material/add_circle:"):
+            col1, col2 = st.columns([0.5, 0.5])
 
 
     # # Sidebar menu (no observations title, no new observation button)
@@ -1945,8 +1949,7 @@ def show_main_app():
             #     )
         except:
             pass
-    with st.bottom:
-        st.caption("© 2026 My Company · All rights reserved")
+
 
 
 
