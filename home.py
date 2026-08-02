@@ -1010,28 +1010,36 @@ def show_main_app():
 
         st.sidebar.markdown(
             f"""
-            <a href="{maps_url}" target="_blank">
+            {maps_url}
                 <div style="
-                    background-color:#4285F4;
+                    background: repeating-linear-gradient(
+                        45deg,
+                        #FFD700,
+                        #FFD700 12px,
+                        #000000 12px,
+                        #000000 24px
+                    );
                     color:white;
-                    padding:0.6rem;
-                    border-radius:5px;
+                    padding:0.8rem;
+                    border-radius:8px;
                     text-align:center;
-                    font-weight:500;
+                    font-weight:700;
                     margin-top:0.5rem;
                     cursor:pointer;
+                    border:2px solid black;
+                    text-shadow:1px 1px 2px black;
                 ">
-                    📍 Open in Google Maps
+                    🚗 Get Directions
                 </div>
             </a>
             """,
             unsafe_allow_html=True
         )
 
+    st.sidebar.divider()
+
     st.sidebar.header("Filters")
 
-    st.sidebar.divider()
-    
     obs = st.session_state.observations
     
     # ---------------------------------------------------------
