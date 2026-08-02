@@ -1160,7 +1160,7 @@ def edit_polygon_dialog(obs):
             "polygons_app"
         ).delete().eq(
             "id",
-            obs["id"]
+            obs['properties']["id"]
         ).execute()
 
         load_polygons(
