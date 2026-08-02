@@ -588,7 +588,23 @@ def edit_observation_dialog(obs):
         obs_date = st.date_input("Date", value=d)
         
     animal_type = obs.get("animal_type", "bat")
-    animal_type = st.radio("Animal type", ["bat", "bird"], index=0 if animal_type == "bat" else 1)
+
+    options = {
+        "🦇": "bat",
+        "🪶": "bird",
+        "🍃": "plant",
+    }
+    
+    selected_emoji = st.radio(
+        "group",
+        list(options.keys()),
+        index=0 if animal_type == "bat" else 1 if animal_type == "bird" else 2,
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    
+    animal_type = options[selected_emoji]
+
 
     if animal_type == "bat":
         species_list = BAT_SPECIES
@@ -596,6 +612,8 @@ def edit_observation_dialog(obs):
     else:
         species_list = BIRD_SPECIES
         func_list = BIRD_FUNCTIONS
+    
+
 
     species_value = obs.get("species", species_list[0])
     if species_value not in species_list:
@@ -605,8 +623,13 @@ def edit_observation_dialog(obs):
     if function_value not in func_list:
         function_value = func_list[0]
 
-    species = st.selectbox("Species", species_list, index=species_list.index(species_value))
-    function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+    if animal_type.isin(["bat","bird"]):
+        species = st.selectbox("Species", species_list, index=species_list.index(species_value))
+        function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+    else:
+        species = st.text_input("Species",value=species_value)
+        function = function_value
+    
     aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
 
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
