@@ -1007,7 +1007,7 @@ def show_main_app():
     centroid_lng = (bounds[0][1] + bounds[1][1]) / 2
 
 
-    if lat and lon:
+    if centroid_lat and centroid_lng:
         maps_url = f"https://www.google.com/maps?q={centroid_lat},{centroid_lng}"
 
         st.sidebar.markdown(
