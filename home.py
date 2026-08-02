@@ -1726,6 +1726,7 @@ def show_main_app():
         if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
             if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
                 edit_polygon_dialog(map_data["last_active_drawing"]["properties"]["id"])
+                st.stop()
             
 
 
