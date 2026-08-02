@@ -609,7 +609,7 @@ def edit_observation_dialog(obs):
     if animal_type == "bat":
         species_list = BAT_SPECIES
         func_list = BAT_FUNCTIONS
-    else:
+    elif animal_type == "bird":
         species_list = BIRD_SPECIES
         func_list = BIRD_FUNCTIONS
     
@@ -627,10 +627,10 @@ def edit_observation_dialog(obs):
         species = st.selectbox("Species", species_list, index=species_list.index(species_value))
         function = st.selectbox("Function", func_list, index=func_list.index(function_value))
     else:
-        species = st.text_input("Species",value=species_value)
+        species = st.text_input("Species",value=obs.get("aantal"))
         function = function_value
     
-    aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
+    aantal = st.number_input("amount", step=1, value=int(obs.get("species")))
 
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
     username = st.text_input("Observer", value=obs.get("username", ""))
