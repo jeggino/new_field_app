@@ -623,7 +623,7 @@ def edit_observation_dialog(obs):
     if function_value not in func_list:
         function_value = func_list[0]
 
-    if animal_type.isin(["bat","bird"]):
+    if animal_type in ["bat","bird"]:
         species = st.selectbox("Species", species_list, index=species_list.index(species_value))
         function = st.selectbox("Function", func_list, index=func_list.index(function_value))
     else:
