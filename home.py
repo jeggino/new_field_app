@@ -438,9 +438,9 @@ def parse_time_safe(value):
 
     value = value.strip()
 
-    # If already a time object
-    if isinstance(value, time):
-        return value
+    # # If already a time object
+    # if isinstance(value, time):
+    #     return value
 
     # Try HH:MM
     try:
