@@ -797,7 +797,7 @@ def new_polygon_dialog():
             "polygon": True,
         },
         edit_options={
-            "edit": True,
+            "edit": False,
             "remove": True,
         },
     ).add_to(m)
@@ -809,6 +809,8 @@ def new_polygon_dialog():
         returned_objects=["all_drawings"],
         key="new_polygon_map",
     )
+
+    st.write(map_data)
 
     polygon_coords = None
 
