@@ -902,6 +902,8 @@ def edit_polygon_dialog(obs):
         "Draw a new polygon only if you want to replace it."
     )
 
+    st.write(obs)
+
     geometry = obs["geometry"]
 
     coords = geometry["coordinates"][0]
