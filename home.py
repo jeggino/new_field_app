@@ -763,6 +763,9 @@ def new_observation_dialog(center):
         st.session_state.map_center = [float(lat), float(lon)]
         st.session_state.map_input_center = [float(lat), float(lon)]
 
+        st.success("Point saved!")
+        time.sleep(2)
+
         load_observations(st.session_state.project)
         st.rerun()
 
@@ -891,7 +894,7 @@ def new_polygon_dialog(center):
         supabase.table("polygons_app").insert(data).execute()
 
         st.success("Polygon saved.")
-        time.sleep(5)
+        time.sleep(2)
 
         st.rerun()
         
