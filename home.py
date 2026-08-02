@@ -961,7 +961,7 @@ def edit_polygon_dialog(obs):
         width="100%",
         height=350,
         returned_objects=["all_drawings"],
-        key=f"edit_polygon_{obs['id']}",
+        key=f"edit_polygon_{obs['properties']['id']}",
     )
 
     new_polygon_coords = None
