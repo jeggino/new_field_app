@@ -1737,7 +1737,7 @@ def show_main_app():
             if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
                 obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
                 label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
-                if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
+                if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/screenshot_region:"):
                     edit_polygon_dialog(map_data["last_active_drawing"])
                     st.stop()
     
@@ -1774,7 +1774,7 @@ def show_main_app():
                     label = f"{base_label}"
                 
                     # EDIT BUTTON
-                    if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
+                    if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/add_location_alt:"):
                         edit_observation_dialog(selected_obs)
     
     
