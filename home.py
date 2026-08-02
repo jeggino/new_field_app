@@ -796,8 +796,8 @@ def new_observation_dialog(center):
         "🦇": "bat",
         "🪶": "bird",
         "🍃": "plant",
-        "🐸": "amphibian"
-        "≽༏≼": "odonata"
+        "🐸": "amphibian",
+        "≽༏≼": "odonata",
     }
     
     selected_emoji = st.radio(
