@@ -675,10 +675,10 @@ def edit_observation_dialog(obs):
 def new_observation_dialog(center):
     st.write("Use the map center as the observation position.")
 
-    base_center = center
+    # base_center = center
     zoom = 20
 
-    m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
+    m = folium.Map(location=center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     crosshair_html = f"""
@@ -772,11 +772,11 @@ def new_polygon_dialog(center):
     st.write("Draw a polygon on the map and save it.")
   
     
-    base_center = center 
+    # base_center = center 
     zoom = 20
 
     m = folium.Map(
-        location=base_center,
+        location=center,
         zoom_start=zoom,
         zoom_control=False
     )
