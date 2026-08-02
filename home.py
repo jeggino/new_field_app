@@ -771,7 +771,6 @@ def new_observation_dialog():
 def new_polygon_dialog():    
     st.write("Draw a polygon on the map and save it.")
     
-
     base_center = st.session_state.map_input_center
     zoom = 20
 
@@ -803,7 +802,8 @@ def new_polygon_dialog():
         m,
         width="100%",
         height=350,
-        returned_objects=["all_drawings"]
+        returned_objects=["all_drawings"],
+        key="new_polygon_map",
     )
 
     polygon_coords = None
