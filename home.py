@@ -684,7 +684,20 @@ def new_observation_dialog():
     with st.expander("Choose date"):
          obs_date = st.date_input("Date", value=datetime.utcnow().date())
    
-    animal_type = st.radio("", ["bat", "bird", "plant"])
+    options = {
+        "🦇": "bat",
+        "🪶": "bird",
+        "🍃": "plant",
+    }
+    
+    selected_emoji = st.radio(
+        "group",
+        list(options.keys()),
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    
+    animal_type = options[selected_emoji]
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
