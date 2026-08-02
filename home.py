@@ -660,6 +660,9 @@ def edit_observation_dialog(obs):
             "photo_url": photo_url,
         }).eq("id", obs["id"]).execute()
 
+        st.success("Point edited!")
+        time.sleep(2)
+
         load_observations(st.session_state.project)
         st.rerun()
 
@@ -876,7 +879,7 @@ def new_polygon_dialog(center):
             "project": st.session_state.project,
             "username": st.session_state.user.email,
             "date": str(polygon_date),
-        
+            "aantal": aantal,
             "group": animal_type,
             "species": species,
             "function": function,
@@ -1135,10 +1138,9 @@ def edit_polygon_dialog(obs):
         st.write(geometry_to_save)
 
 
-        supabase.table("polygons_app").update({
+        supabase.table(OBS_POLYGONS).update({
 
             "group": animal_type,
-            "username": "lekker lekker",
             "species": species,
             "function": function,
             "aantal": aantal,
@@ -1171,7 +1173,7 @@ def edit_polygon_dialog(obs):
         )
 
         supabase.table(
-            "polygons_app"
+            OBS_POLYGONS
         ).delete().eq(
             "id",
             obs['properties']["id"]
