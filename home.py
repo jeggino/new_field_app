@@ -910,8 +910,6 @@ def edit_polygon_dialog(obs):
         "Draw a new polygon only if you want to replace it."
     )
 
-    st.write(obs)
-
     geometry = obs["geometry"]
 
     coords = geometry["coordinates"][0]
@@ -1127,15 +1125,6 @@ def edit_polygon_dialog(obs):
                 "type": "Polygon",
                 "coordinates": [new_polygon_coords]
             }
-        st.write(obs['properties']["id"])
-        st.write(animal_type)
-        st.write(species)
-        st.write(function)
-        st.write(aantal)
-        st.write(comments)
-        st.write(photo_url)
-        st.write(str(polygon_date))
-        st.write(geometry_to_save)
 
 
         supabase.table(OBS_POLYGONS).update({
