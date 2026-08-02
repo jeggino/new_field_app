@@ -783,16 +783,6 @@ def new_polygon_dialog(center):
 
     LocateControl(auto_start=False).add_to(m)
 
-
-
-    map_data = st_folium(
-        m,
-        width="100%",
-        height=350,
-        returned_objects=["all_drawings"],
-        key="new_polygon_map",
-    )
-
     Draw(
         export=False,
         draw_options={
@@ -808,6 +798,16 @@ def new_polygon_dialog(center):
             "remove": True,
         },
     ).add_to(m)
+
+    map_data = st_folium(
+        m,
+        width="100%",
+        height=350,
+        returned_objects=["all_drawings"],
+        key="new_polygon_map",
+    )
+
+
 
     st.write(map_data)
 
