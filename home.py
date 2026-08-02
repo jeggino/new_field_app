@@ -8,6 +8,7 @@ import uuid
 import json
 import pandas as pd
 import re
+import time
 
 
 
@@ -890,6 +891,7 @@ def new_polygon_dialog(center):
         supabase.table("polygons_app").insert(data).execute()
 
         st.success("Polygon saved.")
+        time.sleep(5)
 
         st.rerun()
         
