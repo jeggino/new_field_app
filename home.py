@@ -771,12 +771,12 @@ def new_observation_dialog(center):
 def new_polygon_dialog(center):    
     st.write("Draw a polygon on the map and save it.")
   
-    
-    # base_center = center 
+    base_center = center 
     zoom = 20
+    st.write(base_center)
 
     m = folium.Map(
-        location=center,
+        location=base_center,
         zoom_start=zoom,
         zoom_control=False
     )
@@ -1411,9 +1411,9 @@ def show_main_app():
 
 
     with st.container():
-        # st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
+        st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
         map_data = st_folium(m, height=450, width="100%")
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
     # map_data = st_folium(m, height=550, width="100%")
