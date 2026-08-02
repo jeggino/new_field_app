@@ -770,6 +770,10 @@ def new_observation_dialog():
 @st.dialog("New Polygon")
 def new_polygon_dialog():    
     st.write("Draw a polygon on the map and save it.")
+
+    if "polygon_center" not in st.session_state:
+        st.session_state.polygon_center = st.session_state.map_input_center
+    
     
     base_center = st.session_state.map_input_center
     zoom = 20
