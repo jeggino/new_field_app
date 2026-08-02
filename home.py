@@ -753,7 +753,7 @@ def new_polygon_dialog():
     map_data = st_folium(
         m,
         width="100%",
-        height=500,
+        height=350,
         returned_objects=["all_drawings"]
     )
 
