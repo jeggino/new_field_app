@@ -675,10 +675,10 @@ def edit_observation_dialog(obs):
 def new_observation_dialog(center):
     st.write("Use the map center as the observation position.")
 
-    # base_center = center
+    base_center = center
     zoom = 20
 
-    m = folium.Map(location=center, zoom_start=zoom,zoom_control=False)
+    m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     crosshair_html = f"""
@@ -773,7 +773,6 @@ def new_polygon_dialog(center):
   
     base_center = center 
     zoom = 20
-    st.write(base_center)
 
     m = folium.Map(
         location=base_center,
@@ -794,7 +793,7 @@ def new_polygon_dialog(center):
             "polygon": True,
         },
         edit_options={
-            "edit": True,
+            "edit": False,
             "remove": True,
         },
     ).add_to(m)
@@ -807,9 +806,6 @@ def new_polygon_dialog(center):
         key="new_polygon_map",
     )
 
-
-
-    st.write(map_data)
 
     polygon_coords = None
 
@@ -1432,10 +1428,6 @@ def show_main_app():
     # )
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
-    st.write(st.session_state.map_input_center)
-
-
-
     
     with col1:
         if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
@@ -1443,8 +1435,6 @@ def show_main_app():
     with col2:
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog(st.session_state.map_input_center)
-
-
 
 
     # Use last_object_clicked_popup from st_folium
