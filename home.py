@@ -61,6 +61,22 @@ BIRD_SPECIES = [
     'Boomkruiper','Kauw','Steenuil','..ander'
 ]
 
+DUTCH_AMPHIBIANS = [
+    "Kleine watersalamander",
+    "Alpenwatersalamander",
+    "Kamsalamander",
+    "Vinpootsalamander",
+    "Bruine kikker",
+    "Heikikker",
+    "Poelkikker",
+    "Meerkikker",
+    "Middelste groene kikker",
+    "Boomkikker",
+    "Gewone pad",
+    "Rugstreeppad",
+    "Vroedmeesterpad",
+]
+
 # ----------------- FUNCTION LISTS -----------------
 BAT_FUNCTIONS = [
     'vleermuis waarneming','zomerverblijfplaats','kraamverblijfplaats',
@@ -77,6 +93,26 @@ BAT_FUNCTIONS_POLYGON = [
 
 BIRD_FUNCTIONS_POLYGON = [
     'dekking','foerageergebied','slaapplaats/broedgebied', 'water als dronk en/of badderplaats', 'zandplekken'
+]
+
+AMPHIBIE_FUNCTIONS = [
+    "Adult",
+    "Roepend",
+    "Paring",
+    "Eieren",
+    "Larven",
+    "Jong dier",
+    "Foeragerend",
+    "Trek",
+    "Dood",
+]
+
+AMPHIBIE_FUNCTIONS_POLYGON = [
+    "Voortplantingswater",
+    "Larvenhabitat",
+    "Foerageergebied",
+    "Migratieroute",
+    "Overwinteringsgebied",
 ]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
@@ -715,6 +751,7 @@ def new_observation_dialog(center):
         "🦇": "bat",
         "🪶": "bird",
         "🍃": "plant",
+        "🐸": "amphibian"
     }
     
     selected_emoji = st.radio(
@@ -733,6 +770,10 @@ def new_observation_dialog(center):
     elif animal_type == "bird":
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS)
+        
+    elif animal_type == "amphibian":
+        species = st.selectbox("Species", DUTCH_AMPHIBIANS)
+        function = st.selectbox("Function", AMPHIBIE_FUNCTIONS)
     
     else:
         species = st.text_input("Species")
