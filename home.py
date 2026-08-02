@@ -1409,13 +1409,13 @@ def show_main_app():
             border-radius:6px;
             font-weight:600;
         ">
-            🟢 New Observation
+            ⨁ New Observation
         </div>
         """, unsafe_allow_html=True)
-        with st.expander(label,width="stretch",icon=":material/add_circle:"):
+        with st.expander(label,width="stretch"):
             col1, col2 = st.columns([0.5, 0.5])
 
-
+# ,icon=":material/add_circle:"
 
 
     # # Sidebar menu (no observations title, no new observation button)
