@@ -1397,7 +1397,7 @@ def show_project_selection():
 # ----------------- MAIN APP -----------------
 def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
-    with st.popover("New Observation",width="stretch",icon=":material/add_circle:"):
+    with st.expander("New Observation",width="stretch",icon=":material/add_circle:"):
         col1, col2 = st.columns([0.5, 0.5])
 
 
