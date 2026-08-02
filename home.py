@@ -1262,8 +1262,8 @@ def show_main_app():
             fill_opacity=fill_opacity: {
                 "fillColor": fill_color,
                 "fillOpacity": fill_opacity,
-                "color": "black",
-                "weight": 1,
+                "color": fill_color,
+                "weight": 1.5,
             },
         ).add_to(m)
     
