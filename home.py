@@ -1727,6 +1727,8 @@ def show_main_app():
             st.write(map_data["last_active_drawing"])
             label = f"{map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
             obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
+            st.write(label)
+            st.write(obs_id)
             if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
                 edit_polygon_dialog(map_data["last_active_drawing"])
                 st.stop()
@@ -1776,32 +1778,32 @@ def show_main_app():
 
             
     
-        # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
-        lat = selected_obs.get("lat")
-        lon = selected_obs.get("lon")
+        # # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
+        # lat = selected_obs.get("lat")
+        # lon = selected_obs.get("lon")
     
-        if lat and lon:
-            maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+        # if lat and lon:
+        #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
     
-            st.sidebar.markdown(
-                f"""
-                <a href="{maps_url}" target="_blank">
-                    <div style="
-                        background-color:#4285F4;
-                        color:white;
-                        padding:0.6rem;
-                        border-radius:5px;
-                        text-align:center;
-                        font-weight:500;
-                        margin-top:0.5rem;
-                        cursor:pointer;
-                    ">
-                        📍 Open in Google Maps
-                    </div>
-                </a>
-                """,
-                unsafe_allow_html=True
-            )
+        #     st.sidebar.markdown(
+        #         f"""
+        #         <a href="{maps_url}" target="_blank">
+        #             <div style="
+        #                 background-color:#4285F4;
+        #                 color:white;
+        #                 padding:0.6rem;
+        #                 border-radius:5px;
+        #                 text-align:center;
+        #                 font-weight:500;
+        #                 margin-top:0.5rem;
+        #                 cursor:pointer;
+        #             ">
+        #                 📍 Open in Google Maps
+        #             </div>
+        #         </a>
+        #         """,
+        #         unsafe_allow_html=True
+        #     )
 
 
 
