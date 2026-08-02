@@ -892,6 +892,278 @@ def new_polygon_dialog(center):
         st.success("Polygon saved.")
 
         st.rerun()
+        
+#-----------------------------------------------------------
+@st.dialog("Edit Polygon")
+def edit_polygon_dialog(obs):
+
+    st.write(
+        "The red polygon is the current one. "
+        "Draw a new polygon only if you want to replace it."
+    )
+
+    geometry = obs["geometry"]
+
+    coords = geometry["coordinates"][0]
+
+    lats = [p[1] for p in coords]
+    lons = [p[0] for p in coords]
+
+    center = [
+        sum(lats) / len(lats),
+        sum(lons) / len(lons)
+    ]
+
+    m = folium.Map(
+        location=center,
+        zoom_start=18,
+        zoom_control=False
+    )
+
+    LocateControl(auto_start=False).add_to(m)
+
+    # CURRENT POLYGON (RED)
+
+    folium.GeoJson(
+        {
+            "type": "Feature",
+            "geometry": geometry,
+        },
+        tooltip="Current polygon",
+        style_function=lambda x: {
+            "fillColor": "red",
+            "color": "red",
+            "weight": 3,
+            "fillOpacity": 0.2,
+        },
+    ).add_to(m)
+
+    Draw(
+        export=False,
+        draw_options={
+            "polyline": False,
+            "rectangle": False,
+            "circle": False,
+            "circlemarker": False,
+            "marker": False,
+            "polygon": True,
+        },
+        edit_options={
+            "edit": False,
+            "remove": True,
+        },
+    ).add_to(m)
+
+    map_data = st_folium(
+        m,
+        width="100%",
+        height=350,
+        returned_objects=["all_drawings"],
+        key=f"edit_polygon_{obs['id']}",
+    )
+
+    new_polygon_coords = None
+
+    try:
+        drawings = map_data.get("all_drawings", [])
+
+        if drawings:
+            new_polygon_coords = (
+                drawings[0]["geometry"]["coordinates"][0]
+            )
+
+    except Exception:
+        pass
+
+    # DATE
+
+    try:
+        polygon_date = datetime.fromisoformat(
+            obs["date"]
+        ).date()
+    except:
+        polygon_date = datetime.utcnow().date()
+
+    with st.expander("Choose date"):
+        polygon_date = st.date_input(
+            "Date",
+            value=polygon_date
+        )
+
+    # GROUP
+
+    animal_type = obs.get("group", "bat")
+
+    options = {
+        "🦇": "bat",
+        "🪶": "bird",
+        "🍃": "plant",
+    }
+
+    selected_emoji = st.radio(
+        "group",
+        list(options.keys()),
+        index=0 if animal_type == "bat"
+        else 1 if animal_type == "bird"
+        else 2,
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+    animal_type = options[selected_emoji]
+
+    # SPECIES / FUNCTION
+
+    if animal_type == "bat":
+
+        species_value = obs.get("species", BAT_SPECIES[0])
+
+        if species_value not in BAT_SPECIES:
+            species_value = BAT_SPECIES[0]
+
+        function_value = obs.get(
+            "function",
+            BAT_FUNCTIONS_POLYGON[0]
+        )
+
+        if function_value not in BAT_FUNCTIONS_POLYGON:
+            function_value = BAT_FUNCTIONS_POLYGON[0]
+
+        species = st.selectbox(
+            "Species",
+            BAT_SPECIES,
+            index=BAT_SPECIES.index(species_value)
+        )
+
+        function = st.selectbox(
+            "Function",
+            BAT_FUNCTIONS_POLYGON,
+            index=BAT_FUNCTIONS_POLYGON.index(function_value)
+        )
+
+    elif animal_type == "bird":
+
+        species_value = obs.get("species", BIRD_SPECIES[0])
+
+        if species_value not in BIRD_SPECIES:
+            species_value = BIRD_SPECIES[0]
+
+        function_value = obs.get(
+            "function",
+            BIRD_FUNCTIONS_POLYGON[0]
+        )
+
+        if function_value not in BIRD_FUNCTIONS_POLYGON:
+            function_value = BIRD_FUNCTIONS_POLYGON[0]
+
+        species = st.selectbox(
+            "Species",
+            BIRD_SPECIES,
+            index=BIRD_SPECIES.index(species_value)
+        )
+
+        function = st.selectbox(
+            "Function",
+            BIRD_FUNCTIONS_POLYGON,
+            index=BIRD_FUNCTIONS_POLYGON.index(function_value)
+        )
+
+    else:
+
+        species = st.text_input(
+            "Species",
+            value=obs.get("species", "")
+        )
+
+        function = "plant"
+
+    aantal = st.number_input(
+        "Amount",
+        step=1,
+        value=int(obs.get("aantal", 1))
+    )
+
+    comments = st.text_area(
+        "Comments",
+        value=obs.get("comments", "")
+    )
+
+    if obs.get("photo_url"):
+        st.image(
+            obs["photo_url"],
+            width=150,
+            caption="Current photo"
+        )
+
+    new_photo = st.file_uploader(
+        "Replace Photo",
+        type=["jpg", "jpeg", "png"]
+    )
+
+    # UPDATE
+
+    if st.button("Update Polygon", width="stretch"):
+
+        photo_url = obs.get("photo_url")
+
+        if new_photo:
+            delete_photo_from_storage(photo_url)
+            photo_url = upload_photo(new_photo)
+
+        geometry_to_save = geometry
+
+        if new_polygon_coords:
+            geometry_to_save = {
+                "type": "Polygon",
+                "coordinates": [new_polygon_coords]
+            }
+
+        supabase.table("polygons_app").update({
+
+            "group": animal_type,
+            "species": species,
+            "function": function,
+            "aantal": aantal,
+            "comments": comments,
+            "date": str(polygon_date),
+            "photo_url": photo_url,
+            "geometry": geometry_to_save,
+
+        }).eq(
+            "id",
+            obs["id"]
+        ).execute()
+
+        load_polygons(st.session_state.project)
+
+        st.success("Polygon updated")
+
+        st.rerun()
+
+    # DELETE
+
+    if st.button(
+        "Delete Polygon",
+        type="secondary",
+        width="stretch"
+    ):
+
+        delete_photo_from_storage(
+            obs.get("photo_url")
+        )
+
+        supabase.table(
+            "polygons_app"
+        ).delete().eq(
+            "id",
+            obs["id"]
+        ).execute()
+
+        load_polygons(
+            st.session_state.project
+        )
+
+        st.rerun()
 
 
 # ----------------- UI: LOGIN -----------------
@@ -1238,6 +1510,7 @@ def show_main_app():
                 fill_color=fill_color,
                 color=fill_color,
                 fill_opacity=0.8,
+                
             )
             pattern.add_to(m)
     
@@ -1255,10 +1528,7 @@ def show_main_app():
     
         geojson = folium.GeoJson(
             feature,
-            tooltip=folium.GeoJsonTooltip(
-                fields=["species", "function"],
-                aliases=["Species", "Function"],
-            ),
+            tooltip="id",
             style_function=lambda f,
             fill_color=fill_color,
             fill_opacity=fill_opacity: {
@@ -1379,10 +1649,10 @@ def show_main_app():
         # Tooltip contains ONLY the ID (for selection)
         tooltip_text = obs["id"]
 
-        if color in ["darkred","darkblue","darkgreen","black","purple"]:
-            text_color="white"
-        else:
-            text_color="black"
+        # if color in ["darkred","darkblue","darkgreen","black","purple"]:
+        #     text_color="white"
+        # else:
+        #     text_color="black"
 
         
         # BeautifyIcon marker
@@ -1415,6 +1685,8 @@ def show_main_app():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
         map_data = st_folium(m, height=450, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
+
+    st.write(map_data)
 
 
     # map_data = st_folium(m, height=550, width="100%")
