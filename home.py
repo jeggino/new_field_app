@@ -1725,10 +1725,12 @@ def show_main_app():
     if map_data and map_data.get("last_active_drawing"):
         if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
             st.write(map_data["last_active_drawing"])
-            label = f"{map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
             obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
+            label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
+            
             st.write(label)
             st.write(obs_id)
+            st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True)
             if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
                 edit_polygon_dialog(map_data["last_active_drawing"])
                 st.stop()
