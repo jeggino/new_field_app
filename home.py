@@ -797,7 +797,7 @@ def new_polygon_dialog():
             "polygon": True,
         },
         edit_options={
-            "edit": False,
+            "edit": True,
             "remove": True,
         },
     ).add_to(m)
