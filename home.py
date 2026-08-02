@@ -628,7 +628,7 @@ def edit_observation_dialog(obs):
         
     else:
         species = st.text_input("Species",value=obs.get("species"))
-        function = function_value
+        function = value=obs.get("function")
     
     aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
 
