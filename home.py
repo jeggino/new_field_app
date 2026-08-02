@@ -1001,7 +1001,36 @@ def show_main_app():
 
     st.sidebar.divider()  
 
+    # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
+    lat = st.session_state.map_center[0]
+    lon = st.session_state.map_center[1]
+
+    if lat and lon:
+        maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+
+        st.sidebar.markdown(
+            f"""
+            <a href="{maps_url}" target="_blank">
+                <div style="
+                    background-color:#4285F4;
+                    color:white;
+                    padding:0.6rem;
+                    border-radius:5px;
+                    text-align:center;
+                    font-weight:500;
+                    margin-top:0.5rem;
+                    cursor:pointer;
+                ">
+                    📍 Open in Google Maps
+                </div>
+            </a>
+            """,
+            unsafe_allow_html=True
+        )
+
     st.sidebar.header("Filters")
+
+    st.sidebar.divider()
     
     obs = st.session_state.observations
     
