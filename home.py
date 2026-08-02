@@ -1091,116 +1091,116 @@ def show_main_app():
     LocateControl(auto_start=False).add_to(m)
 
 
-# ============================================================
-# LOAD POLYGONS
-# ============================================================
-
-polygon_rows = (
-    supabase
-    .table(OBS_POLYGONS)
-    .select("*")
-    .eq("project", st.session_state.project)
-    .execute()
-).data or []
-
-# ============================================================
-# SPECIES COLORS
-# ============================================================
-
-palette = [
-    "#e41a1c",
-    "#377eb8",
-    "#4daf4a",
-    "#984ea3",
-    "#ff7f00",
-    "#ffff33",
-    "#a65628",
-    "#f781bf",
-    "#999999",
-    "#66c2a5",
-    "#fc8d62",
-    "#8da0cb",
-]
-
-polygon_species = sorted({
-    row.get("species", "Unknown")
-    for row in polygon_rows
-    if row.get("species")
-})
-
-species_colors = {
-    s: palette[i % len(palette)]
-    for i, s in enumerate(polygon_species)
-}
-
-# ============================================================
-# ADD POLYGONS TO MAP
-# ============================================================
-
-for row in polygon_rows:
-
-    geometry = row["geometry"]
-    species = row.get("species", "Unknown")
-    function_type = row.get("function", "")
-
-    fill_color = species_colors.get(species, "#cccccc")
-
-    pattern = None
-    fill_opacity = 1
-
-    if function_type == "paarterritorium":
-
-        pattern = StripePattern(
-            angle=45,
-            weight=4,
-            space_weight=4,
-            color=fill_color,
-            opacity=0.8,
-        )
-        pattern.add_to(m)
-
-    elif function_type == "foerageergebied":
-
-        pattern = CirclePattern(
-            width=12,
-            height=12,
-            radius=2,
-            fill_color=fill_color,
-            color=fill_color,
-            fill_opacity=0.8,
-        )
-        pattern.add_to(m)
-
-    else:
-        fill_opacity = 0.1
-
-    feature = {
-        "type": "Feature",
-        "geometry": geometry,
-        "properties": {
-            "species": species,
-            "function": function_type,
-        },
+    # ============================================================
+    # LOAD POLYGONS
+    # ============================================================
+    
+    polygon_rows = (
+        supabase
+        .table(OBS_POLYGONS)
+        .select("*")
+        .eq("project", st.session_state.project)
+        .execute()
+    ).data or []
+    
+    # ============================================================
+    # SPECIES COLORS
+    # ============================================================
+    
+    palette = [
+        "#e41a1c",
+        "#377eb8",
+        "#4daf4a",
+        "#984ea3",
+        "#ff7f00",
+        "#ffff33",
+        "#a65628",
+        "#f781bf",
+        "#999999",
+        "#66c2a5",
+        "#fc8d62",
+        "#8da0cb",
+    ]
+    
+    polygon_species = sorted({
+        row.get("species", "Unknown")
+        for row in polygon_rows
+        if row.get("species")
+    })
+    
+    species_colors = {
+        s: palette[i % len(palette)]
+        for i, s in enumerate(polygon_species)
     }
-
-    geojson = folium.GeoJson(
-        feature,
-        tooltip=folium.GeoJsonTooltip(
-            fields=["species", "function"],
-            aliases=["Species", "Function"],
-        ),
-        style_function=lambda f,
-        fill_color=fill_color,
-        fill_opacity=fill_opacity: {
-            "fillColor": fill_color,
-            "fillOpacity": fill_opacity,
-            "color": "black",
-            "weight": 1,
-        },
-    ).add_to(m)
-
-    if pattern:
-        geojson.options["fillPattern"] = pattern
+    
+    # ============================================================
+    # ADD POLYGONS TO MAP
+    # ============================================================
+    
+    for row in polygon_rows:
+    
+        geometry = row["geometry"]
+        species = row.get("species", "Unknown")
+        function_type = row.get("function", "")
+    
+        fill_color = species_colors.get(species, "#cccccc")
+    
+        pattern = None
+        fill_opacity = 1
+    
+        if function_type == "paarterritorium":
+    
+            pattern = StripePattern(
+                angle=45,
+                weight=4,
+                space_weight=4,
+                color=fill_color,
+                opacity=0.8,
+            )
+            pattern.add_to(m)
+    
+        elif function_type == "foerageergebied":
+    
+            pattern = CirclePattern(
+                width=12,
+                height=12,
+                radius=2,
+                fill_color=fill_color,
+                color=fill_color,
+                fill_opacity=0.8,
+            )
+            pattern.add_to(m)
+    
+        else:
+            fill_opacity = 0.1
+    
+        feature = {
+            "type": "Feature",
+            "geometry": geometry,
+            "properties": {
+                "species": species,
+                "function": function_type,
+            },
+        }
+    
+        geojson = folium.GeoJson(
+            feature,
+            tooltip=folium.GeoJsonTooltip(
+                fields=["species", "function"],
+                aliases=["Species", "Function"],
+            ),
+            style_function=lambda f,
+            fill_color=fill_color,
+            fill_opacity=fill_opacity: {
+                "fillColor": fill_color,
+                "fillOpacity": fill_opacity,
+                "color": "black",
+                "weight": 1,
+            },
+        ).add_to(m)
+    
+        if pattern:
+            geojson.options["fillPattern"] = pattern
 
 
 
