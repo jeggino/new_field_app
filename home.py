@@ -1149,7 +1149,7 @@ def show_main_app():
                 "fillColor": "#ffcc00",
                 "color": "red",
                 "weight": 2.5,
-                "fillOpacity": 0.1,
+                "fillOpacity": 0.05,
             }
         ).add_to(m)
     
