@@ -986,12 +986,7 @@ def show_main_app():
     # NO title on main page, only New Observation button (mobile-friendly)
     with st.popover("New Observation",width="stretch",icon=":material/add_circle:"):
         col1, col2 = st.columns([0.5, 0.5])
-        with col1:
-            if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
-                new_polygon_dialog(st.session_state.map_input_center)
-        with col2:
-            if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
-                new_observation_dialog(st.session_state.map_input_center)
+
 
     # # Sidebar menu (no observations title, no new observation button)
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
@@ -1438,6 +1433,19 @@ def show_main_app():
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     st.write(st.session_state.map_input_center)
+
+
+
+    
+    with col1:
+        if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
+            new_polygon_dialog(st.session_state.map_input_center)
+    with col2:
+        if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
+            new_observation_dialog(st.session_state.map_input_center)
+
+
+
 
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_object_clicked_popup"):
