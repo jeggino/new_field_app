@@ -1402,6 +1402,16 @@ def show_main_app():
 
     with st.bottom:
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
+
+        st.markdown("""
+        <style>
+        .streamlit-expanderHeader {
+            color: #2563eb !important;
+            font-size: 1.2rem !important;
+            font-weight: 700 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
         label = "**New Observation**"
         with st.expander(label,width="stretch",icon=":material/add_circle:"):
             col1, col2 = st.columns([0.5, 0.5])
