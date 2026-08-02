@@ -26,6 +26,7 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 PROJECTS_TABLE = "project_members"
 OBS_TABLE = "observations"
+OBS_POLYGONS = "polygons_app"
 BUCKET = "observation_photos"
 
 CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png"
@@ -120,6 +121,7 @@ defaults = {
     "project": None,
     "changing_project": False,
     "observations": [],
+    "polygons": [],
     "map_center": [52.0, 5.0],
     "map_input_center": [52.0, 5.0],
     "map_input_zoom": 6,
@@ -186,6 +188,17 @@ def load_observations(project_name: str):
         last = st.session_state.observations[-1]
         st.session_state.map_center = [last["lat"], last["lon"]]
         st.session_state.map_input_center = [last["lat"], last["lon"]]
+
+def load_polygons(project_name: str):
+    res = (
+        supabase
+        .table(OBS_POLYGONS)
+        .select("*")
+        .eq("project", project_name)
+        .order("date", desc=False)
+        .execute()
+    )
+    st.session_state.polygons = res.data or []
 
 
 def load_project_boundary(project_name):
