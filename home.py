@@ -774,7 +774,7 @@ def new_polygon_dialog():
             value=datetime.utcnow().date()
         )
 
-    animal_type = st.radio("", ["bat", "bird", "plant"])
+    animal_type = st.radio("group", ["bat", "bird", "plant"],horizontal=True,label_visibility="collapsed")
 
     if animal_type == "bat":
         species = st.selectbox("Species", BAT_SPECIES)
