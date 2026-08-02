@@ -38,7 +38,7 @@ IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_L
 
 # ................. ICON CUSTUMIZE ----------------
 marker_size = 28
-inner_icon_px = 11
+inner_icon_px = 12
 
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
