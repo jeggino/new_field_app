@@ -1728,7 +1728,7 @@ def show_main_app():
                 edit_polygon_dialog(map_data["last_active_drawing"]["properties"]["id"])
                 st.stop()
 
-        eliif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
+        elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
 
         if map_data and map_data.get("last_object_clicked_popup"):
             obs_id = map_data.get("last_object_clicked_tooltip")
