@@ -614,18 +614,18 @@ def edit_observation_dialog(obs):
         func_list = BIRD_FUNCTIONS
     
 
-
-    species_value = obs.get("species", species_list[0])
-    if species_value not in species_list:
-        species_value = species_list[0]
-
-    function_value = obs.get("function", func_list[0])
-    if function_value not in func_list:
-        function_value = func_list[0]
-
     if animal_type in ["bat","bird"]:
+        species_value = obs.get("species", species_list[0])
+        if species_value not in species_list:
+            species_value = species_list[0]
+    
+        function_value = obs.get("function", func_list[0])
+        if function_value not in func_list:
+            function_value = func_list[0]
+
         species = st.selectbox("Species", species_list, index=species_list.index(species_value))
         function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+        
     else:
         species = st.text_input("Species",value=obs.get("species"))
         function = function_value
