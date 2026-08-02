@@ -45,7 +45,7 @@ inner_icon_px = 12
 REPORT_KINDS = [
     'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend (1/3)', 'Kraamverblijf Ochtend (2/3)', 'Kraamverblijf Ochtend (3/3)',
     'Winterverblijf','Paarverblijf (1/2)',
-    'Paarverblijf (2/2)', 'Huismus (1/3)','Huismus (2/3)', 'Huismus (3/3)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)','Steenuil (1/3)','Steenuil (2/3)', 'Steenuil (3/3)', 
+    'Paarverblijf (2/2)', 'Huismus (1/3)','Huismus (2/3)', 'Huismus (3/3)','Gierzwaluw (1/3)','Gierzwaluw (2/3)','Gierzwaluw (3/3)','Steenuil (1/3)','Steenuil (2/3)', 'Steenuil (3/3)', 'Algemeen'
 ]
 
 REPORT_RAIN = ["Droog", "Nevel/mist", "Motregen"]
