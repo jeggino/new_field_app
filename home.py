@@ -61,6 +61,20 @@ BIRD_SPECIES = [
     'Boomkruiper','Kauw','Steenuil','..ander'
 ]
 
+PLANT_SPECIES = [
+    'Sneeuwbes',
+     'Gewone dwergvleermuis',
+     'Japanse berberis',
+     'Broodboom',
+     'Tuinjudaspenning',
+     'Deutzia',
+     'Zegekruid',
+     'Japanse duizendknoop',
+     'Gewone hortensia',
+     'Bamboe',
+    '..ander'
+    ]
+
 DUTCH_AMPHIBIANS = [
     "Kleine watersalamander",
     "Alpenwatersalamander",
@@ -830,6 +844,8 @@ def new_observation_dialog(center):
         
     elif animal_type == "bird":
         species = st.selectbox("Species", BIRD_SPECIES)
+        if species == "..ander":
+            species = st.text_input("Write a species")       
         function = st.selectbox("Function", BIRD_FUNCTIONS)
         
     elif animal_type == "amphibian":
@@ -841,7 +857,9 @@ def new_observation_dialog(center):
         function = st.selectbox("Function", ODONATA_FUNCTIONS)
     
     else:
-        species = st.text_input("Species")
+        species = st.selectbox("Species", PLANT_SPECIES)
+        if species == "..ander":
+            species = st.text_input("Write a species")
         function = st.selectbox("Function", PLANT_FUNCTIONS)        
 
     aantal = st.number_input("amount", step=1, value=1)
@@ -971,7 +989,9 @@ def new_polygon_dialog(center):
         function = st.selectbox("Function", ODONATA_FUNCTIONS_POLYGON)
 
     else:
-        species = st.text_input("Write a species")
+        species = st.selectbox("Species", PLANT_SPECIES)
+        if species == "..ander":
+            species = st.text_input("Write a species")
         function = st.selectbox("Function", PLANT_FUNCTIONS_POLYGON)        
     
 
