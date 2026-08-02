@@ -1720,7 +1720,10 @@ def show_main_app():
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog(st.session_state.map_input_center)
 
-
+    st.sidebar.divider()
+    
+    st.sidebar.header("Edit/Delete observation")
+    
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_active_drawing"):
         if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
@@ -1751,30 +1754,25 @@ def show_main_app():
     #         st.session_state.selected_obs_id = obs_id
 
 
-
-    st.sidebar.divider()
     
-    st.sidebar.header("Edit/Delete observation")
-
-    
-    # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
-    selected_id = st.session_state.selected_obs_id
-    
-    # Find the matching observation
-    selected_obs = None
-    for obs in filtered:
-        if str(obs["id"]) == selected_id:
-            selected_obs = obs
-            break
-        
-    if selected_obs:
-        obs_id = str(selected_obs["id"])
-        base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
-        label = f"{base_label}"
-    
-        # EDIT BUTTON
-        if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
-            edit_observation_dialog(selected_obs)
+            # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
+            selected_id = st.session_state.selected_obs_id
+            
+            # Find the matching observation
+            selected_obs = None
+            for obs in filtered:
+                if str(obs["id"]) == selected_id:
+                    selected_obs = obs
+                    break
+                
+            if selected_obs:
+                obs_id = str(selected_obs["id"])
+                base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
+                label = f"{base_label}"
+            
+                # EDIT BUTTON
+                if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
+                    edit_observation_dialog(selected_obs)
 
 
 
