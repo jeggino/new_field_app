@@ -1002,11 +1002,13 @@ def show_main_app():
     st.sidebar.divider()  
 
     # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
-    lat = st.session_state.map_center[0]
-    lon = st.session_state.map_center[1]
+    boundary, bounds = load_project_boundary(st.session_state.project)
+    centroid_lat = (bounds[0][0] + bounds[1][0]) / 2
+    centroid_lng = (bounds[0][1] + bounds[1][1]) / 2
+
 
     if lat and lon:
-        maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+        maps_url = f"https://www.google.com/maps?q={centroid_lat},{centroid_lng}"
 
         st.sidebar.markdown(
             f"""
