@@ -1127,6 +1127,8 @@ def edit_polygon_dialog(obs):
         st.write(comments)
         st.write(photo_url)
         st.write(str(polygon_date))
+        st.write(geometry_to_save)
+
 
         supabase.table("polygons_app").update({
 
