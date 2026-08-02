@@ -1484,6 +1484,7 @@ def show_main_app():
         fill_color = SPECIES_COLORS.get(species, "blue")
     
         function_type = row.get("function", "")
+        id_type = row.get("id", "")
     
         # fill_color = species_colors.get(species, "#cccccc")
     
@@ -1523,12 +1524,13 @@ def show_main_app():
             "properties": {
                 "species": species,
                 "function": function_type,
+                "id": id_type,
             },
         }
     
         geojson = folium.GeoJson(
             feature,
-            tooltip="id",
+            tooltip=None,
             style_function=lambda f,
             fill_color=fill_color,
             fill_opacity=fill_opacity: {
