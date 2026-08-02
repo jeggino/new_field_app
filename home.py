@@ -1090,6 +1090,28 @@ def show_main_app():
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
+ 
+
+    # folium.LayerControl(position="topright").add_to(m)
+
+
+    # Load boundary
+    boundary, bounds = load_project_boundary(st.session_state.project)
+    
+    if boundary:
+        folium.GeoJson(
+            boundary,
+            name="Boundary",
+            style_function=lambda x: {
+                "fillColor": "#ffcc00",
+                "color": "red",
+                "weight": 2.5,
+                "fillOpacity": 0.1,
+            }
+        ).add_to(m)
+    
+        if bounds:
+            m.fit_bounds(bounds)
 
 
     # ============================================================
@@ -1142,9 +1164,11 @@ def show_main_app():
     
         geometry = row["geometry"]
         species = row.get("species", "Unknown")
+        fill_color = SPECIES_COLORS.get(species, "blue")
+    
         function_type = row.get("function", "")
     
-        fill_color = species_colors.get(species, "#cccccc")
+        # fill_color = species_colors.get(species, "#cccccc")
     
         pattern = None
         fill_opacity = 1
@@ -1202,31 +1226,6 @@ def show_main_app():
     
         if pattern:
             geojson.options["fillPattern"] = pattern
-
-
-
-    
-
-    # folium.LayerControl(position="topright").add_to(m)
-
-
-    # Load boundary
-    boundary, bounds = load_project_boundary(st.session_state.project)
-    
-    if boundary:
-        folium.GeoJson(
-            boundary,
-            name="Boundary",
-            style_function=lambda x: {
-                "fillColor": "#ffcc00",
-                "color": "red",
-                "weight": 2.5,
-                "fillOpacity": 0.1,
-            }
-        ).add_to(m)
-    
-        if bounds:
-            m.fit_bounds(bounds)
 
 
     for obs in filtered:
