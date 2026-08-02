@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from folium.plugins import LocateControl, BeautifyIcon, MarkerCluster, Draw
+from folium.plugins import LocateControl, BeautifyIcon, MarkerCluster, Draw, StripePattern, CirclePattern
 from supabase import create_client, Client
 from datetime import datetime, time
 import uuid
