@@ -1730,11 +1730,11 @@ def show_main_app():
 
         elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
 
-        if map_data and map_data.get("last_object_clicked_popup"):
-            obs_id = map_data.get("last_object_clicked_tooltip")
-            if obs_id:
-                st.session_state.selected_obs_id = obs_id
-            
+            if map_data and map_data.get("last_object_clicked_popup"):
+                obs_id = map_data.get("last_object_clicked_tooltip")
+                if obs_id:
+                    st.session_state.selected_obs_id = obs_id
+                
 
 
     
