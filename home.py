@@ -1120,7 +1120,13 @@ def edit_polygon_dialog(obs):
                 "coordinates": [new_polygon_coords]
             }
         st.write(obs['properties']["id"])
-        st.write(geometry_to_save)
+        st.write(animal_type)
+        st.write(species)
+        st.write(function)
+        st.write(aantal)
+        st.write(comments)
+        st.write(photo_url)
+        st.write(str(polygon_date))
 
         supabase.table("polygons_app").update({
 
