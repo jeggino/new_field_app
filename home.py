@@ -77,6 +77,29 @@ DUTCH_AMPHIBIANS = [
     "Vroedmeesterpad",
 ]
 
+ODONATA_SPECIES = [
+    "Azuurwaterjuffer",
+    "Lantaarntje",
+    "Gewone pantserjuffer",
+    "Weidebeekjuffer",
+    "Bosbeekjuffer",
+    "Vuurjuffer",
+    "Variabele waterjuffer",
+    "Grote roodoogjuffer",
+    "Paardenbijter",
+    "Blauwe glazenmaker",
+    "Bruine glazenmaker",
+    "Grote keizerlibel",
+    "Glassnijder",
+    "Platbuik",
+    "Viervlek",
+    "Gewone oeverlibel",
+    "Bruinrode heidelibel",
+    "Bloedrode heidelibel",
+    "Steenrode heidelibel",
+    "Vuurlibel",
+]
+
 # ----------------- FUNCTION LISTS -----------------
 BAT_FUNCTIONS = [
     'vleermuis waarneming','zomerverblijfplaats','kraamverblijfplaats',
@@ -113,6 +136,28 @@ AMPHIBIE_FUNCTIONS_POLYGON = [
     "Foerageergebied",
     "Migratieroute",
     "Overwinteringsgebied",
+]
+
+ODONATA_FUNCTIONS = [
+    "Adult",
+    "Paring",
+    "Eiafzet",
+    "Tandem",
+    "Uitsluiping",
+    "Larve",
+    "Exuvia",
+    "Rustend",
+    "Foeragerend",
+    "Dood",
+]
+
+ODONATA_FUNCTIONS_POLYGON = [
+    "Voortplantingswater",
+    "Eiafzetgebied",
+    "Larvenhabitat",
+    "Uitsluipplaats",
+    "Foerageergebied",
+    "Rustgebied",
 ]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
@@ -752,6 +797,7 @@ def new_observation_dialog(center):
         "🪶": "bird",
         "🍃": "plant",
         "🐸": "amphibian"
+        "≽༏≼": "odonata"
     }
     
     selected_emoji = st.radio(
@@ -774,6 +820,10 @@ def new_observation_dialog(center):
     elif animal_type == "amphibian":
         species = st.selectbox("Species", DUTCH_AMPHIBIANS)
         function = st.selectbox("Function", AMPHIBIE_FUNCTIONS)
+
+    elif animal_type == "odonata":
+        species = st.selectbox("Species", ODONATA_SPECIES)
+        function = st.selectbox("Function", ODONATA_FUNCTIONS)
     
     else:
         species = st.text_input("Species")
