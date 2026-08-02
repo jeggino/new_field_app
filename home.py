@@ -1730,7 +1730,7 @@ def show_main_app():
             
             st.write(label)
             st.write(obs_id)
-            st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True)
+            # st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True)
             if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
                 edit_polygon_dialog(map_data["last_active_drawing"])
                 st.stop()
