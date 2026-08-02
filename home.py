@@ -1411,9 +1411,9 @@ def show_main_app():
 
 
     with st.container():
-        st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
+        # st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
         map_data = st_folium(m, height=450, width="100%")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # st.markdown('</div>', unsafe_allow_html=True)
 
 
     # map_data = st_folium(m, height=550, width="100%")
@@ -1437,6 +1437,7 @@ def show_main_app():
     # )
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
+    st.write(st.session_state.map_input_center)
 
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_object_clicked_popup"):
