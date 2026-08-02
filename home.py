@@ -1027,12 +1027,22 @@ def show_main_app():
                     border:2px solid black;
                     text-shadow:1px 1px 2px black;
                 ">
-                    🚗 Get Directions
+                    <span style="
+                        background-color:black;
+                        color:white;
+                        padding:0.35rem 0.8rem;
+                        border-radius:6px;
+                        font-weight:700;
+                        display:inline-block;
+                    ">
+                        🚗 Get Directions
+                    </span>
                 </div>
             </a>
             """,
             unsafe_allow_html=True
         )
+
 
     st.sidebar.divider()
 
