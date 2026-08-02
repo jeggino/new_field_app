@@ -1688,7 +1688,7 @@ def show_main_app():
         map_data = st_folium(m, height=450, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write(map_data)
+    st.write(map_data["last_active_drawing"])
 
 
     # map_data = st_folium(m, height=550, width="100%")
