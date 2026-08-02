@@ -1733,79 +1733,82 @@ def show_main_app():
     
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_active_drawing"):
-        if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
-            obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
-            label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
-            if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
-                edit_polygon_dialog(map_data["last_active_drawing"])
-                st.stop()
-
-        elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
-
-            if map_data and map_data.get("last_object_clicked_popup"):
-                obs_id = map_data.get("last_object_clicked_tooltip")
-                if obs_id:
-                    st.session_state.selected_obs_id = obs_id
-                
-
-
-    
-    # if map_data and map_data.get("last_object_clicked_popup"):
-    #     obs_id = map_data.get("last_object_clicked_tooltip")
-    #     if obs_id:
-    #         st.session_state.selected_obs_id = obs_id
-
-
-    
-            # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
-            selected_id = st.session_state.selected_obs_id
-            
-            # Find the matching observation
-            selected_obs = None
-            for obs in filtered:
-                if str(obs["id"]) == selected_id:
-                    selected_obs = obs
-                    break
-                
-            if selected_obs:
-                obs_id = str(selected_obs["id"])
-                base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
-                label = f"{base_label}"
-            
-                # EDIT BUTTON
+        try:
+            if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
+                obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
+                label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
                 if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
-                    edit_observation_dialog(selected_obs)
-
-
-
-            
+                    edit_polygon_dialog(map_data["last_active_drawing"])
+                    st.stop()
     
-        # # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
-        # lat = selected_obs.get("lat")
-        # lon = selected_obs.get("lon")
+            elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
     
-        # if lat and lon:
-        #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+                if map_data and map_data.get("last_object_clicked_popup"):
+                    obs_id = map_data.get("last_object_clicked_tooltip")
+                    if obs_id:
+                        st.session_state.selected_obs_id = obs_id
+                    
     
-        #     st.sidebar.markdown(
-        #         f"""
-        #         <a href="{maps_url}" target="_blank">
-        #             <div style="
-        #                 background-color:#4285F4;
-        #                 color:white;
-        #                 padding:0.6rem;
-        #                 border-radius:5px;
-        #                 text-align:center;
-        #                 font-weight:500;
-        #                 margin-top:0.5rem;
-        #                 cursor:pointer;
-        #             ">
-        #                 📍 Open in Google Maps
-        #             </div>
-        #         </a>
-        #         """,
-        #         unsafe_allow_html=True
-        #     )
+    
+        
+        # if map_data and map_data.get("last_object_clicked_popup"):
+        #     obs_id = map_data.get("last_object_clicked_tooltip")
+        #     if obs_id:
+        #         st.session_state.selected_obs_id = obs_id
+    
+    
+        
+                # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
+                selected_id = st.session_state.selected_obs_id
+                
+                # Find the matching observation
+                selected_obs = None
+                for obs in filtered:
+                    if str(obs["id"]) == selected_id:
+                        selected_obs = obs
+                        break
+                    
+                if selected_obs:
+                    obs_id = str(selected_obs["id"])
+                    base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
+                    label = f"{base_label}"
+                
+                    # EDIT BUTTON
+                    if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True):
+                        edit_observation_dialog(selected_obs)
+    
+    
+    
+                
+        
+            # # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
+            # lat = selected_obs.get("lat")
+            # lon = selected_obs.get("lon")
+        
+            # if lat and lon:
+            #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+        
+            #     st.sidebar.markdown(
+            #         f"""
+            #         <a href="{maps_url}" target="_blank">
+            #             <div style="
+            #                 background-color:#4285F4;
+            #                 color:white;
+            #                 padding:0.6rem;
+            #                 border-radius:5px;
+            #                 text-align:center;
+            #                 font-weight:500;
+            #                 margin-top:0.5rem;
+            #                 cursor:pointer;
+            #             ">
+            #                 📍 Open in Google Maps
+            #             </div>
+            #         </a>
+            #         """,
+            #         unsafe_allow_html=True
+            #     )
+        except:
+            pass
 
 
 
