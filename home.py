@@ -672,10 +672,10 @@ def edit_observation_dialog(obs):
 
 # ----------------- NEW OBSERVATION -----------------
 @st.dialog("New Observation")
-def new_observation_dialog():
+def new_observation_dialog(center):
     st.write("Use the map center as the observation position.")
 
-    base_center = st.session_state.map_input_center
+    base_center = center
     zoom = 20
 
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
@@ -768,14 +768,11 @@ def new_observation_dialog():
 
 # ----------------- NEW POLYGON -----------------
 @st.dialog("New Polygon")
-def new_polygon_dialog():    
+def new_polygon_dialog(center):    
     st.write("Draw a polygon on the map and save it.")
-
-    if "polygon_center" not in st.session_state:
-        st.session_state.polygon_center = st.session_state.map_input_center
+  
     
-    
-    base_center = st.session_state.map_input_center
+    base_center = center 
     zoom = 20
 
     m = folium.Map(
@@ -991,10 +988,10 @@ def show_main_app():
         col1, col2 = st.columns([0.5, 0.5])
         with col1:
             if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
-                new_polygon_dialog()
+                new_polygon_dialog(st.session_state.map_input_center)
         with col2:
             if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
-                new_observation_dialog()
+                new_observation_dialog(st.session_state.map_input_center)
 
     # # Sidebar menu (no observations title, no new observation button)
     # st.sidebar.write(f"Logged in as: {st.session_state.user.email}")
