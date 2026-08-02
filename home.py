@@ -1945,6 +1945,8 @@ def show_main_app():
             #     )
         except:
             pass
+    with st.bottom:
+        st.caption("© 2026 My Company · All rights reserved")
 
 
 
