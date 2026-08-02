@@ -1133,7 +1133,7 @@ def edit_polygon_dialog(obs):
 
         }).eq(
             "id",
-            obs["id"]
+            obs['properties']["id"]
         ).execute()
 
         load_polygons(st.session_state.project)
