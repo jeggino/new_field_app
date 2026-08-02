@@ -118,6 +118,21 @@ BIRD_FUNCTIONS_POLYGON = [
     'dekking','foerageergebied','slaapplaats/broedgebied', 'water als dronk en/of badderplaats', 'zandplekken'
 ]
 
+PLANT_FUNCTIONS = [
+    "Aanwezig",
+    "Bloeiend",
+    "Vrucht",
+    "Dood",
+]
+
+PLANT_FUNCTIONS_POLYGON = [
+    "Groeiplaats",
+    "Vegetatie",
+    "Dominante soort",
+]
+
+
+
 AMPHIBIE_FUNCTIONS = [
     "Adult",
     "Roepend",
@@ -827,7 +842,7 @@ def new_observation_dialog(center):
     
     else:
         species = st.text_input("Species")
-        function = "plant"        
+        function = st.selectbox("Function", PLANT_FUNCTIONS)        
 
     aantal = st.number_input("amount", step=1, value=1)
     behavior = st.text_area("Comments")
@@ -926,6 +941,8 @@ def new_polygon_dialog(center):
         "🦇": "bat",
         "🪶": "bird",
         "🍃": "plant",
+        "🐸": "amphibian",
+        "≽༏≼": "odonata",
     }
     
     selected_emoji = st.radio(
@@ -945,9 +962,17 @@ def new_polygon_dialog(center):
         species = st.selectbox("Species", BIRD_SPECIES)
         function = st.selectbox("Function", BIRD_FUNCTIONS_POLYGON)
 
+    elif animal_type == "amphibian":
+        species = st.selectbox("Species", DUTCH_AMPHIBIANS)
+        function = st.selectbox("Function", AMPHIBIE_FUNCTIONS_POLYGON)
+
+    elif animal_type == "odonata":
+        species = st.selectbox("Species", ODONATA_SPECIES)
+        function = st.selectbox("Function", ODONATA_FUNCTIONS_POLYGON)
+
     else:
         species = st.text_input("Write a species")
-        function = "plant"        
+        function = st.selectbox("Function", PLANT_FUNCTIONS_POLYGON)        
     
 
     aantal = st.number_input("amount", step=1, value=1)
