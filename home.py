@@ -1401,21 +1401,10 @@ def show_main_app():
     #     col1, col2 = st.columns([0.5, 0.5])
 
     with st.bottom:
-        label = st.markdown("""
-        <div style="
-            background:#f3f4f6;
-            border-left:4px solid #16a34a;
-            padding:10px;
-            border-radius:6px;
-            font-weight:600;
-        ">
-            ⨁ New Observation
-        </div>
-        """, unsafe_allow_html=True)
-        with st.expander(label,width="stretch"):
+        label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
+        with st.expander(label,width="stretch",icon=":material/add_circle:"):
             col1, col2 = st.columns([0.5, 0.5])
 
-# ,icon=":material/add_circle:"
 
 
     # # Sidebar menu (no observations title, no new observation button)
