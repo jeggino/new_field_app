@@ -1010,7 +1010,7 @@ def show_main_app():
 
         st.sidebar.markdown(
             f"""
-            {maps_url}
+            <a href="{maps_url}" target="_blank">
                 <div style="
                     background: repeating-linear-gradient(
                         45deg,
