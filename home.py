@@ -1764,6 +1764,7 @@ def show_main_app():
                 "date": date,
                 "comments": comments,
                 "aantal": aantal,
+                "id": id_type,
             },
         }
     
