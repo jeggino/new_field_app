@@ -1951,7 +1951,7 @@ def show_main_app():
 
         st.divider()
     
-        st.markdown(":red[**Edit/Delete observation}",text_alignment='center')
+        st.markdown(":red[**Edit/Delete observation**]",text_alignment='center')
     
         # Use last_object_clicked_popup from st_folium
         if map_data and map_data.get("last_active_drawing"):
@@ -2007,7 +2007,7 @@ def show_main_app():
                 
         st.divider()
         
-        st.markdown(":blue[**Daily Report]",text_alignment='center')
+        st.markdown(":blue[**Daily Report**]",text_alignment='center')
         
         if st.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
             daily_report_dialog()
