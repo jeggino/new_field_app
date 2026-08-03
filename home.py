@@ -1161,90 +1161,77 @@ def edit_polygon_dialog(obs):
 
     # GROUP
 
-    animal_type = obs.get("group", "bat")
 
     options = {
         "🦇": "bat",
         "🪶": "bird",
         "🍃": "plant",
+        "🐸": "amphibian",
+        "≽༏≼": "odonata",
     }
-
+    
+    animal_type_obs = obs.get("animal_type", "bird")
+    
     selected_emoji = st.radio(
         "group",
         list(options.keys()),
-        index=0 if animal_type == "bat"
-        else 1 if animal_type == "bird"
-        else 2,
+        index=list(options.values()).index(animal_type_obs),
         horizontal=True,
         label_visibility="collapsed",
     )
-
+    
     animal_type = options[selected_emoji]
-
-    # SPECIES / FUNCTION
-
+    
+    # Determine lists
     if animal_type == "bat":
-
-        species_value = obs.get("species", BAT_SPECIES[0])
-
-        if species_value not in BAT_SPECIES:
-            species_value = BAT_SPECIES[0]
-
-        function_value = obs.get(
-            "function",
-            BAT_FUNCTIONS_POLYGON[0]
-        )
-
-        if function_value not in BAT_FUNCTIONS_POLYGON:
-            function_value = BAT_FUNCTIONS_POLYGON[0]
-
-        species = st.selectbox(
-            "Species",
-            BAT_SPECIES,
-            index=BAT_SPECIES.index(species_value)
-        )
-
-        function = st.selectbox(
-            "Function",
-            BAT_FUNCTIONS_POLYGON,
-            index=BAT_FUNCTIONS_POLYGON.index(function_value)
-        )
-
+        species_list = BAT_SPECIES
+        func_list = BAT_FUNCTIONS
+    
     elif animal_type == "bird":
-
-        species_value = obs.get("species", BIRD_SPECIES[0])
-
-        if species_value not in BIRD_SPECIES:
-            species_value = BIRD_SPECIES[0]
-
-        function_value = obs.get(
-            "function",
-            BIRD_FUNCTIONS_POLYGON[0]
-        )
-
-        if function_value not in BIRD_FUNCTIONS_POLYGON:
-            function_value = BIRD_FUNCTIONS_POLYGON[0]
-
-        species = st.selectbox(
-            "Species",
-            BIRD_SPECIES,
-            index=BIRD_SPECIES.index(species_value)
-        )
-
-        function = st.selectbox(
-            "Function",
-            BIRD_FUNCTIONS_POLYGON,
-            index=BIRD_FUNCTIONS_POLYGON.index(function_value)
-        )
-
+        species_list = BIRD_SPECIES
+        func_list = BIRD_FUNCTIONS
+    
+    elif animal_type == "amphibian":
+        species_list = DUTCH_AMPHIBIANS
+        func_list = AMPHIBIE_FUNCTIONS
+    
+    elif animal_type == "odonata":
+        species_list = ODONATA_SPECIES
+        func_list = ODONATA_FUNCTIONS
+    
+    elif animal_type == "plant":
+        species_list = PLANT_SPECIES
+        func_list = PLANT_FUNCTIONS
+    
+    # Use values from obs only if they are valid in the current group
+    species_value = obs.get("species")
+    if species_value in species_list:
+        species_index = species_list.index(species_value)
     else:
+        species_index = 0
+    
+    species = st.selectbox(
+        "Species",
+        species_list,
+        index=species_index,
+    )
+    
+    function_value = obs.get("function")
+    if function_value in func_list:
+        function_index = func_list.index(function_value)
+    else:
+        function_index = 0
+    
+    function = st.selectbox(
+        "Function",
+        func_list,
+        index=function_index,
+    )
 
-        species = st.text_input(
-            "Species",
-            value=obs.get("species", "")
-        )
 
-        function = "plant"
+
+
+
 
     aantal = st.number_input(
         "Amount",
