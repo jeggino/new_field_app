@@ -699,7 +699,7 @@ def edit_observation_dialog(obs):
     with st.expander("Edit date"):
         obs_date = st.date_input("Date", value=d)
         
-    animal_type = obs.get("animal_type", "bat")
+    animal_type = obs.get("animal_type")
 
     options = {
         "🦇": "bat",
