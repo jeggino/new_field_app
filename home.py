@@ -1185,23 +1185,23 @@ def edit_polygon_dialog(obs):
     # Determine lists
     if animal_type == "bat":
         species_list = BAT_SPECIES
-        func_list = BAT_FUNCTIONS
+        func_list = BAT_FUNCTIONS_POLYGON
     
     elif animal_type == "bird":
         species_list = BIRD_SPECIES
-        func_list = BIRD_FUNCTIONS
+        func_list = BIRD_FUNCTIONS_POLYGON
     
     elif animal_type == "amphibian":
         species_list = DUTCH_AMPHIBIANS
-        func_list = AMPHIBIE_FUNCTIONS
+        func_list = AMPHIBIE_FUNCTIONS_POLYGON
     
     elif animal_type == "odonata":
         species_list = ODONATA_SPECIES
-        func_list = ODONATA_FUNCTIONS
+        func_list = ODONATA_FUNCTIONS_POLYGON
     
     elif animal_type == "plant":
         species_list = PLANT_SPECIES
-        func_list = PLANT_FUNCTIONS
+        func_list = PLANT_FUNCTIONS_POLYGON
     
     # Use values from obs only if they are valid in the current group
     species_value = obs.get("species")
