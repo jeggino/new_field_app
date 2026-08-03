@@ -1614,11 +1614,11 @@ def show_main_app():
     
         geometry = row["geometry"]
         species = row.get("species", "Unknown")
-        date = row.get("date", "Unknown")
-        aantal = row.get("aantal", "Unknown")
-        fill_color = SPECIES_COLORS.get(species, "blue")
-        comments = row.get("comments", "")
-        group = row.get('group', '')
+        date = row.get("date", )
+        aantal = row.get("aantal",)
+        fill_color = SPECIES_COLORS.get(species, "yellow")
+        comments = row.get("comments",)
+        group = row.get('group')
     
         function_type = row.get("function", "")
         id_type = row.get("id", "")
