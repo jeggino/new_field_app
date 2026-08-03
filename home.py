@@ -1640,46 +1640,94 @@ def show_main_app():
     
         function_type = row.get("function", "")
         id_type = row.get("id", "")
-    
 
-        popup_html = f"""
+
+        if row.get("photo_url"):
+            # Use real image
+            image_block = f"""
+                <a href="{row.get('photo_url')}" target="_blank">
+                    <img src="{row.get('photo_url')}" 
+                         style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px;">
+                </a>
+            """
+        else:
+            # Choose emoji based on species type
+            if "bat" in row.get('animal_type', ''):
+                emoji = "🦇"
+            elif "bird" in row.get('animal_type', ''):
+                emoji = "🪶"  # default feather for birds or unknown
+            elif "amphibian" in row.get('animal_type', ''):
+                emoji = "🐸"  # default feather for birds or unknown
+            elif "odonata" in row.get('animal_type', ''):
+                emoji = "≽༏≼"  # default feather for birds or unknown
+            else:
+                emoji = "🍃"
+        
+            image_block = f"""
+                <div style="
+                    font-size: 20px;
+                    text-align: center;
+                    margin: 10px 0;
+                ">{emoji}</div>
+            """
+        
+        # Styled popup with colored border matching the marker color
+        popup_html_polygon = f"""
         <div style="
             background-color: white;
             padding: 10px 14px;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            font-family: Arial, sans-serif;
-            width: 220px;
+            font-family: 'Arial', sans-serif;
+            width: 200px;
             border: 3px solid {fill_color};
         ">
         
+            <!-- Species Title -->
             <div style="
                 font-weight: 700;
                 font-size: 15px;
-                color: {fill_color};
+                color: {color};
                 margin-bottom: 6px;
                 text-align: center;
             ">
                 {species}
             </div>
         
+            <!-- Image or Emoji -->
+            <div style="text-align:center; margin-bottom:8px;">
+                {image_block}
+            </div>
+        
+            <!-- Date (NO label) -->
             <div style="
                 font-size: 13px;
                 color: #444;
-                text-align: center;
                 margin-bottom: 4px;
+                text-align: center;
             ">
                 {date}
             </div>
         
+            <!-- Function (italic, centered, capitalized) -->
             <div style="
                 font-size: 12px;
                 color: #555;
-                text-align: center;
-                font-style: italic;
                 margin-bottom: 4px;
+                font-style: italic;
+                text-align: center;
             ">
                 ({aantal}) {function_type.capitalize()}
+            </div>
+        
+            <!-- Comment (bold, justified) -->
+            <div style="
+                font-size: 12px;
+                color: #333;
+                font-weight: bold;
+                text-align: justify;
+            ">
+                {obs.get('behavior', '')}
             </div>
         
         </div>
@@ -1693,14 +1741,11 @@ def show_main_app():
 
 
 
-
-
-
     
         pattern = None
         fill_opacity = 1
     
-        if function_type == "paarterritorium":
+        if function_type == "foerageergebied":
     
             pattern = StripePattern(
                 angle=45,
@@ -1711,7 +1756,7 @@ def show_main_app():
             )
             pattern.add_to(m)
     
-        elif function_type == "foerageergebied":
+        elif function_type == "paarterritorium":
     
             pattern = CirclePattern(
                 width=12,
@@ -1739,7 +1784,7 @@ def show_main_app():
     
         geojson = folium.GeoJson(
             feature,
-            popup=popup,
+            popup=popup_html_polygon,
             tooltip=None,
             style_function=lambda f,
             fill_color=fill_color,
@@ -1782,6 +1827,10 @@ def show_main_app():
                 emoji = "🦇"
             elif "bird" in obs.get('animal_type', ''):
                 emoji = "🪶"  # default feather for birds or unknown
+            elif "amphibian" in obs.get('animal_type', ''):
+                emoji = "🐸"  # default feather for birds or unknown
+            elif "odonata" in obs.get('animal_type', ''):
+                emoji = "≽༏≼"  # default feather for birds or unknown
             else:
                 emoji = "🍃"
         
