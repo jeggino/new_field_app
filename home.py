@@ -195,7 +195,24 @@ ODONATA_FUNCTIONS_POLYGON = [
 ]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
+# FUNCTION_ICONS = {
+#     "vleermuis waarneming": "walkie-talkie",
+#     "zomerverblijfplaats": "sun",
+#     "kraamverblijfplaats": "venus",
+#     "paarverblijfplaats": "heart",
+#     "winterverblijfplaats": "snowflake",
+#     "vleermuiskast": "box-archive",
+#     "zender": "tower-broadcast",
+
+#     "vogel waarneming": "binoculars",
+#     "nestlocatie": "egg",
+#     "mogelijke nestlocatie": "question",
+
+#     "plant": "fa-light fa-leaf"
+# }
+
 FUNCTION_ICONS = {
+    # Bats
     "vleermuis waarneming": "walkie-talkie",
     "zomerverblijfplaats": "sun",
     "kraamverblijfplaats": "venus",
@@ -204,11 +221,34 @@ FUNCTION_ICONS = {
     "vleermuiskast": "box-archive",
     "zender": "tower-broadcast",
 
+    # Birds
     "vogel waarneming": "binoculars",
     "nestlocatie": "egg",
     "mogelijke nestlocatie": "question",
 
-    "plant": "fa-light fa-leaf"
+    # Plants
+    "Aanwezig": "leaf",
+    "Bloeiend": "seedling",
+    "Vrucht": "apple-whole",
+    "Dood": "skull-crossbones",
+
+    # Amphibians
+    "Adult": "frog",
+    "Roepend": "volume-high",
+    "Paring": "heart",
+    "Eieren": "egg",
+    "Larven": "water",
+    "Jong dier": "child",
+    "Foeragerend": "utensils",
+    "Trek": "route",
+
+    # Odonata
+    "Eiafzet": "egg",
+    "Tandem": "link",
+    "Uitsluiping": "arrow-up-right-dots",
+    "Larve": "water",
+    "Exuvia": "shirt",
+    "Rustend": "pause",
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
