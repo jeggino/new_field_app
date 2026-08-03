@@ -1735,7 +1735,7 @@ def show_main_app():
         """
         
         popup = folium.Popup(
-            folium.Html(popup_html, script=True),
+            folium.Html(popup_html_polygon, script=True),
             max_width=300,
         )
 
