@@ -2007,6 +2007,8 @@ def show_main_app():
             except:
                 st.warning("Select a Point or a Polygon")
                 pass
+        else:
+            st.warning("Select a Point or a Polygon")
                 
         st.divider()
         
