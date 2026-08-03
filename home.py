@@ -1407,7 +1407,7 @@ def show_project_selection():
 def show_main_app():
     with st.bottom:
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
-        label = ":red[**Tools**]"
+        label = " "
         with st.expander(label,width="stretch",icon=":material/dehaze:"):
             col1, col2 = st.columns([0.5, 0.5])
             # col1 =  st.columns([1])
@@ -1943,7 +1943,7 @@ def show_main_app():
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     
     with col1:
-        st.markdown(":blue[New observation]",text_alignment='center')
+        st.markdown(":green[**New observation**]",text_alignment='center')
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog(st.session_state.map_input_center)
         if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
@@ -1951,7 +1951,7 @@ def show_main_app():
 
         st.divider()
     
-        st.markdown("Edit/Delete observation",width="stretch")
+        st.markdown(":red[**Edit/Delete observation}",text_alignment='center')
     
         # Use last_object_clicked_popup from st_folium
         if map_data and map_data.get("last_active_drawing"):
@@ -2007,7 +2007,7 @@ def show_main_app():
                 
         st.divider()
         
-        st.markdown("Daily Report")
+        st.markdown(":blue[**Daily Report]",text_alignment='center')
         
         if st.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
             daily_report_dialog()
