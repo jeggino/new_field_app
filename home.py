@@ -1687,7 +1687,7 @@ def show_main_app():
             <div style="
                 font-weight: 700;
                 font-size: 15px;
-                color: {color};
+                color: {fill_color};
                 margin-bottom: 6px;
                 text-align: center;
             ">
