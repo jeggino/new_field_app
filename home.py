@@ -1405,10 +1405,6 @@ def show_project_selection():
 
 # ----------------- MAIN APP -----------------
 def show_main_app():
-    # NO title on main page, only New Observation button (mobile-friendly)
-    # with st.expander("New Observation",width="stretch",icon=":material/add_circle:"):
-    #     col1, col2 = st.columns([0.5, 0.5])
-
     with st.bottom:
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
         label = ":red[**New Observation**]"
@@ -1962,9 +1958,9 @@ def show_main_app():
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog(st.session_state.map_input_center)
 
-    st.sidebar.divider()
+    col1.divider()
     
-    st.sidebar.header("Edit/Delete observation")
+    col1.header("Edit/Delete observation")
     
     # Use last_object_clicked_popup from st_folium
     if map_data and map_data.get("last_active_drawing"):
@@ -1972,7 +1968,7 @@ def show_main_app():
             if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
                 obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
                 label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
-                if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/screenshot_region:"):
+                if col1.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/screenshot_region:"):
                     edit_polygon_dialog(map_data["last_active_drawing"])
                     st.stop()
     
@@ -2009,7 +2005,7 @@ def show_main_app():
                     label = f"{base_label}"
                 
                     # EDIT BUTTON
-                    if st.sidebar.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/add_location_alt:"):
+                    if col2.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/add_location_alt:"):
                         edit_observation_dialog(selected_obs)
     
     
