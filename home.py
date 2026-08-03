@@ -42,7 +42,7 @@ marker_size = 28
 inner_icon_px = 12
 
 #------------------  MAP SIZE ---------------------
-map_height = 530
+map_height = 510
 
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
