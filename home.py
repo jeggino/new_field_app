@@ -210,13 +210,40 @@ FUNCTION_ICONS = {
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
-ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES + PLANT_SPECIES + DUTCH_AMPHIBIANS + ODONATA_SPECIES
-COLOR_PALETTE = [
-    "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
-    "darkgreen","cadetblue","cadetblue","blue","pink","lightblue","lightgreen",
-    "gray","black","red"
-]
-SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
+# ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES + PLANT_SPECIES + DUTCH_AMPHIBIANS + ODONATA_SPECIES
+# COLOR_PALETTE = [
+#     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
+#     "darkgreen","cadetblue","cadetblue","blue","pink","lightblue","lightgreen",
+#     "gray","black","red"
+# ]
+# SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
+
+def generate_colors(species_list):
+    n = len(species_list)
+
+    colors = []
+    for i in range(n):
+        h = i / n
+        r, g, b = colorsys.hsv_to_rgb(h, 0.8, 0.9)
+        colors.append(
+            f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
+        )
+
+    return dict(zip(species_list, colors))
+
+BAT_COLORS = generate_colors(BAT_SPECIES)
+BIRD_COLORS = generate_colors(BIRD_SPECIES)
+PLANT_COLORS = generate_colors(PLANT_SPECIES)
+AMPHIBIAN_COLORS = generate_colors(DUTCH_AMPHIBIANS)
+ODONATA_COLORS = generate_colors(ODONATA_SPECIES)
+
+SPECIES_COLORS = {
+    **BAT_COLORS,
+    **BIRD_COLORS,
+    **PLANT_COLORS,
+    **AMPHIBIAN_COLORS,
+    **ODONATA_COLORS,
+}
 
 # ----------------- SHAPE SETTINGS -----------------
 BAT_BORDER = True
