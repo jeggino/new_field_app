@@ -1148,7 +1148,7 @@ def edit_polygon_dialog(obs):
 
     try:
         polygon_date = datetime.fromisoformat(
-            obs["date"]
+            obs['properties']["date"]
         ).date()
     except:
         polygon_date = datetime.utcnow().date()
@@ -1170,7 +1170,7 @@ def edit_polygon_dialog(obs):
         "≽༏≼": "odonata",
     }
     
-    animal_type_obs = obs.get("group")  
+    animal_type_obs = obs['properties']["group"]
     st.write(obs)
     selected_emoji = st.radio(
         "group",
@@ -1234,7 +1234,7 @@ def edit_polygon_dialog(obs):
     aantal = st.number_input(
         "Amount",
         step=1,
-        value=int(obs.get("aantal", 1))
+        value=int(obs['properties'][aantal])
     )
 
     comments = st.text_area(
@@ -1618,6 +1618,7 @@ def show_main_app():
         aantal = row.get("aantal", "Unknown")
         fill_color = SPECIES_COLORS.get(species, "blue")
         comments = row.get("comments", "")
+        group = row.get('group', '')
     
         function_type = row.get("function", "")
         id_type = row.get("id", "")
@@ -1759,7 +1760,10 @@ def show_main_app():
             "properties": {
                 "species": species,
                 "function": function_type,
-                "id": id_type,
+                "group": group,
+                "date": date,
+                "comments": comments,
+                "aantal": aantal,
             },
         }
     
