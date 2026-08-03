@@ -1170,7 +1170,7 @@ def edit_polygon_dialog(obs):
         "≽༏≼": "odonata",
     }
     
-    animal_type_obs = obs.get("animal_type", "bird")
+    animal_type_obs = obs.get("group")
     
     selected_emoji = st.radio(
         "group",
@@ -1227,8 +1227,6 @@ def edit_polygon_dialog(obs):
         func_list,
         index=function_index,
     )
-
-
 
 
 
