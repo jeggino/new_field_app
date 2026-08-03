@@ -699,8 +699,6 @@ def edit_observation_dialog(obs):
     with st.expander("Edit date"):
         obs_date = st.date_input("Date", value=d)
         
-    animal_type = obs.get("animal_type")
-
     options = {
         "🦇": "bat",
         "🪶": "bird",
@@ -708,46 +706,64 @@ def edit_observation_dialog(obs):
         "🐸": "amphibian",
         "≽༏≼": "odonata",
     }
-
+    
+    animal_type_obs = obs.get("animal_type", "bird")
     
     selected_emoji = st.radio(
         "group",
         list(options.keys()),
-        index=list(options.values()).index(animal_type),
+        index=list(options.values()).index(animal_type_obs),
         horizontal=True,
         label_visibility="collapsed",
     )
     
     animal_type = options[selected_emoji]
     
+    # Determine lists
     if animal_type == "bat":
         species_list = BAT_SPECIES
         func_list = BAT_FUNCTIONS
+    
     elif animal_type == "bird":
         species_list = BIRD_SPECIES
         func_list = BIRD_FUNCTIONS
+    
     elif animal_type == "amphibian":
         species_list = DUTCH_AMPHIBIANS
         func_list = AMPHIBIE_FUNCTIONS
+    
     elif animal_type == "odonata":
         species_list = ODONATA_SPECIES
         func_list = ODONATA_FUNCTIONS
+    
     elif animal_type == "plant":
         species_list = PLANT_SPECIES
         func_list = PLANT_FUNCTIONS
-   
-
-    species_value = obs.get("species")
     
-    if species_value not in species_list:
-        species_value = species_list[0]
-        species = st.text_input("Species",value=obs.get("species"))
+    # Use values from obs only if they are valid in the current group
+    species_value = obs.get("species")
+    if species_value in species_list:
+        species_index = species_list.index(species_value)
     else:
-        species_value = obs.get("species", species_list[0])
-        species = st.selectbox("Species", species_list, index=species_list.index(species_value))
-
-    function_value = obs.get("function", func_list[0])
-    function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+        species_index = 0
+    
+    species = st.selectbox(
+        "Species",
+        species_list,
+        index=species_index,
+    )
+    
+    function_value = obs.get("function")
+    if function_value in func_list:
+        function_index = func_list.index(function_value)
+    else:
+        function_index = 0
+    
+    function = st.selectbox(
+        "Function",
+        func_list,
+        index=function_index,
+    )
         
    
     aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
