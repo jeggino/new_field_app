@@ -1960,7 +1960,7 @@ def show_main_app():
 
         st.divider()
     
-        st.marksown("Edit/Delete observation")
+        st.markdown("Edit/Delete observation")
     
         # Use last_object_clicked_popup from st_folium
         if map_data and map_data.get("last_active_drawing"):
