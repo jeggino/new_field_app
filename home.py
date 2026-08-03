@@ -207,7 +207,7 @@ FUNCTION_ICONS = {
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
-ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES
+ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES + PLANT_SPECIES + DUTCH_AMPHIBIANS + ODONATA_SPECIES
 COLOR_PALETTE = [
     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
     "darkgreen","cadetblue","cadetblue","blue","pink","lightblue","lightgreen",
