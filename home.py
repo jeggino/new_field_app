@@ -1634,6 +1634,8 @@ def show_main_app():
     
         geometry = row["geometry"]
         species = row.get("species", "Unknown")
+        date = row.get("date", "Unknown")
+        aantal = row.get("aantal", "Unknown")
         fill_color = SPECIES_COLORS.get(species, "blue")
     
         function_type = row.get("function", "")
@@ -1667,7 +1669,7 @@ def show_main_app():
                 text-align: center;
                 margin-bottom: 4px;
             ">
-                ID: {id_type}
+                {date}
             </div>
         
             <div style="
@@ -1677,7 +1679,7 @@ def show_main_app():
                 font-style: italic;
                 margin-bottom: 4px;
             ">
-                {function_type.capitalize()}
+                ({aantal}) {function_type.capitalize()}
             </div>
         
         </div>
