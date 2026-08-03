@@ -1943,7 +1943,7 @@ def show_main_app():
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     
     with col1:
-        st.markdown("Daily Report")
+        st.markdown("New observation")
         if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
             new_polygon_dialog(st.session_state.map_input_center)
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
