@@ -1637,6 +1637,7 @@ def show_main_app():
         date = row.get("date", "Unknown")
         aantal = row.get("aantal", "Unknown")
         fill_color = SPECIES_COLORS.get(species, "blue")
+        comments = row.get("comments", "Unknown")
     
         function_type = row.get("function", "")
         id_type = row.get("id", "")
@@ -1652,13 +1653,13 @@ def show_main_app():
             """
         else:
             # Choose emoji based on species type
-            if "bat" in row.get('animal_type', ''):
+            if "bat" in row.get('group', ''):
                 emoji = "🦇"
-            elif "bird" in row.get('animal_type', ''):
+            elif "bird" in row.get('group', ''):
                 emoji = "🪶"  # default feather for birds or unknown
-            elif "amphibian" in row.get('animal_type', ''):
+            elif "amphibian" in row.get('group', ''):
                 emoji = "🐸"  # default feather for birds or unknown
-            elif "odonata" in row.get('animal_type', ''):
+            elif "odonata" in row.get('group', ''):
                 emoji = "≽༏≼"  # default feather for birds or unknown
             else:
                 emoji = "🍃"
@@ -1727,7 +1728,7 @@ def show_main_app():
                 font-weight: bold;
                 text-align: justify;
             ">
-                {obs.get('behavior', '')}
+                {comments}
             </div>
         
         </div>
