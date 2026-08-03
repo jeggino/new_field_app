@@ -1409,7 +1409,8 @@ def show_main_app():
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
         label = ":red[**New Observation**]"
         with st.expander(label,width="stretch",icon=":material/add_circle:"):
-            col1, col2 = st.columns([0.5, 0.5])
+            # col1, col2 = st.columns([0.5, 0.5])
+            col1 =  st.columns([1])
 
 
 
@@ -1954,59 +1955,58 @@ def show_main_app():
     with col1:
         if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
             new_polygon_dialog(st.session_state.map_input_center)
-    with col2:
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
             new_observation_dialog(st.session_state.map_input_center)
 
-    col1.divider()
+        st.divider()
     
-    col1.header("Edit/Delete observation")
+        st.marksown("Edit/Delete observation")
     
-    # Use last_object_clicked_popup from st_folium
-    if map_data and map_data.get("last_active_drawing"):
-        try:
-            if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
-                obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
-                label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
-                if col1.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/screenshot_region:"):
-                    edit_polygon_dialog(map_data["last_active_drawing"])
-                    st.stop()
-    
-            elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
-    
-                if map_data and map_data.get("last_object_clicked_popup"):
-                    obs_id = map_data.get("last_object_clicked_tooltip")
-                    if obs_id:
-                        st.session_state.selected_obs_id = obs_id
-                    
-    
-    
+        # Use last_object_clicked_popup from st_folium
+        if map_data and map_data.get("last_active_drawing"):
+            try:
+                if map_data["last_active_drawing"]["geometry"]["type"] == "Polygon":
+                    obs_id = f"{map_data["last_active_drawing"]["properties"]["id"]}"
+                    label = f"({obs_id}) {map_data["last_active_drawing"]["properties"]["species"]} - {map_data["last_active_drawing"]["properties"]["function"]}"
+                    if st.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/screenshot_region:"):
+                        edit_polygon_dialog(map_data["last_active_drawing"])
+                        st.stop()
         
-        # if map_data and map_data.get("last_object_clicked_popup"):
-        #     obs_id = map_data.get("last_object_clicked_tooltip")
-        #     if obs_id:
-        #         st.session_state.selected_obs_id = obs_id
-    
-    
+                elif map_data["last_active_drawing"]["geometry"]["type"] == "Point":
         
-                # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
-                selected_id = st.session_state.selected_obs_id
-                
-                # Find the matching observation
-                selected_obs = None
-                for obs in filtered:
-                    if str(obs["id"]) == selected_id:
-                        selected_obs = obs
-                        break
+                    if map_data and map_data.get("last_object_clicked_popup"):
+                        obs_id = map_data.get("last_object_clicked_tooltip")
+                        if obs_id:
+                            st.session_state.selected_obs_id = obs_id
+                        
+        
+        
+            
+            # if map_data and map_data.get("last_object_clicked_popup"):
+            #     obs_id = map_data.get("last_object_clicked_tooltip")
+            #     if obs_id:
+            #         st.session_state.selected_obs_id = obs_id
+        
+        
+            
+                    # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
+                    selected_id = st.session_state.selected_obs_id
                     
-                if selected_obs:
-                    obs_id = str(selected_obs["id"])
-                    base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
-                    label = f"{base_label}"
-                
-                    # EDIT BUTTON
-                    if col2.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/add_location_alt:"):
-                        edit_observation_dialog(selected_obs)
+                    # Find the matching observation
+                    selected_obs = None
+                    for obs in filtered:
+                        if str(obs["id"]) == selected_id:
+                            selected_obs = obs
+                            break
+                        
+                    if selected_obs:
+                        obs_id = str(selected_obs["id"])
+                        base_label = f"({obs_id}) {selected_obs.get('species','')} – {selected_obs.get('function','')}"
+                        label = f"{base_label}"
+                    
+                        # EDIT BUTTON
+                        if st.button(label, key=f"obs_{obs_id}", use_container_width=True,icon=":material/add_location_alt:"):
+                            edit_observation_dialog(selected_obs)
     
     
     
