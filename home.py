@@ -1639,7 +1639,61 @@ def show_main_app():
         function_type = row.get("function", "")
         id_type = row.get("id", "")
     
-        # fill_color = species_colors.get(species, "#cccccc")
+
+        popup_html = f"""
+        <div style="
+            background-color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            font-family: Arial, sans-serif;
+            width: 220px;
+            border: 3px solid {fill_color};
+        ">
+        
+            <div style="
+                font-weight: 700;
+                font-size: 15px;
+                color: {fill_color};
+                margin-bottom: 6px;
+                text-align: center;
+            ">
+                {species}
+            </div>
+        
+            <div style="
+                font-size: 13px;
+                color: #444;
+                text-align: center;
+                margin-bottom: 4px;
+            ">
+                ID: {id_type}
+            </div>
+        
+            <div style="
+                font-size: 12px;
+                color: #555;
+                text-align: center;
+                font-style: italic;
+                margin-bottom: 4px;
+            ">
+                {function_type.capitalize()}
+            </div>
+        
+        </div>
+        """
+        
+        popup = folium.Popup(
+            folium.Html(popup_html, script=True),
+            max_width=300,
+        )
+
+
+
+
+
+
+
     
         pattern = None
         fill_opacity = 1
@@ -1683,6 +1737,7 @@ def show_main_app():
     
         geojson = folium.GeoJson(
             feature,
+            popup=popup,
             tooltip=None,
             style_function=lambda f,
             fill_color=fill_color,
