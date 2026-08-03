@@ -708,10 +708,12 @@ def edit_observation_dialog(obs):
         "🐸": "amphibian",
         "≽༏≼": "odonata",
     }
+
     
     selected_emoji = st.radio(
         "group",
         list(options.keys()),
+        index=list(options.values()).index(animal_type),
         horizontal=True,
         label_visibility="collapsed",
     )
