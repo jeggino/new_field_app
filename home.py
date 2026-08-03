@@ -1234,7 +1234,7 @@ def edit_polygon_dialog(obs):
     aantal = st.number_input(
         "Amount",
         step=1,
-        value=int(obs['properties'][aantal])
+        value=int(obs['properties']['aantal'])
     )
 
     comments = st.text_area(
