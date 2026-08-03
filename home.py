@@ -1596,35 +1596,6 @@ def show_main_app():
         .execute()
     ).data or []
     
-    # ============================================================
-    # SPECIES COLORS
-    # ============================================================
-    
-    palette = [
-        "#e41a1c",
-        "#377eb8",
-        "#4daf4a",
-        "#984ea3",
-        "#ff7f00",
-        "#ffff33",
-        "#a65628",
-        "#f781bf",
-        "#999999",
-        "#66c2a5",
-        "#fc8d62",
-        "#8da0cb",
-    ]
-    
-    polygon_species = sorted({
-        row.get("species", "Unknown")
-        for row in polygon_rows
-        if row.get("species")
-    })
-    
-    species_colors = {
-        s: palette[i % len(palette)]
-        for i, s in enumerate(polygon_species)
-    }
     
     # ============================================================
     # ADD POLYGONS TO MAP
@@ -1637,7 +1608,7 @@ def show_main_app():
         date = row.get("date", "Unknown")
         aantal = row.get("aantal", "Unknown")
         fill_color = SPECIES_COLORS.get(species, "blue")
-        comments = row.get("comments", "Unknown")
+        comments = row.get("comments", "")
     
         function_type = row.get("function", "")
         id_type = row.get("id", "")
@@ -1785,7 +1756,7 @@ def show_main_app():
     
         geojson = folium.GeoJson(
             feature,
-            popup=popup_html_polygon,
+            popup=popup,
             tooltip=None,
             style_function=lambda f,
             fill_color=fill_color,
