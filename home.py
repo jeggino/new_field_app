@@ -1551,16 +1551,6 @@ def show_main_app():
 
         
 
-    st.sidebar.divider()
-    
-    st.sidebar.header("Daily Report")
-    
-    if st.sidebar.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
-        daily_report_dialog()
-    
-    if st.sidebar.button("View Reports",width="stretch",icon=":material/menu_book:"):
-        show_reports_dialog()
-
 
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
@@ -2011,7 +2001,18 @@ def show_main_app():
     
     
             except:
+                st.warning("Select a Point or a Polygon")
                 pass
+                
+    st.divider()
+    
+    st.markdown("Daily Report")
+    
+    if st.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
+        daily_report_dialog()
+    
+    if st.button("View Reports",width="stretch",icon=":material/menu_book:"):
+        show_reports_dialog()
 
 
 
