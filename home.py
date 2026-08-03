@@ -41,6 +41,9 @@ IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_L
 marker_size = 28
 inner_icon_px = 12
 
+#------------------  MAP SIZE ---------------------
+map_height = 550
+
 # ----------------- REPORT KINDS ------------------
 REPORT_KINDS = [
     'Kraamverblijf Avond (1/2)','Kraamverblijf Avond (2/2)','Kraamverblijf Ochtend (1/3)', 'Kraamverblijf Ochtend (2/3)', 'Kraamverblijf Ochtend (3/3)',
@@ -1916,7 +1919,7 @@ def show_main_app():
 
     with st.container():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
-        map_data = st_folium(m, height=450, width="100%")
+        map_data = st_folium(m, height=map_height, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
 
 
