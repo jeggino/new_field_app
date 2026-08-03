@@ -1407,8 +1407,8 @@ def show_project_selection():
 def show_main_app():
     with st.bottom:
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
-        label = ":red[**New Observation**]"
-        with st.expander(label,width="stretch",icon=":material/add_circle:"):
+        label = ":red[**Tools**]"
+        with st.expander(label,width="stretch",icon=":material/dehaze:"):
             col1, col2 = st.columns([0.5, 0.5])
             # col1 =  st.columns([1])
 
@@ -1943,6 +1943,7 @@ def show_main_app():
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     
     with col1:
+        st.markdown("Daily Report")
         if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
             new_polygon_dialog(st.session_state.map_input_center)
         if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
