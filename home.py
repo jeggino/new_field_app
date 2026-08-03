@@ -2010,36 +2010,8 @@ def show_main_app():
     
     
     
-                
-        
-            # # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
-            # lat = selected_obs.get("lat")
-            # lon = selected_obs.get("lon")
-        
-            # if lat and lon:
-            #     maps_url = f"https://www.google.com/maps?q={lat},{lon}"
-        
-            #     st.sidebar.markdown(
-            #         f"""
-            #         <a href="{maps_url}" target="_blank">
-            #             <div style="
-            #                 background-color:#4285F4;
-            #                 color:white;
-            #                 padding:0.6rem;
-            #                 border-radius:5px;
-            #                 text-align:center;
-            #                 font-weight:500;
-            #                 margin-top:0.5rem;
-            #                 cursor:pointer;
-            #             ">
-            #                 📍 Open in Google Maps
-            #             </div>
-            #         </a>
-            #         """,
-            #         unsafe_allow_html=True
-            #     )
-        except:
-            pass
+            except:
+                pass
 
 
 
