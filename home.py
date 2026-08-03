@@ -705,43 +705,49 @@ def edit_observation_dialog(obs):
         "🦇": "bat",
         "🪶": "bird",
         "🍃": "plant",
+        "🐸": "amphibian",
+        "≽༏≼": "odonata",
     }
     
     selected_emoji = st.radio(
         "group",
         list(options.keys()),
-        index=0 if animal_type == "bat" else 1 if animal_type == "bird" else 2,
         horizontal=True,
         label_visibility="collapsed",
     )
     
     animal_type = options[selected_emoji]
-
-
+    
     if animal_type == "bat":
         species_list = BAT_SPECIES
         func_list = BAT_FUNCTIONS
     elif animal_type == "bird":
         species_list = BIRD_SPECIES
         func_list = BIRD_FUNCTIONS
-    
+    elif animal_type == "amphibian":
+        species_list = DUTCH_AMPHIBIANS
+        func_list = AMPHIBIE_FUNCTIONS
+    elif animal_type == "odonata":
+        species_list = ODONATA_SPECIES
+        func_list = ODONATA_FUNCTIONS
+    elif animal_type == "plant":
+        species_list = PLANT_SPECIES
+        func_list = PLANT_FUNCTIONS
+   
 
-    if animal_type in ["bat","bird"]:
-        species_value = obs.get("species", species_list[0])
-        if species_value not in species_list:
-            species_value = species_list[0]
+    species_value = obs.get("species")
     
-        function_value = obs.get("function", func_list[0])
-        if function_value not in func_list:
-            function_value = func_list[0]
-
-        species = st.selectbox("Species", species_list, index=species_list.index(species_value))
-        function = st.selectbox("Function", func_list, index=func_list.index(function_value))
-        
-    else:
+    if species_value not in species_list:
+        species_value = species_list[0]
         species = st.text_input("Species",value=obs.get("species"))
-        function = value=obs.get("function")
-    
+    else:
+        species_value = obs.get("species", species_list[0])
+        species = st.selectbox("Species", species_list, index=species_list.index(species_value))
+
+    function_value = obs.get("function", func_list[0])
+    function = st.selectbox("Function", func_list, index=func_list.index(function_value))
+        
+   
     aantal = st.number_input("amount", step=1, value=int(obs.get("aantal")))
 
     behavior = st.text_area("Comments", value=obs.get("behavior", ""))
