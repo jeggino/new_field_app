@@ -1171,7 +1171,7 @@ def edit_polygon_dialog(obs):
     }
     
     animal_type_obs = obs.get("group")  
-    st.write(animal_type_obs)
+    st.write(obs)
     selected_emoji = st.radio(
         "group",
         list(options.keys()),
