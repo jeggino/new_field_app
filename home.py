@@ -724,6 +724,17 @@ def edit_observation_dialog(obs):
     m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+    folium.LayerControl(position="topright").add_to(m)
+
     # BeautifyIcon marker
     marker_icon = BeautifyIcon(
         icon="map-marker",
@@ -899,6 +910,17 @@ def new_observation_dialog(center):
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+    folium.LayerControl(position="topright").add_to(m)
+
     crosshair_html = f"""
     <div style="
         position: fixed;
@@ -1016,6 +1038,17 @@ def new_polygon_dialog(center):
     )
 
     LocateControl(auto_start=False).add_to(m)
+
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+    folium.LayerControl(position="topright").add_to(m)
 
     Draw(
         export=False,
@@ -1169,6 +1202,17 @@ def edit_polygon_dialog(obs):
     )
 
     LocateControl(auto_start=False).add_to(m)
+
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+    folium.LayerControl(position="topright").add_to(m)
 
     # CURRENT POLYGON (RED)
 
