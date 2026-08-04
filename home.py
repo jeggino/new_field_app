@@ -1690,7 +1690,7 @@ def show_main_app():
         control=True
     ).add_to(m)
 
-    # folium.LayerControl(position="topright").add_to(m)
+    folium.LayerControl(position="topright").add_to(m)
  
 
     # folium.LayerControl(position="topright").add_to(m)
