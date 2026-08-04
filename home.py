@@ -875,7 +875,7 @@ def edit_observation_dialog(obs):
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
-        control=True
+        control=false
     ).add_to(m)
 
     folium.LayerControl(position="topright").add_to(m)
@@ -1068,7 +1068,7 @@ def new_observation_dialog(center):
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
-        control=True
+        control=False
     ).add_to(m)
 
     folium.LayerControl(position="topright").add_to(m)
@@ -1204,10 +1204,9 @@ def new_polygon_dialog(center):
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
-        control=True
+        control=False
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
 
     Draw(
         export=False,
@@ -1361,12 +1360,12 @@ def edit_polygon_dialog(obs):
     )
 
     LocateControl(auto_start=False).add_to(m)
-    # Fullscreen(
-    #     position="topleft",
-    #     title="Full Screen",
-    #     title_cancel="Exit Full Screen",
-    #     force_separate_button=True,
-    # ).add_to(m)
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
@@ -1374,10 +1373,9 @@ def edit_polygon_dialog(obs):
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
-        control=True
+        control=False
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
 
     # CURRENT POLYGON (RED)
 
