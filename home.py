@@ -2214,6 +2214,7 @@ def show_main_app():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
         map_data = st_folium(m, height=map_height, width="100%")
         st.markdown('</div>', unsafe_allow_html=True)
+        st.write(map_data)
 
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
