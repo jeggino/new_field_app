@@ -2195,7 +2195,7 @@ def show_main_app():
             tooltip=tooltip_text,
             # tooltip=None,
             icon=marker_icon,
-            name=layer_name
+            name=None
         ).add_to(fg_2)
 
         fg_2.add_to(m)
