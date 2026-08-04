@@ -408,7 +408,7 @@ def show_google_maps_button():
     if centroid_lat and centroid_lng:
         maps_url = f"https://www.google.com/maps?q={centroid_lat},{centroid_lng}"
 
-        st.sidebar.link_button(
+        st.link_button(
             "🗺️ Open in Google Maps",
             maps_url,
             use_container_width=True,
@@ -2276,7 +2276,7 @@ def show_main_app():
 
             show_google_maps_button()
         
-            if st.sidebar.button("ℹ️ Info", help="View project description",width="stretch"):
+            if st.button("ℹ️ Info", help="View project description",width="stretch"):
                 description = get_project_description()
                 show_project_description(description)
 
