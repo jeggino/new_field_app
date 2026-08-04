@@ -2226,8 +2226,6 @@ def show_main_app():
             if st.button("New Polygon", key="New Polygon",width="stretch",icon=":material/screenshot_region:"):
                 new_polygon_dialog(st.session_state.map_input_center)
 
-        st.divider()
-
         with st.expander(":red[**Edit/Delete observation**]"):
         # st.markdown(":red[**Edit/Delete observation**]",text_alignment='center')
     
@@ -2276,8 +2274,6 @@ def show_main_app():
             else:
                 st.warning("Select a Point or a Polygon")
                 
-        st.divider()
-
         with st.expander(":blue[**Daily Report**]"):
         # st.markdown(":blue[**Daily Report**]",text_alignment='center')
         
