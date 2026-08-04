@@ -2278,7 +2278,7 @@ def show_main_app():
                 
         st.divider()
 
-        st.expander(":blue[**Daily Report**]")
+        with st.expander(":blue[**Daily Report**]"):
         # st.markdown(":blue[**Daily Report**]",text_alignment='center')
         
             if st.button("Fill a Report",width="stretch",icon=":material/edit_note:"):
