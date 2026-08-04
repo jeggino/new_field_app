@@ -2026,11 +2026,12 @@ def show_main_app():
             },
         }
 
-        species_short = SPECIES_SHORT[species]
-        function_short = FUNCTION_SHORT[function_type]
+        # species_short = SPECIES_SHORT[species]
+        # function_short = FUNCTION_SHORT[function_type]
         
-        layer_name = f"{species_short}-{function_short} ({id_type})"
-        fg = folium.FeatureGroup(name=layer_name)
+        # layer_name = f"{species_short}-{function_short} ({id_type})"
+        # fg = folium.FeatureGroup(name=layer_name)
+        fg = folium.FeatureGroup(name="peppe")
         
         geojson = folium.GeoJson(
             feature,
