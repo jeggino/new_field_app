@@ -1435,7 +1435,7 @@ def show_project_description(description: str | None):
 project = (
     supabase.table("projects")
     .select("description")
-    .eq("id", st.session_state.projectst.session_state.project)
+    .eq("id", st.session_state.project)
     .single()
     .execute()
 )
