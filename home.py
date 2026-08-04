@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-from folium.plugins import LocateControl, BeautifyIcon, MarkerCluster, Draw, StripePattern, CirclePattern
+from folium.plugins import LocateControl, BeautifyIcon, MarkerCluster, Draw, StripePattern, CirclePattern, Fullscreen
 from supabase import create_client, Client
 from datetime import datetime, time
 import uuid
@@ -862,6 +862,13 @@ def edit_observation_dialog(obs):
     m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
+
     # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -1048,6 +1055,13 @@ def new_observation_dialog(center):
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
+
     # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -1176,6 +1190,13 @@ def new_polygon_dialog(center):
     )
 
     LocateControl(auto_start=False).add_to(m)
+
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
@@ -1340,6 +1361,12 @@ def edit_polygon_dialog(obs):
     )
 
     LocateControl(auto_start=False).add_to(m)
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
@@ -1816,6 +1843,13 @@ def show_main_app():
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
+
+    Fullscreen(
+        position="topleft",
+        title="Full Screen",
+        title_cancel="Exit Full Screen",
+        force_separate_button=True,
+    ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
