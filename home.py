@@ -2214,12 +2214,6 @@ def show_main_app():
             icon_size=[marker_size, marker_size],                 # marker size
             inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
         )
-
-        species_short = SPECIES_SHORT[species]
-        function_short = FUNCTION_SHORT[obs.get('function', '')]
-        
-        layer_name = f"{species_short}-{function_short} (ID:{obs["id"]})"
-        fg_2 = folium.FeatureGroup(name=layer_name)
         
     
         # Add marker to cluster (NOT to map)
@@ -2229,10 +2223,8 @@ def show_main_app():
             tooltip=tooltip_text,
             # tooltip=None,
             icon=marker_icon,
-            name=None
-        ).add_to(fg_2)
+        ).add_to(m)
 
-        fg_2.add_to(m)
 
 
 
