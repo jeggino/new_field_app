@@ -868,7 +868,7 @@ def edit_observation_dialog(obs):
         attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
         name="Satellite",
         overlay=False,
-        control=false
+        control=False
     ).add_to(m)
 
 
