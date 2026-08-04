@@ -2029,9 +2029,8 @@ def show_main_app():
         species_short = SPECIES_SHORT[species]
         function_short = FUNCTION_SHORT[function_type]
         
-        layer_name = f"{species_short}-{function_short} ({id_type})"
+        layer_name = f"{species_short}-{function_short} (ID:{id_type})"
         fg = folium.FeatureGroup(name=layer_name)
-        # fg = folium.FeatureGroup(name=function_type)
         
         geojson = folium.GeoJson(
             feature,
@@ -2182,6 +2181,12 @@ def show_main_app():
             inner_icon_style=f"font-size:{inner_icon_px}px; display:flex; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:0; margin:0" # icon size
         )
 
+        species_short = SPECIES_SHORT[species]
+        function_short = FUNCTION_SHORT[obs.get('function', '')]
+        
+        layer_name = f"{species_short}-{function_short} (ID:{obs["id"]})"
+        fg = folium.FeatureGroup(name=layer_name)
+        
     
         # Add marker to cluster (NOT to map)
         folium.Marker(
@@ -2190,7 +2195,9 @@ def show_main_app():
             tooltip=tooltip_text,
             # tooltip=None,
             icon=marker_icon
-        ).add_to(cluster)
+        ).add_to(fg)
+
+        fg.add_to(m)
 
 
 
