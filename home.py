@@ -1361,12 +1361,12 @@ def edit_polygon_dialog(obs):
     )
 
     LocateControl(auto_start=False).add_to(m)
-    Fullscreen(
-        position="topleft",
-        title="Full Screen",
-        title_cancel="Exit Full Screen",
-        force_separate_button=True,
-    ).add_to(m)
+    # Fullscreen(
+    #     position="topleft",
+    #     title="Full Screen",
+    #     title_cancel="Exit Full Screen",
+    #     force_separate_button=True,
+    # ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
