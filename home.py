@@ -194,44 +194,44 @@ ODONATA_FUNCTIONS_POLYGON = [
 ]
 
 # ---------------- PICTOGRAMMEN VOOR FUNCTIES -----------------
-FUNCTION_ICONS = { 
-    # Vleermuizen 
-    "vleermuis waarneming": "walkietalkie", 
-    "zomerverblijfplaats": "zon", 
-    "kraamverblijfplaats": "venus", 
-    "paarverblijfplaats": "hart", 
-    "winterverblijfplaats": "sneeuwvlok", 
-    "vleermuiskast": "doosarchief", 
-    "zender": "torenuitzending", 
-    
-    # Vogels 
-    "vogel waarneming": "verrekijker", 
-    "nestlocatie": "ei", 
-    "Mogelijke nestlocatie": "vraag", 
-    
-    # Planten 
-    "Aanwezig": "blad", 
-    "Bloeiend": "zaailing", 
-    "Vrucht": "appel-heel", 
-    "Dood": "gekruiste knekels", 
-    
-    # Amfibieën 
-    "Volwassen": "kikker", 
-    "Roepend": "volume-hoog", 
-    "Paring": "hart", 
-    "Eieren": "ei", 
-    "Larven": "water", 
-    "Jong dier": "kind", 
-    "Foeragerend": "gebruiksvoorwerpen", 
-    "Trektocht": "route", 
-    
-    # Odonata 
-    "Eiafzet": "ei", 
-    "Tandem": "link", 
-    "Uitsluiping": "pijl-omhoog-rechts-punten", 
-    "Larve": "water", 
-    "Exuvia": "overhemd", 
-    "Rustend": "pauze",
+FUNCTION_ICONS = {
+    # Bats
+    "vleermuis waarneming": "walkie-talkie",
+    "zomerverblijfplaats": "sun",
+    "kraamverblijfplaats": "venus",
+    "paarverblijfplaats": "heart",
+    "winterverblijfplaats": "snowflake",
+    "vleermuiskast": "box-archive",
+    "zender": "tower-broadcast",
+
+    # Birds
+    "vogel waarneming": "binoculars",
+    "nestlocatie": "egg",
+    "mogelijke nestlocatie": "question",
+
+    # Plants
+    "Aanwezig": "leaf",
+    "Bloeiend": "seedling",
+    "Vrucht": "apple-whole",
+    "Dood": "skull-crossbones",
+
+    # Amphibians
+    "Adult": "frog",
+    "Roepend": "volume-high",
+    "Paring": "heart",
+    "Eieren": "egg",
+    "Larven": "water",
+    "Jong dier": "child",
+    "Foeragerend": "utensils",
+    "Trek": "route",
+
+    # Odonata
+    "Eiafzet": "egg",
+    "Tandem": "link",
+    "Uitsluiping": "arrow-up-right-dots",
+    "Larve": "water",
+    "Exuvia": "shirt",
+    "Rustend": "pause",
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
