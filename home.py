@@ -341,6 +341,24 @@ def logout():
 
 
 # ----------------- DATA HELPERS -----------------
+def get_project_description():
+    try:
+        response = (
+            supabase.table("projects")
+            .select("description")
+            .eq("id", st.session_state["project"])
+            .single()
+            .execute()
+        )
+
+        if response.data:
+            return response.data.get("description")
+
+        return None
+
+    except Exception as e:
+        st.error(f"Error loading project description: {e}")
+        return None
 
 def load_projects():
     user = st.session_state.user
@@ -1428,22 +1446,6 @@ def show_project_description(description: str | None):
         )
 
 
-
-
-# ===== Example Supabase Query =====
-# Replace project_id with your actual project identifier
-st.write(st.session_state.project)
-project = (
-    supabase.table("projects")
-    .select("description")
-    .eq("id", st.session_state.project)
-    .single()
-    .execute()
-)
-
-
-
-
 # ----------------- UI: LOGIN -----------------
 def show_login():
     st.sidebar.title("Login")
@@ -1598,9 +1600,8 @@ def show_main_app():
         )
 
 
-    description = project.data.get("description") if project.data else None
-    # Info icon button
-    if st.sidebar.button("ℹ️", help="View project description"):
+    if st.button("ℹ️", help="View project description"):
+        description = get_project_description()
         show_project_description(description)
 
 
