@@ -2031,7 +2031,7 @@ def show_main_app():
         
         # layer_name = f"{species_short}-{function_short} ({id_type})"
         # fg = folium.FeatureGroup(name=layer_name)
-        fg = folium.FeatureGroup(name="peppe")
+        fg = folium.FeatureGroup(name=function_type)
         
         geojson = folium.GeoJson(
             feature,
