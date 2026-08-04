@@ -1432,6 +1432,7 @@ def show_project_description(description: str | None):
 
 # ===== Example Supabase Query =====
 # Replace project_id with your actual project identifier
+st.write(st.session_state.project)
 project = (
     supabase.table("projects")
     .select("description")
