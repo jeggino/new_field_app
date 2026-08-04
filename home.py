@@ -300,7 +300,6 @@ def show_google_maps_button():
         st.sidebar.link_button(
             "🗺️ Open in Google Maps",
             maps_url,
-            type="primary",
             use_container_width=True,
         )
 # ----------------- SHAPE SETTINGS -----------------
