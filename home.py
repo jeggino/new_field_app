@@ -337,7 +337,7 @@ def get_project_description():
         response = (
             supabase.table("projects")
             .select("description")
-            .eq("id", st.session_state["project"])
+            .eq("name", st.session_state["project"])
             .single()
             .execute()
         )
