@@ -1392,6 +1392,57 @@ def edit_polygon_dialog(obs):
         st.rerun()
 
 
+# ----------------- PROJECT DESCRIPTION -------
+# Dialog component
+@st.dialog("Project Description")
+def show_project_description(description: str | None):
+    if description and description.strip():
+        st.markdown(
+            f"""
+            <div style="
+                padding: 1.5rem;
+                border-radius: 12px;
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+                line-height: 1.7;
+                font-size: 1rem;
+            ">
+                {description}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 2rem;">
+                <h4 style="color: #6c757d;">No Description Available</h4>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.image(
+            "https://b2729162.smushcdn.com/2729162/wpcontent/uploads/2024/01/nothing.gif?size=160x87&lossy=1&strip=1&webp=1",
+            use_container_width=False,
+        )
+
+
+
+
+# ===== Example Supabase Query =====
+# Replace project_id with your actual project identifier
+project = (
+    supabase.table("projects")
+    .select("description")
+    .eq("id", st.session_state.projectst.session_state.project)
+    .single()
+    .execute()
+)
+
+
+
+
 # ----------------- UI: LOGIN -----------------
 def show_login():
     st.sidebar.title("Login")
@@ -1544,6 +1595,13 @@ def show_main_app():
             """,
             unsafe_allow_html=True
         )
+
+
+    description = project.data.get("description") if project.data else None
+    # Info icon button
+    if st.sidebar.button("ℹ️", help="View project description"):
+        show_project_description(description)
+
 
 
     st.sidebar.divider()
