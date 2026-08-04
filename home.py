@@ -2219,7 +2219,7 @@ def show_main_app():
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     
     with col1:
-        with st.container(":green[**New observation**]"):
+        with st.expander(":green[**New observation**]"):
         # st.markdown(":green[**New observation**]",text_alignment='center')
             if st.button("New Point",key="New Observation",width="stretch",icon=":material/add_location_alt:"):
                 new_observation_dialog(st.session_state.map_input_center)
