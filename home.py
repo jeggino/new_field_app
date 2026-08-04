@@ -1841,7 +1841,9 @@ def show_main_app():
 
 
     # MAP
-    m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
+    m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False,
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",)
     LocateControl(auto_start=False).add_to(m)
 
     Fullscreen(
@@ -1851,19 +1853,14 @@ def show_main_app():
         force_separate_button=True,
     ).add_to(m)
 
-    # Satellite (Esri)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-        name="Satellite",
-        overlay=False,
-        control=True
-    ).add_to(m)
-
-    # folium.LayerControl(position="topright").add_to(m)
- 
-
-    # folium.LayerControl(position="topright").add_to(m)
+    # # Satellite (Esri)
+    # folium.TileLayer(
+    #     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    #     attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+    #     name="Satellite",
+    #     overlay=False,
+    #     control=True
+    # ).add_to(m)
 
 
     # Load boundary
