@@ -1854,14 +1854,14 @@ def show_main_app():
         force_separate_button=True,
     ).add_to(m)
 
-    # # Satellite (Esri)
-    # folium.TileLayer(
-    #     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    #     attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-    #     name="Satellite",
-    #     overlay=False,
-    #     control=False
-    # ).add_to(m)
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=False
+    ).add_to(m)
 
 
     # Load boundary
