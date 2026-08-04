@@ -607,6 +607,7 @@ def daily_report_dialog():
         }).execute()
 
         st.success("Report submitted.")
+        time.sleep(1)
         st.rerun()
 
 @st.dialog("Daily Reports")
@@ -701,6 +702,7 @@ def show_reports_dialog():
             }).eq("id", report["id"]).execute()
 
             st.success("Report updated.")
+            time.sleep(1)
             st.rerun()
 
         # ---------------------------------------------------------
@@ -721,7 +723,7 @@ def edit_observation_dialog(obs):
     st.write("Move the map to adjust the coordinates")
     
     edit_center = [obs["lat"], obs["lon"]]
-    m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
+    m = folium.Map(location=edit_center, zoom_start=17, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     # Satellite (Esri)
@@ -886,7 +888,7 @@ def edit_observation_dialog(obs):
         }).eq("id", obs["id"]).execute()
 
         st.success("Point edited!")
-        time.sleep(2)
+        time.sleep(1)
 
         load_observations(st.session_state.project)
         st.rerun()
@@ -905,7 +907,7 @@ def new_observation_dialog(center):
     st.write("Use the map center as the observation position.")
 
     base_center = center
-    zoom = 20
+    zoom = 17
 
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
@@ -1017,7 +1019,7 @@ def new_observation_dialog(center):
         st.session_state.map_input_center = [float(lat), float(lon)]
 
         st.success("Point saved!")
-        time.sleep(2)
+        time.sleep(1)
 
         load_observations(st.session_state.project)
         st.rerun()
@@ -1029,7 +1031,7 @@ def new_polygon_dialog(center):
     st.write("Draw a polygon on the map and save it.")
   
     base_center = center 
-    zoom = 20
+    zoom = 17
 
     m = folium.Map(
         location=base_center,
@@ -1170,7 +1172,7 @@ def new_polygon_dialog(center):
         supabase.table("polygons_app").insert(data).execute()
 
         st.success("Polygon saved.")
-        time.sleep(2)
+        time.sleep(1)
 
         st.rerun()
         
@@ -1197,7 +1199,7 @@ def edit_polygon_dialog(obs):
 
     m = folium.Map(
         location=center,
-        zoom_start=18,
+        zoom_start=17,
         zoom_control=False
     )
 
@@ -1414,6 +1416,7 @@ def edit_polygon_dialog(obs):
         load_polygons(st.session_state.project)
 
         st.success("Polygon updated")
+        time.sleep(1)
 
         st.rerun()
 
@@ -1677,6 +1680,17 @@ def show_main_app():
     # MAP
     m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
+
+    # Satellite (Esri)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        name="Satellite",
+        overlay=False,
+        control=True
+    ).add_to(m)
+
+    folium.LayerControl(position="topright").add_to(m)
  
 
     # folium.LayerControl(position="topright").add_to(m)
