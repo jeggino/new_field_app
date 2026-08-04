@@ -193,6 +193,142 @@ ODONATA_FUNCTIONS_POLYGON = [
     "Rustgebied",
 ]
 
+# ---------------- SHORT NAMES --------------------------------
+SPECIES_SHORT = {
+
+    # BATS
+    "Gewone dwergvleermuis": "GDV",
+    "Ruige dwergvleermuis": "RDV",
+    "Laatvlieger": "LV",
+    "Rosse vleermuis": "RV",
+    "Baardvleermuis": "BV",
+    "Meervleermuis": "MV",
+    "Watervleermuis": "WV",
+    "Kleine dwergvleermuis": "KDV",
+    "Tweekleurige vleermuis": "TV",
+    "Gewone grootoorvleermuis": "GGV",
+    "onbekend": "ONB",
+
+    # BIRDS
+    "Gierzwaluw": "GZW",
+    "Huiszwaluw": "HZW",
+    "Boerenzwaluw": "BZW",
+    "Huismus": "HM",
+    "Spreeuw": "SPR",
+    "Boomkruiper": "BKR",
+    "Kauw": "KAW",
+    "Steenuil": "STU",
+    "..ander": "AND",
+
+    # PLANTS
+    "Sneeuwbes": "SNB",
+    "Japanse berberis": "JBB",
+    "Broodboom": "BRB",
+    "Tuinjudaspenning": "TJP",
+    "Deutzia": "DEU",
+    "Zegekruid": "ZKG",
+    "Japanse duizendknoop": "JDK",
+    "Gewone hortensia": "GHO",
+    "Bamboe": "BAM",
+
+    # AMPHIBIANS
+    "Kleine watersalamander": "KWS",
+    "Alpenwatersalamander": "AWS",
+    "Kamsalamander": "KAM",
+    "Vinpootsalamander": "VPS",
+    "Bruine kikker": "BRK",
+    "Heikikker": "HEK",
+    "Poelkikker": "POK",
+    "Meerkikker": "MEK",
+    "Middelste groene kikker": "MGK",
+    "Boomkikker": "BOK",
+    "Gewone pad": "GEP",
+    "Rugstreeppad": "RSP",
+    "Vroedmeesterpad": "VMP",
+
+    # ODONATA
+    "Azuurwaterjuffer": "AWJ",
+    "Lantaarntje": "LAN",
+    "Gewone pantserjuffer": "GPJ",
+    "Weidebeekjuffer": "WBJ",
+    "Bosbeekjuffer": "BBJ",
+    "Vuurjuffer": "VUJ",
+    "Variabele waterjuffer": "VWJ",
+    "Grote roodoogjuffer": "GRJ",
+    "Paardenbijter": "PB",
+    "Blauwe glazenmaker": "BGM",
+    "Bruine glazenmaker": "BRG",
+    "Grote keizerlibel": "GKL",
+    "Glassnijder": "GLS",
+    "Platbuik": "PLB",
+    "Viervlek": "VVL",
+    "Gewone oeverlibel": "GOL",
+    "Bruinrode heidelibel": "BHL",
+    "Bloedrode heidelibel": "BDL",
+    "Steenrode heidelibel": "SHL",
+    "Vuurlibel": "VUL",
+}
+
+FUNCTION_SHORT = {
+
+    # Bats
+    "vleermuis waarneming": "WA",
+    "zomerverblijfplaats": "ZV",
+    "kraamverblijfplaats": "KV",
+    "paarverblijfplaats": "PV",
+    "winterverblijfplaats": "WV",
+    "vleermuiskast": "VK",
+    "zender": "ZD",
+
+    # Birds
+    "vogel waarneming": "WA",
+    "nestlocatie": "NL",
+    "mogelijke nestlocatie": "MNL",
+
+    # Polygon
+    "foerageergebied": "FG",
+    "paarterritorium": "PT",
+    "dekking": "DK",
+    "slaapplaats/broedgebied": "SB",
+    "water als dronk en/of badderplaats": "WB",
+    "zandplekken": "ZP",
+
+    # Plants
+    "Aanwezig": "AA",
+    "Bloeiend": "BL",
+    "Vrucht": "VR",
+    "Dood": "DD",
+    "Groeiplaats": "GP",
+    "Vegetatie": "VEG",
+    "Dominante soort": "DS",
+
+    # Amphibians
+    "Volwassen": "VOL",
+    "Roepend": "ROE",
+    "Paring": "PAR",
+    "Eieren": "EI",
+    "Larven": "LAR",
+    "Jong dier": "JD",
+    "Foeragerend": "FOE",
+    "Trek": "TRK",
+    "Dood": "DD",
+    "Voortplantingswater": "VW",
+    "Larvenhabitat": "LH",
+    "Migratieroute": "MR",
+    "Overwinteringsgebied": "OW",
+
+    # Odonata
+    "Eiafzet": "EA",
+    "Tandem": "TAN",
+    "Uitsluipen": "UIT",
+    "Larve": "LAR",
+    "Exuvia": "EX",
+    "Rustend": "RUS",
+    "Eiafzetgebied": "EG",
+    "Rustgebied": "RG",
+}
+
+
 # ---------------- PICTOGRAMMEN VOOR FUNCTIES -----------------
 FUNCTION_ICONS = {
     # Bats
@@ -723,7 +859,7 @@ def edit_observation_dialog(obs):
     st.write("Move the map to adjust the coordinates")
     
     edit_center = [obs["lat"], obs["lon"]]
-    m = folium.Map(location=edit_center, zoom_start=17, zoom_control=False)
+    m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
     # Satellite (Esri)
@@ -907,7 +1043,7 @@ def new_observation_dialog(center):
     st.write("Use the map center as the observation position.")
 
     base_center = center
-    zoom = 17
+    zoom = 18
 
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
@@ -1031,7 +1167,7 @@ def new_polygon_dialog(center):
     st.write("Draw a polygon on the map and save it.")
   
     base_center = center 
-    zoom = 17
+    zoom = 18
 
     m = folium.Map(
         location=base_center,
@@ -1199,7 +1335,7 @@ def edit_polygon_dialog(obs):
 
     m = folium.Map(
         location=center,
-        zoom_start=17,
+        zoom_start=18,
         zoom_control=False
     )
 
@@ -1889,7 +2025,9 @@ def show_main_app():
                 "id": id_type,
             },
         }
-    
+        layer_name = f"{species_short}-{function_short} ({id_type})"
+        fg = folium.FeatureGroup(name=layer_name)
+        
         geojson = folium.GeoJson(
             feature,
             popup=popup,
@@ -1902,7 +2040,7 @@ def show_main_app():
                 "color": fill_color,
                 "weight": 1.5,
             },
-        ).add_to(m)
+        ).add_to(fg)
     
         if pattern:
             geojson.options["fillPattern"] = pattern
