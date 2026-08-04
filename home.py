@@ -1404,7 +1404,6 @@ def edit_polygon_dialog(obs):
 # Dialog component
 @st.dialog("Project Description")
 def show_project_description(description: str | None):
-    st.write(description)
     if description and description.strip():
         st.markdown(
             f"""
