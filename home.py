@@ -1600,7 +1600,7 @@ def show_main_app():
         )
 
 
-    if st.button("ℹ️", help="View project description"):
+    if st.sidebar.button("ℹ️", help="View project description"):
         description = get_project_description()
         show_project_description(description)
 
