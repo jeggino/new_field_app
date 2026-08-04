@@ -1441,8 +1441,8 @@ def show_project_description(description: str | None):
         )
 
         st.image(
-            "https://b2729162.smushcdn.com/2729162/wpcontent/uploads/2024/01/nothing.gif?size=160x87&lossy=1&strip=1&webp=1",
-            use_container_width=False,
+            "https://tse1.mm.bing.net/th/id/OIP.CLmh58rJ57FG_7zz9c7zvgHaHY?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+            use_container_width=True,
         )
 
 
