@@ -195,22 +195,6 @@ ODONATA_FUNCTIONS_POLYGON = [
 ]
 
 # ----------------- ICONS FOR FUNCTIONS -----------------
-# FUNCTION_ICONS = {
-#     "vleermuis waarneming": "walkie-talkie",
-#     "zomerverblijfplaats": "sun",
-#     "kraamverblijfplaats": "venus",
-#     "paarverblijfplaats": "heart",
-#     "winterverblijfplaats": "snowflake",
-#     "vleermuiskast": "box-archive",
-#     "zender": "tower-broadcast",
-
-#     "vogel waarneming": "binoculars",
-#     "nestlocatie": "egg",
-#     "mogelijke nestlocatie": "question",
-
-#     "plant": "fa-light fa-leaf"
-# }
-
 FUNCTION_ICONS = {
     # Bats
     "vleermuis waarneming": "walkie-talkie",
@@ -252,14 +236,6 @@ FUNCTION_ICONS = {
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
-# ALL_SPECIES = BAT_SPECIES + BIRD_SPECIES + PLANT_SPECIES + DUTCH_AMPHIBIANS + ODONATA_SPECIES
-# COLOR_PALETTE = [
-#     "red","green","blue","purple","orange","darkred","lightred","beige","darkblue",
-#     "darkgreen","cadetblue","cadetblue","blue","pink","lightblue","lightgreen",
-#     "gray","black","red"
-# ]
-# SPECIES_COLORS = {sp: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, sp in enumerate(ALL_SPECIES)}
-
 def generate_colors(species_list):
     n = len(species_list)
 
@@ -578,7 +554,6 @@ def _get_center_from_map_data(map_data, fallback_center):
 
 
 
-# ----------------- EDIT OBSERVATION -----------------
 # ----------------- EDIT OBSERVATION -----------------
 @st.dialog("Daily Report")
 def daily_report_dialog():
