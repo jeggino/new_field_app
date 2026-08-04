@@ -1449,7 +1449,7 @@ def show_project_description(description: str | None):
         st.markdown(
             """
             <div style="text-align: center; padding: 2rem;">
-                <h4 style="color: #6c757d;">No Description Available</h4>
+                <h4 style="color: #6c757d;">Geen beschrijving beschikbaar, neem contact op met uw teamleider.</h4>
             </div>
             """,
             unsafe_allow_html=True,
