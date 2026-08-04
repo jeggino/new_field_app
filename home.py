@@ -287,6 +287,22 @@ SPECIES_COLORS = {
     **ODONATA_COLORS,
 }
 
+# ----------------- GET DIRECTION ------------------
+def show_google_maps_button():
+    boundary, bounds = load_project_boundary(st.session_state.project)
+
+    centroid_lat = (bounds[0][0] + bounds[1][0]) / 2
+    centroid_lng = (bounds[0][1] + bounds[1][1]) / 2
+
+    if centroid_lat and centroid_lng:
+        maps_url = f"https://www.google.com/maps?q={centroid_lat},{centroid_lng}"
+
+        st.sidebar.link_button(
+            "🗺️ Open in Google Maps",
+            maps_url,
+            type="primary",
+            use_container_width=True,
+        )
 # ----------------- SHAPE SETTINGS -----------------
 BAT_BORDER = True
 
@@ -1553,54 +1569,10 @@ def show_main_app():
 
     st.sidebar.divider()  
 
-    # GOOGLE MAPS BUTTON (works on Streamlit Cloud)
-    boundary, bounds = load_project_boundary(st.session_state.project)
-    centroid_lat = (bounds[0][0] + bounds[1][0]) / 2
-    centroid_lng = (bounds[0][1] + bounds[1][1]) / 2
+    show_google_maps_button()
 
 
-    if centroid_lat and centroid_lng:
-        maps_url = f"https://www.google.com/maps?q={centroid_lat},{centroid_lng}"
-
-        st.sidebar.markdown(
-            f"""
-            <a href="{maps_url}" target="_blank">
-                <div style="
-                    background: repeating-linear-gradient(
-                        45deg,
-                        #FFD700,
-                        #FFD700 12px,
-                        #000000 12px,
-                        #000000 24px
-                    );
-                    color:white;
-                    padding:0.8rem;
-                    border-radius:8px;
-                    text-align:center;
-                    font-weight:700;
-                    margin-top:0.5rem;
-                    cursor:pointer;
-                    border:2px solid black;
-                    text-shadow:1px 1px 2px black;
-                ">
-                    <span style="
-                        background-color:black;
-                        color:white;
-                        padding:0.35rem 0.8rem;
-                        border-radius:6px;
-                        font-weight:700;
-                        display:inline-block;
-                    ">
-                        🚗 Get Directions
-                    </span>
-                </div>
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-    if st.sidebar.button("ℹ️", help="View project description"):
+    if st.sidebar.button("ℹ️ Info", help="View project description",width="stretch"):
         description = get_project_description()
         show_project_description(description)
 
