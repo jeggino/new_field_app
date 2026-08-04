@@ -1736,17 +1736,6 @@ def show_main_app():
 
     st.sidebar.divider()  
 
-    show_google_maps_button()
-
-
-    if st.sidebar.button("ℹ️ Info", help="View project description",width="stretch"):
-        description = get_project_description()
-        show_project_description(description)
-
-
-
-    st.sidebar.divider()
-
     st.sidebar.header("Filters")
 
     obs = st.session_state.observations
@@ -2283,6 +2272,13 @@ def show_main_app():
             if st.button("View Reports",width="stretch",icon=":material/menu_book:"):
                 show_reports_dialog()
 
+        with st.expander(":yellow[**Tools**]"):
+
+            show_google_maps_button()
+        
+            if st.sidebar.button("ℹ️ Info", help="View project description",width="stretch"):
+                description = get_project_description()
+                show_project_description(description)
 
 
 
