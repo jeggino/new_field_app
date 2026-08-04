@@ -1415,6 +1415,7 @@ def show_project_description(description: str | None):
                 border: 1px solid #e9ecef;
                 line-height: 1.7;
                 font-size: 1rem;
+                color: black;
             ">
                 {description}
             </div>
