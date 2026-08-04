@@ -2212,31 +2212,9 @@ def show_main_app():
 
     with st.container():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
-        # folium.LayerControl(position="topright").add_to(m)
         map_data = st_folium(m, height=map_height, width="100%")
-        
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-    # map_data = st_folium(m, height=550, width="100%")
-
-    # # Use CSS to make the map full screen
-    # st.markdown(
-    #     """
-    #     <style>
-    #         /* Target the folium map container and make it full screen */
-    #         [data-testid="stFolium"] {
-    #             height: 100vh !important;
-    #             width: 100vw !important;
-    #             position: fixed;
-    #             top: 0;
-    #             left: 0;
-    #             z-index: 999;
-    #         }
-    #     </style>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
 
     st.session_state.map_input_center = _get_center_from_map_data(map_data, st.session_state.map_center)
     
@@ -2266,16 +2244,7 @@ def show_main_app():
                     if map_data and map_data.get("last_object_clicked_popup"):
                         obs_id = map_data.get("last_object_clicked_tooltip")
                         if obs_id:
-                            st.session_state.selected_obs_id = obs_id
-                        
-        
-        
-            
-            # if map_data and map_data.get("last_object_clicked_popup"):
-            #     obs_id = map_data.get("last_object_clicked_tooltip")
-            #     if obs_id:
-            #         st.session_state.selected_obs_id = obs_id
-        
+                            st.session_state.selected_obs_id = obs_id      
         
             
                     # # OBSERVATION LIST IN SIDEBAR (no title, no new button)
