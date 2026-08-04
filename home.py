@@ -138,100 +138,100 @@ BIRD_FUNCTIONS_POLYGON = [
 ]
 
 PLANT_FUNCTIONS = [ 
-"Aanwezig", 
-"Bloeiend", 
-"Vrucht", 
-"Dood",
+    "Aanwezig", 
+    "Bloeiend", 
+    "Vrucht", 
+    "Dood",
 ]
 
 PLANT_FUNCTIONS_POLYGON = [ 
-"Groeiplaats", 
-"Vegetatie", 
-"Dominante soort",
+    "Groeiplaats", 
+    "Vegetatie", 
+    "Dominante soort",
 ]
 
 
 
 AMPHIBIE_FUNCTIONS = [ 
-"Volwassen", 
-"Roepend", 
-"Paring", 
-"Eieren", 
-"Larven", 
-"Jong dier", 
-"Foeragerend", 
-"Trek", 
-"Dood",
+    "Volwassen", 
+    "Roepend", 
+    "Paring", 
+    "Eieren", 
+    "Larven", 
+    "Jong dier", 
+    "Foeragerend", 
+    "Trek", 
+    "Dood",
 ]
 
 AMPHIBIE_FUNCTIONS_POLYGON = [ 
-"Voortplantingswater", 
-"Larvenhabitat", 
-"Foerageergebied", 
-"Migratieroute", 
-"Overwinteringsgebied",
+    "Voortplantingswater", 
+    "Larvenhabitat", 
+    "Foerageergebied", 
+    "Migratieroute", 
+    "Overwinteringsgebied",
 ]
 
 ODONATA_FUNCTIONS = [ 
-"Volwassen", 
-"Paring", 
-"Eiafzet", 
-"Tandem", 
-"Uitsluipen", 
-"Larve", 
-"Exuvia", 
-"Rustend", 
-"Foeragerend", 
-"Dood",
+    "Volwassen", 
+    "Paring", 
+    "Eiafzet", 
+    "Tandem", 
+    "Uitsluipen", 
+    "Larve", 
+    "Exuvia", 
+    "Rustend", 
+    "Foeragerend", 
+    "Dood",
 ]
 
 ODONATA_FUNCTIONS_POLYGON = [ 
-"Voortplantingswater", 
-"Eiafzetgebied", 
-"Larvenhabitat", 
-"Foerageergebied", 
-"Rustgebied",
+    "Voortplantingswater", 
+    "Eiafzetgebied", 
+    "Larvenhabitat", 
+    "Foerageergebied", 
+    "Rustgebied",
 ]
 
 # ---------------- PICTOGRAMMEN VOOR FUNCTIES -----------------
 FUNCTION_ICONS = { 
-# Vleermuizen 
-"vleermuis waarneming": "walkietalkie", 
-"zomerverblijfplaats": "zon", 
-"kraamverblijfplaats": "venus", 
-"paarverblijfplaats": "hart", 
-"winterverblijfplaats": "sneeuwvlok", 
-"vleermuiskast": "doosarchief", 
-"zender": "torenuitzending", 
-
-# Vogels 
-"vogel waarneming": "verrekijker", 
-"nestlocatie": "ei", 
-"Mogelijke nestlocatie": "vraag", 
-
-# Planten 
-"Aanwezig": "blad", 
-"Bloeiend": "zaailing", 
-"Vrucht": "appel-heel", 
-"Dood": "gekruiste knekels", 
-
-# Amfibieën 
-"Volwassen": "kikker", 
-"Roepend": "volume-hoog", 
-"Paring": "hart", 
-"Eieren": "ei", 
-"Larven": "water", 
-"Jong dier": "kind", 
-"Foeragerend": "gebruiksvoorwerpen", 
-"Trektocht": "route", 
-
-# Odonata 
-"Eiafzet": "ei", 
-"Tandem": "link", 
-"Uitsluiping": "pijl-omhoog-rechts-punten", 
-"Larve": "water", 
-"Exuvia": "overhemd", 
-"Rustend": "pauze",
+    # Vleermuizen 
+    "vleermuis waarneming": "walkietalkie", 
+    "zomerverblijfplaats": "zon", 
+    "kraamverblijfplaats": "venus", 
+    "paarverblijfplaats": "hart", 
+    "winterverblijfplaats": "sneeuwvlok", 
+    "vleermuiskast": "doosarchief", 
+    "zender": "torenuitzending", 
+    
+    # Vogels 
+    "vogel waarneming": "verrekijker", 
+    "nestlocatie": "ei", 
+    "Mogelijke nestlocatie": "vraag", 
+    
+    # Planten 
+    "Aanwezig": "blad", 
+    "Bloeiend": "zaailing", 
+    "Vrucht": "appel-heel", 
+    "Dood": "gekruiste knekels", 
+    
+    # Amfibieën 
+    "Volwassen": "kikker", 
+    "Roepend": "volume-hoog", 
+    "Paring": "hart", 
+    "Eieren": "ei", 
+    "Larven": "water", 
+    "Jong dier": "kind", 
+    "Foeragerend": "gebruiksvoorwerpen", 
+    "Trektocht": "route", 
+    
+    # Odonata 
+    "Eiafzet": "ei", 
+    "Tandem": "link", 
+    "Uitsluiping": "pijl-omhoog-rechts-punten", 
+    "Larve": "water", 
+    "Exuvia": "overhemd", 
+    "Rustend": "pauze",
 }
 
 # ----------------- COLORS FOR SPECIES -----------------
