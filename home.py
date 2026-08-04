@@ -2185,7 +2185,7 @@ def show_main_app():
         function_short = FUNCTION_SHORT[obs.get('function', '')]
         
         layer_name = f"{species_short}-{function_short} (ID:{obs["id"]})"
-        fg = folium.FeatureGroup(name=layer_name)
+        # fg = folium.FeatureGroup(name=layer_name)
         
     
         # Add marker to cluster (NOT to map)
@@ -2194,10 +2194,11 @@ def show_main_app():
             popup=popup_html,
             tooltip=tooltip_text,
             # tooltip=None,
-            icon=marker_icon
-        ).add_to(fg)
+            icon=marker_icon,
+            name=layer_name
+        ).add_to(m)
 
-        fg.add_to(m)
+        # fg.add_to(m)
 
 
 
