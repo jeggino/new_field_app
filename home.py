@@ -862,13 +862,6 @@ def edit_observation_dialog(obs):
     m = folium.Map(location=edit_center, zoom_start=18, zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
-    Fullscreen(
-        position="topleft",
-        title="Full Screen",
-        title_cancel="Exit Full Screen",
-        force_separate_button=True,
-    ).add_to(m)
-
     # Satellite (Esri)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -878,7 +871,6 @@ def edit_observation_dialog(obs):
         control=false
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
 
     # BeautifyIcon marker
     marker_icon = BeautifyIcon(
@@ -1055,12 +1047,6 @@ def new_observation_dialog(center):
     m = folium.Map(location=base_center, zoom_start=zoom,zoom_control=False)
     LocateControl(auto_start=False).add_to(m)
 
-    Fullscreen(
-        position="topleft",
-        title="Full Screen",
-        title_cancel="Exit Full Screen",
-        force_separate_button=True,
-    ).add_to(m)
 
     # Satellite (Esri)
     folium.TileLayer(
@@ -1071,7 +1057,6 @@ def new_observation_dialog(center):
         control=False
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
 
     crosshair_html = f"""
     <div style="
