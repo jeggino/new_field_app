@@ -2204,7 +2204,7 @@ def show_main_app():
             tooltip=tooltip_text,
             # tooltip=None,
             icon=marker_icon,
-        ).add_to(m)
+        ).add_to(cluster)
 
 
 
