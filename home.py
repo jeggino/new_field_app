@@ -1690,7 +1690,7 @@ def show_main_app():
         control=True
     ).add_to(m)
 
-    folium.LayerControl(position="topright").add_to(m)
+    # folium.LayerControl(position="topright").add_to(m)
  
 
     # folium.LayerControl(position="topright").add_to(m)
@@ -2052,7 +2052,9 @@ def show_main_app():
 
     with st.container():
         st.markdown('<div class="fixed-map">', unsafe_allow_html=True)
+        folium.LayerControl(position="topright").add_to(m)
         map_data = st_folium(m, height=map_height, width="100%")
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 
