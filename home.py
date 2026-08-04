@@ -2025,6 +2025,10 @@ def show_main_app():
                 "id": id_type,
             },
         }
+
+        species_short = SPECIES_SHORT[species]
+        function_short = FUNCTION_SHORT[function_type]
+        
         layer_name = f"{species_short}-{function_short} ({id_type})"
         fg = folium.FeatureGroup(name=layer_name)
         
