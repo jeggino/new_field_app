@@ -68,7 +68,6 @@ BIRD_SPECIES = [
 
 PLANT_SPECIES = [
     'Sneeuwbes',
-     'Gewone dwergvleermuis',
      'Japanse berberis',
      'Broodboom',
      'Tuinjudaspenning',
