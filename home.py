@@ -37,7 +37,8 @@ OPACITY = 1
 WIDTH = 30
 
 # ----------------- LOGO --------------------------
-IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
+# IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
+IMAGE = "https://media.licdn.com/dms/image/v2/C4D0BAQE9sKwGG06UPA/company-logo_200_200/company-logo_200_200/0/1631374822253?e=2147483647&v=beta&t=o0WOgRmlYwkShUAMXq8QGCcrWvlS84iLYNpsqqcWFLw"
 
 # ................. ICON CUSTUMIZE ----------------
 marker_size = 28
