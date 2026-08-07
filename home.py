@@ -1813,10 +1813,7 @@ def show_main_app():
 
 
     # MAP
-    m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False,
-    # tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    # attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
-    )
+    m = folium.Map(location=st.session_state.map_center, zoom_start=12, zoom_control=False,tiles=None)
     LocateControl(auto_start=False).add_to(m)
 
     Fullscreen(
@@ -1826,11 +1823,22 @@ def show_main_app():
         force_separate_button=True,
     ).add_to(m)
 
-    # Satellite (Esri)
+    tiles = 'https://api.mapbox.com/styles/v1/jeggino/cmn7ms1u3001f01pl691k0eyu/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ'
+    folium.TileLayer(tiles=tiles,
+                     attr='XXX Mapbox Attribution',
+                         max_zoom=24,
+        max_native_zoom=22,
+        overlay=False,
+        control=False,name="OpenStreetMap").add_to(m)
+    
+    
+    # Satellite
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        attr="Esri",
         name="Satellite",
+        max_native_zoom=21,
+        max_zoom=21,
         overlay=False,
         control=False
     ).add_to(m)
