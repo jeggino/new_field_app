@@ -671,15 +671,26 @@ if page == "Create Project":
         st.session_state.confirm_multipolygon = False
 
     # MAP
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True)
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12, zoom_control=True,tiles=None)
 
-    # Satellite (Esri)
+    tiles = 'https://api.mapbox.com/styles/v1/jeggino/cmn7ms1u3001f01pl691k0eyu/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ'
+    folium.TileLayer(tiles=tiles,
+                     attr='XXX Mapbox Attribution',
+                         max_zoom=24,
+        max_native_zoom=22,
+        overlay=False,
+        control=False,name="OpenStreetMap").add_to(m)
+    
+    
+    # Satellite
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        attr="Esri",
         name="Satellite",
+        max_native_zoom=21,
+        max_zoom=21,
         overlay=False,
-        control=True
+        control=False
     ).add_to(m)
 
     # Geocoder FIRST
@@ -1109,14 +1120,26 @@ elif page == "View Projects":
     # ---------------------------------------------------------
     # CREATE MAP
     # ---------------------------------------------------------
-    m = folium.Map(location=[52.37, 4.90], zoom_start=12)
+    m = folium.Map(location=[52.37, 4.90], zoom_start=12,tiles = None)
 
-    folium.TileLayer(
-        tiles="http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-        attr="Google Satellite",
-        name="Google Satellite",
+    tiles = 'https://api.mapbox.com/styles/v1/jeggino/cmn7ms1u3001f01pl691k0eyu/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ'
+    folium.TileLayer(tiles=tiles,
+                     attr='XXX Mapbox Attribution',
+                         max_zoom=24,
+        max_native_zoom=22,
         overlay=False,
-        control=True,
+        control=False,name="OpenStreetMap").add_to(m)
+    
+    
+    # Satellite
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Satellite",
+        max_native_zoom=21,
+        max_zoom=21,
+        overlay=False,
+        control=False
     ).add_to(m)
 
     if existing_boundary_feature:
