@@ -708,7 +708,6 @@ if page == "Create Project":
     ).add_to(m)
 
     Fullscreen(position="topleft").add_to(m)
-    folium.LayerControl(position="topright").add_to(m)
 
     # Render map
     with st.container():
