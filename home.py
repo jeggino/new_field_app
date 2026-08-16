@@ -1554,7 +1554,7 @@ def edit_polygon_dialog(obs):
 
     comments = st.text_area(
         "Comments",
-        value=obs.get("comments", "")
+        value=obs['properties']["comments"]
     )
 
     if obs.get("photo_url"):
