@@ -1168,6 +1168,8 @@ elif page == "View Projects":
         edit_options={"edit": True, "remove": True},
     ).add_to(m)
 
+    Fullscreen(position="topleft").add_to(m)
+
     folium.LayerControl().add_to(m)
 
     # ---------------------------------------------------------
