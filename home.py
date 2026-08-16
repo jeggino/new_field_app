@@ -1519,7 +1519,7 @@ def edit_polygon_dialog(obs):
         func_list = PLANT_FUNCTIONS_POLYGON
     
     # Use values from obs only if they are valid in the current group
-    species_value = obs.get("species")
+    species_value = obs['properties']["species"]
     if species_value in species_list:
         species_index = species_list.index(species_value)
     else:
@@ -1531,7 +1531,7 @@ def edit_polygon_dialog(obs):
         index=species_index,
     )
     
-    function_value = obs.get("function")
+    function_value = obs['properties']["function"]
     if function_value in func_list:
         function_index = func_list.index(function_value)
     else:
@@ -1559,7 +1559,7 @@ def edit_polygon_dialog(obs):
 
     if obs.get("photo_url"):
         st.image(
-            obs["photo_url"],
+            obs['properties']["photo_url"],
             width=150,
             caption="Current photo"
         )
