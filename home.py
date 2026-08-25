@@ -41,8 +41,8 @@ WIDTH = 30
 IMAGE = "https://media.licdn.com/dms/image/v2/C4D0BAQE9sKwGG06UPA/company-logo_200_200/company-logo_200_200/0/1631374822253?e=2147483647&v=beta&t=o0WOgRmlYwkShUAMXq8QGCcrWvlS84iLYNpsqqcWFLw"
 
 # ................. ICON CUSTUMIZE ----------------
-marker_size = 28
-inner_icon_px = 12
+marker_size = 30
+inner_icon_px = 14
 
 #------------------  MAP SIZE ---------------------
 map_height = 510
