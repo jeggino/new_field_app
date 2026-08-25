@@ -335,11 +335,12 @@ FUNCTION_ICONS = {
     "vleermuis waarneming": "walkie-talkie",
     "zomerverblijfplaats": "mars",
     "kraamverblijfplaats": "venus",
-    "paarverblijfplaats": "heart",
-    "winterverblijfplaats": "snowflake",
+    "paarverblijfplaats": "venus-mars",
+    "winterverblijfplaats": "mars-and-venus",
     "vleermuiskast": "box-archive",
     "zender": "tower-broadcast",
 
+    
     # Birds
     "vogel waarneming": "binoculars",
     "nestlocatie": "egg",
