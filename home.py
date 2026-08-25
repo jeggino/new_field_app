@@ -333,7 +333,7 @@ FUNCTION_SHORT = {
 FUNCTION_ICONS = {
     # Bats
     "vleermuis waarneming": "walkie-talkie",
-    "zomerverblijfplaats": "sun",
+    "zomerverblijfplaats": "mars",
     "kraamverblijfplaats": "venus",
     "paarverblijfplaats": "heart",
     "winterverblijfplaats": "snowflake",
