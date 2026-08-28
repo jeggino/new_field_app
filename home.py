@@ -2648,7 +2648,7 @@ if page == "HTML-generator":
     
     file = "Screenshot 2026-08-05 165527.jpg"
     
-    encoded = base64.b64encode(open(file, "rb").read()).decode()
+    encoded = base64.b64encode(file).decode()
     
     
     
