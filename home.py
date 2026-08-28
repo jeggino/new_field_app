@@ -1558,7 +1558,7 @@ if page == "HTML-generator":
     polygons_gdf = gpd.GeoDataFrame(
         records,
         geometry="geometry",
-        crs=crs
+        # crs=crs
     )
 #------------------------
 
