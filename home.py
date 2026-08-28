@@ -1497,7 +1497,10 @@ if page == "HTML-generator":
         list_all_geojson(BUCKET)
     )
     
+    st.write(f"GeoJSON files found: {len(geojson_files)}")
     
+    for f in geojson_files:
+        st.write(f)
     
     # =====================================================
     # CREATE GEODATAFRAME
@@ -1544,7 +1547,7 @@ if page == "HTML-generator":
     
         except Exception as e:
     
-            print(f"Error loading {filepath}: {e}")
+            st.write(f"Error loading {filepath}: {e}")
     
         finally:
     
@@ -1554,13 +1557,15 @@ if page == "HTML-generator":
     # =====================================================
     # FINAL GEODATAFRAME
     # =====================================================
-
-    st.write(records)
     
     polygons_gdf = gpd.GeoDataFrame(
         records,
         geometry="geometry",
-        # crs=crs
+        crs=crs
+    )
+    
+    st.write(
+        f"Loaded {len(polygons_gdf)} polygons."
     )
 #------------------------
 
