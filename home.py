@@ -1554,6 +1554,8 @@ if page == "HTML-generator":
     # =====================================================
     # FINAL GEODATAFRAME
     # =====================================================
+
+    sw.write(records)
     
     polygons_gdf = gpd.GeoDataFrame(
         records,
