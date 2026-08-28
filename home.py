@@ -2644,11 +2644,12 @@ if page == "HTML-generator":
     # LOGO
     # --------------------------------------------------
     import base64
-    from folium.plugins import FloatImage
+    from pathlib import Path
     
-    file = "Screenshot 2026-08-05 165527.jpg"
+    logo_path = Path("Screenshot 2026-08-05 165527.jpg")
     
-    encoded = base64.b64encode(file).decode()
+    with open(logo_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
     
     
     
