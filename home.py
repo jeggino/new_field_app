@@ -6,6 +6,7 @@ from supabase import create_client
 from folium.plugins import Geocoder, Fullscreen, Draw
 import pandas as pd
 import altair as alt
+import geopandas as gpd
 
 
 
