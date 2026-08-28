@@ -1430,7 +1430,136 @@ if page == "HTML-generator":
     
     project_df = load_table("projects")
 
+#------------------------
+    BUCKET = "observation_photos"
     
+    
+    def list_folder_paginated(bucket, path=""):
+        items = []
+    
+        offset = 0
+        limit = 100
+    
+        while True:
+    
+            batch = supabase.storage.from_(bucket).list(
+                path,
+                {
+                    "limit": limit,
+                    "offset": offset
+                }
+            )
+    
+            if not batch:
+                break
+    
+            items.extend(batch)
+    
+            if len(batch) < limit:
+                break
+    
+            offset += limit
+    
+        return items
+    
+    
+    def list_all_geojson(bucket, path=""):
+        files = []
+    
+        items = list_folder_paginated(bucket, path)
+    
+        for item in items:
+    
+            name = item["name"]
+    
+            # folder
+            if item.get("id") is None:
+    
+                subpath = f"{path}/{name}" if path else name
+    
+                files.extend(
+                    list_all_geojson(bucket, subpath)
+                )
+    
+            # file
+            else:
+    
+                filepath = f"{path}/{name}" if path else name
+    
+                if filepath.lower().endswith(".geojson"):
+                    files.append(filepath)
+    
+        return files
+    
+    
+    geojson_files = sorted(
+        list_all_geojson(BUCKET)
+    )
+    
+    
+    
+    # =====================================================
+    # CREATE GEODATAFRAME
+    # =====================================================
+    
+    records = []
+    crs = None
+    
+    for filepath in geojson_files:
+    
+    
+        try:
+    
+            file_content = (
+                supabase.storage
+                .from_(BUCKET)
+                .download(filepath)
+            )
+    
+            with tempfile.NamedTemporaryFile(
+                suffix=".geojson",
+                delete=False
+            ) as tmp:
+    
+                tmp.write(file_content)
+                tmp_path = tmp.name
+    
+            gdf = gpd.read_file(tmp_path)
+    
+            if gdf.empty:
+                continue
+    
+            if crs is None:
+                crs = gdf.crs
+    
+            geometry = unary_union(gdf.geometry)
+    
+            records.append(
+                {
+                    "project_polygon": os.path.splitext(filepath)[0],
+                    "geometry": geometry,
+                }
+            )
+    
+        except Exception as e:
+    
+            print(f"Error loading {filepath}: {e}")
+    
+        finally:
+    
+            if "tmp_path" in locals() and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+    
+    # =====================================================
+    # FINAL GEODATAFRAME
+    # =====================================================
+    
+    polygons_gdf = gpd.GeoDataFrame(
+        records,
+        geometry="geometry",
+        crs=crs
+    )
+#------------------------
 
     project_name = st.selectbox(
         "Choose a project",
