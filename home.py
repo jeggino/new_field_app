@@ -1432,23 +1432,26 @@ if page == "HTML-generator":
     project_df = load_table("projects")
 
 #------------------------
+    import os
+    import tempfile
+    import streamlit as st
+    import geopandas as gpd
+    
+    from shapely.ops import unary_union
+    
+    
     BUCKET = "observation_photos"
     
     
     def list_folder_paginated(bucket, path=""):
         items = []
-    
         offset = 0
         limit = 100
     
         while True:
-    
             batch = supabase.storage.from_(bucket).list(
                 path,
-                {
-                    "limit": limit,
-                    "offset": offset
-                }
+                {"limit": limit, "offset": offset},
             )
     
             if not batch:
@@ -1467,24 +1470,13 @@ if page == "HTML-generator":
     def list_all_geojson(bucket, path=""):
         files = []
     
-        items = list_folder_paginated(bucket, path)
-    
-        for item in items:
-    
+        for item in list_folder_paginated(bucket, path):
             name = item["name"]
     
-            # folder
             if item.get("id") is None:
-    
                 subpath = f"{path}/{name}" if path else name
-    
-                files.extend(
-                    list_all_geojson(bucket, subpath)
-                )
-    
-            # file
+                files.extend(list_all_geojson(bucket, subpath))
             else:
-    
                 filepath = f"{path}/{name}" if path else name
     
                 if filepath.lower().endswith(".geojson"):
@@ -1493,80 +1485,66 @@ if page == "HTML-generator":
         return files
     
     
-    geojson_files = sorted(
-        list_all_geojson(BUCKET)
-    )
+    @st.cache_data(show_spinner="Loading project polygons...")
+    def load_polygons():
     
-    st.write(f"GeoJSON files found: {len(geojson_files)}")
+        geojson_files = sorted(list_all_geojson(BUCKET))
     
-    for f in geojson_files:
-        st.write(f)
+        records = []
+        crs = None
     
-    # =====================================================
-    # CREATE GEODATAFRAME
-    # =====================================================
+        for filepath in geojson_files:
     
-    records = []
-    crs = None
+            tmp_path = None
     
-    for filepath in geojson_files:
+            try:
+                content = (
+                    supabase.storage
+                    .from_(BUCKET)
+                    .download(filepath)
+                )
+    
+                with tempfile.NamedTemporaryFile(
+                    suffix=".geojson",
+                    delete=False
+                ) as tmp:
+                    tmp.write(content)
+                    tmp_path = tmp.name
+    
+                gdf = gpd.read_file(tmp_path)
+    
+                if gdf.empty:
+                    continue
+    
+                if crs is None:
+                    crs = gdf.crs
+    
+                records.append(
+                    {
+                        "project_polygon": os.path.splitext(filepath)[0],
+                        "geometry": unary_union(gdf.geometry),
+                    }
+                )
+    
+            except Exception as e:
+                st.warning(f"Failed to load {filepath}: {e}")
+    
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+    
+        return gpd.GeoDataFrame(
+            records,
+            geometry="geometry",
+            crs=crs,
+        )
     
     
-        try:
+    # Load once and cache
+    polygons_gdf = load_polygons()
     
-            file_content = (
-                supabase.storage
-                .from_(BUCKET)
-                .download(filepath)
-            )
-    
-            with tempfile.NamedTemporaryFile(
-                suffix=".geojson",
-                delete=False
-            ) as tmp:
-    
-                tmp.write(file_content)
-                tmp_path = tmp.name
-    
-            gdf = gpd.read_file(tmp_path)
-    
-            if gdf.empty:
-                continue
-    
-            if crs is None:
-                crs = gdf.crs
-    
-            geometry = unary_union(gdf.geometry)
-    
-            records.append(
-                {
-                    "project_polygon": os.path.splitext(filepath)[0],
-                    "geometry": geometry,
-                }
-            )
-    
-        except Exception as e:
-    
-            st.write(f"Error loading {filepath}: {e}")
-    
-        finally:
-    
-            if "tmp_path" in locals() and os.path.exists(tmp_path):
-                os.remove(tmp_path)
-    
-    # =====================================================
-    # FINAL GEODATAFRAME
-    # =====================================================
-    
-    polygons_gdf = gpd.GeoDataFrame(
-        records,
-        geometry="geometry",
-        crs=crs
-    )
-    
-    st.write(
-        f"Loaded {len(polygons_gdf)} polygons."
-    )
+    st.write(f"Loaded {len(polygons_gdf)} polygons")
+    st.dataframe(polygons_gdf[["project_polygon"]])
 #------------------------
 
     project_name = st.selectbox(
