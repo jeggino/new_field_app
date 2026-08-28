@@ -1547,6 +1547,8 @@ if page == "HTML-generator":
     st.dataframe(polygons_gdf[["project_polygon"]])
 #------------------------
 
+    OBS_POLYGONS = 'polygons_app'
+
     project_name = st.selectbox(
         "Choose a project",
         list(project_df['name'].unique()),
