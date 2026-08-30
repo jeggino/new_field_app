@@ -1545,7 +1545,7 @@ if page == "HTML-generator":
     polygons_gdf = load_polygons()
     
     st.write(f"Loaded {len(polygons_gdf)} polygons")
-    st.dataframe(polygons_gdf[["project_polygon"]])
+    # st.dataframe(polygons_gdf[["project_polygon"]])
 #------------------------
 
     OBS_POLYGONS = 'polygons_app'
