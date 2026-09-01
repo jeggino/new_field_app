@@ -656,8 +656,8 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht","HTML-generator","Gegenereerde output"])
-
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht","Gegenereerde output"])
+#"HTML-generator",
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
 # ---------------------------------------------------------
@@ -3120,6 +3120,9 @@ if page == "HTML-generator":
     # )
 
 elif page == "Gegenereerde output":
+
+    st.set_page_config(layout="wide")
+    
     BUCKET = "observation_photos"
     projects = supabase.table("projects").select("*").execute().data
     reports = supabase.table("report").select("*").execute().data
