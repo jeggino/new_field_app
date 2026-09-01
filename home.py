@@ -1549,6 +1549,8 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # DISPLAY
     # ---------------------------------------------------------
+    gif_url = "https://i.makeagif.com/media/1-17-2023/JfKHrM.gif"
+    st.image(gif_url)
     st.text(" ") # Adds a blank line
     st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
@@ -1559,26 +1561,9 @@ elif page == "Gegenereerde output":
         height=(len(df_huismus_tabel) + 1) * 35
     )
 
-    gif_url = "https://i.makeagif.com/media/1-17-2023/JfKHrM.gif"
-    
-    st.image(gif_url)
 
-#------------------
 
-    # Example
-    excel_file = create_excel_file({
-        "Veldbezoeken": df_veldbezoeken,
-        "Vleermuizen": df_verblijfplaatsen,
-        "Huismus": df_huismus_tabel,
-        "Rapporten": df_filtered
-    })
-    
-    st.download_button(
-        label="📥 Download Excel",
-        data=excel_file,
-        file_name=f"{selected_project}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+
 
     
 # --------------HTML-----------------------------------
@@ -2939,14 +2924,34 @@ elif page == "Gegenereerde output":
     
     # Save map as HTML string
     html_map = m.get_root().render()
-    
-    # Download button
-    st.download_button(
-        label="📥 Download HTML Map",
-        data=html_map,
-        file_name=f"{safe_project_name}_HTML.html",
-        mime="text/html"
-    )
+
+    col1, col2 = st.columns(2, gap="xxlarge")
+
+    with col1:
+        # Download button
+        st.download_button(
+            label="📥 Download HTML Map",
+            data=html_map,
+            file_name=f"{safe_project_name}_HTML.html",
+            mime="text/html"
+        )
+
+#------------------
+    with col2:
+        # Example
+        excel_file = create_excel_file({
+            "Veldbezoeken": df_veldbezoeken,
+            "Vleermuizen": df_verblijfplaatsen,
+            "Huismus": df_huismus_tabel,
+            "Rapporten": df_filtered
+        })
+        
+        st.download_button(
+            label="📥 Download Excel",
+            data=excel_file,
+            file_name=f"{selected_project}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 
     
