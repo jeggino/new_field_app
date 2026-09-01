@@ -2734,15 +2734,37 @@ if page == "HTML-generator":
     from streamlit_folium import st_folium
     import folium
     import random
-    from shapely.geometry import Polygon
+    from collections import Counter
     
-    # --------------------------------------------------
-    # PROJECT SETTINGS
-    # --------------------------------------------------
+    # =====================================================
+    # CONFIG
+    # =====================================================
     
-    PROJECT_NAME = "Birds and Bats Monitoring Project"
+    PROJECT_NAME = "Wildlife Monitoring Project"
     
     CENTER = [45.4642, 9.1900]
+    
+    random.seed(42)
+    
+    GROUP_COLORS = {
+        "Sparrow": "#E67E22",
+        "Swift": "#16A085",
+        "Bat": "#7D3C98"
+    }
+    
+    FUNCTION_COLORS = {
+        "Nesting": "#E41A1C",
+        "Feeding": "#377EB8",
+        "Roosting": "#4DAF4A"
+    }
+    
+    BAT_SPECIES = [
+        "Pipistrellus pipistrellus",
+        "Pipistrellus kuhlii",
+        "Myotis myotis",
+        "Nyctalus noctula",
+        "Rhinolophus ferrumequinum"
+    ]
     
     FUNCTIONS = [
         "Nesting",
@@ -2750,119 +2772,79 @@ if page == "HTML-generator":
         "Roosting"
     ]
     
-    SPECIES = {
-        "Sparrow": ["Passer domesticus"],
-        "Swift": ["Apus apus"],
-        "Bat": [
-            "Pipistrellus pipistrellus",
-            "Pipistrellus kuhlii",
-            "Myotis myotis",
-            "Nyctalus noctula",
-            "Rhinolophus ferrumequinum"
-        ]
-    }
-    
-    COLORS = {
-        "Sparrow": "#d95f02",
-        "Swift": "#1b9e77",
-        "Bat": "#7570b3"
-    }
-    
-    
-    # --------------------------------------------------
-    # RANDOM DATA GENERATION
-    # --------------------------------------------------
-    
-    random.seed(42)
+    # =====================================================
+    # DATA GENERATION
+    # =====================================================
     
     points = []
     
-    # 8 Sparrows (40%)
-    for i in range(8):
+    # 8 Sparrows
+    for _ in range(8):
         points.append({
             "group": "Sparrow",
             "species": "Passer domesticus",
             "function": random.choice(FUNCTIONS),
-            "lat": CENTER[0] + random.uniform(-0.03, 0.03),
-            "lon": CENTER[1] + random.uniform(-0.03, 0.03)
+            "lat": CENTER[0] + random.uniform(-0.03,0.03),
+            "lon": CENTER[1] + random.uniform(-0.03,0.03)
         })
     
-    # 6 Swifts (30%)
-    for i in range(6):
+    # 6 Swifts
+    for _ in range(6):
         points.append({
             "group": "Swift",
             "species": "Apus apus",
             "function": random.choice(FUNCTIONS),
-            "lat": CENTER[0] + random.uniform(-0.03, 0.03),
-            "lon": CENTER[1] + random.uniform(-0.03, 0.03)
+            "lat": CENTER[0] + random.uniform(-0.03,0.03),
+            "lon": CENTER[1] + random.uniform(-0.03,0.03)
         })
     
-    # 6 Bats (30%)
-    for i in range(6):
+    # 6 Bats
+    for _ in range(6):
         points.append({
             "group": "Bat",
-            "species": random.choice(SPECIES["Bat"]),
+            "species": random.choice(BAT_SPECIES),
             "function": random.choice(FUNCTIONS),
-            "lat": CENTER[0] + random.uniform(-0.03, 0.03),
-            "lon": CENTER[1] + random.uniform(-0.03, 0.03)
+            "lat": CENTER[0] + random.uniform(-0.03,0.03),
+            "lon": CENTER[1] + random.uniform(-0.03,0.03)
         })
     
-    # --------------------------------------------------
+    # =====================================================
     # POLYGONS
-    # --------------------------------------------------
+    # =====================================================
     
     polygons = []
     
-    for i in range(4):
+    for _ in range(4):
     
         group = random.choice(["Sparrow", "Swift", "Bat"])
     
         if group == "Bat":
-            species = random.choice(SPECIES["Bat"])
-        elif group == "Sparrow":
-            species = "Passer domesticus"
-        else:
+            species = random.choice(BAT_SPECIES)
+        elif group == "Swift":
             species = "Apus apus"
+        else:
+            species = "Passer domesticus"
     
-        lat = CENTER[0] + random.uniform(-0.025, 0.025)
-        lon = CENTER[1] + random.uniform(-0.025, 0.025)
+        lat = CENTER[0] + random.uniform(-0.02,0.02)
+        lon = CENTER[1] + random.uniform(-0.02,0.02)
     
-        size = 0.005
-    
-        coords = [
-            [lat, lon],
-            [lat + size, lon],
-            [lat + size, lon + size],
-            [lat, lon + size]
-        ]
+        size = 0.006
     
         polygons.append({
             "group": group,
             "species": species,
             "function": random.choice(FUNCTIONS),
-            "coords": coords
+            "coords": [
+                [lat, lon],
+                [lat+size, lon],
+                [lat+size, lon+size],
+                [lat, lon+size]
+            ]
         })
     
-    
-    # --------------------------------------------------
-    # STREAMLIT
-    # --------------------------------------------------
-    
-    st.set_page_config(layout="wide")
-    
-    st.title(PROJECT_NAME)
-    
-    st.sidebar.header("Filters")
-    
-    show_points = st.sidebar.checkbox(
-        "Show Points",
-        value=True
-    )
-    
-    show_polygons = st.sidebar.checkbox(
-        "Show Polygons",
-        value=True
-    )
+    # =====================================================
+    # SIDEBAR
+    # =====================================================
     
     all_species = sorted(
         list(
@@ -2873,21 +2855,83 @@ if page == "HTML-generator":
         )
     )
     
+    if "species_filter" not in st.session_state:
+        st.session_state.species_filter = all_species
+    
+    if "function_filter" not in st.session_state:
+        st.session_state.function_filter = FUNCTIONS
+    
+    st.sidebar.title("Filters")
+    
+    if st.sidebar.button("Reset Filters"):
+        st.session_state.species_filter = all_species
+        st.session_state.function_filter = FUNCTIONS
+    
+    show_points = st.sidebar.checkbox(
+        "Show Points",
+        True
+    )
+    
+    show_polygons = st.sidebar.checkbox(
+        "Show Polygons",
+        True
+    )
+    
     selected_species = st.sidebar.multiselect(
         "Species",
         all_species,
-        default=all_species
+        key="species_filter"
     )
     
     selected_functions = st.sidebar.multiselect(
         "Functions",
         FUNCTIONS,
-        default=FUNCTIONS
+        key="function_filter"
     )
     
-    # --------------------------------------------------
+    # =====================================================
+    # FILTERED DATA
+    # =====================================================
+    
+    filtered_points = [
+        p for p in points
+        if p["species"] in selected_species
+        and p["function"] in selected_functions
+    ]
+    
+    filtered_polygons = [
+        p for p in polygons
+        if p["species"] in selected_species
+        and p["function"] in selected_functions
+    ]
+    
+    visible_items = []
+    
+    if show_points:
+        visible_items.extend(filtered_points)
+    
+    if show_polygons:
+        visible_items.extend(filtered_polygons)
+    
+    # =====================================================
+    # COUNTERS FOR LEGEND
+    # =====================================================
+    
+    group_counts = Counter(
+        [x["group"] for x in visible_items]
+    )
+    
+    species_counts = Counter(
+        [x["species"] for x in visible_items]
+    )
+    
+    function_counts = Counter(
+        [x["function"] for x in visible_items]
+    )
+    
+    # =====================================================
     # MAP
-    # --------------------------------------------------
+    # =====================================================
     
     m = folium.Map(
         location=CENTER,
@@ -2895,122 +2939,143 @@ if page == "HTML-generator":
         control_scale=True
     )
     
-    # --------------------------------------------------
+    # =====================================================
     # POINTS
-    # --------------------------------------------------
+    # =====================================================
     
     if show_points:
     
-        for p in points:
-    
-            if p["species"] not in selected_species:
-                continue
-    
-            if p["function"] not in selected_functions:
-                continue
+        for p in filtered_points:
     
             folium.CircleMarker(
                 location=[p["lat"], p["lon"]],
-                radius=7,
+                radius=8,
                 fill=True,
+                fill_color=GROUP_COLORS[p["group"]],
                 fill_opacity=0.9,
-                color=COLORS[p["group"]],
-                fill_color=COLORS[p["group"]],
+                color=FUNCTION_COLORS[p["function"]],
+                weight=3,
                 popup=f"""
-                <b>Type:</b> Point<br>
+                <b>Feature:</b> Point<br>
                 <b>Group:</b> {p['group']}<br>
                 <b>Species:</b> {p['species']}<br>
                 <b>Function:</b> {p['function']}
                 """
             ).add_to(m)
     
-    # --------------------------------------------------
+    # =====================================================
     # POLYGONS
-    # --------------------------------------------------
+    # =====================================================
     
     if show_polygons:
     
-        for poly in polygons:
-    
-            if poly["species"] not in selected_species:
-                continue
-    
-            if poly["function"] not in selected_functions:
-                continue
+        for poly in filtered_polygons:
     
             folium.Polygon(
                 locations=poly["coords"],
-                color=COLORS[poly["group"]],
+                color=FUNCTION_COLORS[poly["function"]],
+                weight=3,
                 fill=True,
+                fill_color=GROUP_COLORS[poly["group"]],
                 fill_opacity=0.45,
                 popup=f"""
-                <b>Type:</b> Polygon<br>
+                <b>Feature:</b> Polygon<br>
                 <b>Group:</b> {poly['group']}<br>
                 <b>Species:</b> {poly['species']}<br>
                 <b>Function:</b> {poly['function']}
                 """
             ).add_to(m)
     
-    # --------------------------------------------------
-    # LEGEND (TOP LEFT)
-    # --------------------------------------------------
+    # =====================================================
+    # DYNAMIC LEGEND
+    # =====================================================
     
-    legend_html = """
+    group_html = ""
+    
+    for group in group_counts:
+    
+        group_html += f"""
+        <span style="color:{GROUP_COLORS[group]};font-size:18px;">
+        ●
+        </span>
+        {group} ({group_counts[group]})<br>
+        """
+    
+    species_html = ""
+    
+    for species, count in sorted(species_counts.items()):
+    
+        species_html += f"""
+        {species}: {count}<br>
+        """
+    
+    function_html = ""
+    
+    for func in function_counts:
+    
+        function_html += f"""
+        <span style="
+            color:{FUNCTION_COLORS[func]};
+            font-size:18px;
+            ">
+            ■
+        </span>
+        {func} ({function_counts[func]})
+        <br>
+        """
+    
+    legend = f"""
     <div style="
     position: fixed;
     top: 10px;
     left: 10px;
     z-index:9999;
-    background:white;
-    padding:10px;
-    border:2px solid grey;
-    font-size:14px;
-    width:240px;
+    background: rgba(255,255,255,0.95);
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #777;
+    font-size: 13px;
+    width: 280px;
     ">
     
-    <h4 style="margin-top:0;">Birds and Bats Monitoring</h4>
+    <h4 style="margin-top:0;">
+    {PROJECT_NAME}
+    </h4>
     
     <b>Groups</b><br>
+    {group_html}
     
-    <span style="color:#d95f02;">●</span> Sparrow<br>
-    <span style="color:#1b9e77;">●</span> Swift<br>
-    <span style="color:#7570b3;">●</span> Bat<br><br>
+    <hr>
     
     <b>Functions</b><br>
-    • Nesting<br>
-    • Feeding<br>
-    • Roosting
+    {function_html}
+    
+    <hr>
+    
+    <b>Species present</b><br>
+    {species_html}
     
     </div>
     """
     
     m.get_root().html.add_child(
-        folium.Element(legend_html)
+        folium.Element(legend)
     )
     
-    # --------------------------------------------------
-    # ROSA DEI VENTI (BOTTOM RIGHT)
-    # --------------------------------------------------
+    # =====================================================
+    # COMPASS ROSE
+    # =====================================================
     
     compass_html = """
     <div style="
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    right: 15px;
+    bottom: 15px;
     z-index:9999;
-    background:white;
-    padding:8px;
-    border:1px solid gray;
-    text-align:center;
-    font-size:14px;
-    width:70px;
+    background: rgba(255,255,255,0.0);
     ">
     
-    N<br>
-    ↑<br>
-    W ← → E<br>
-    ↓<br>
-    S
+    https://clipart-library.com/images_k/transparent-compass-rose/transparent-compass-rose-18.jpg
     
     </div>
     """
@@ -3019,14 +3084,20 @@ if page == "HTML-generator":
         folium.Element(compass_html)
     )
     
-    # --------------------------------------------------
-    # DISPLAY
-    # --------------------------------------------------
+    # =====================================================
+    # PAGE TITLE
+    # =====================================================
+    
+    st.title(PROJECT_NAME)
+    
+    # =====================================================
+    # SHOW MAP
+    # =====================================================
     
     st_folium(
         m,
         width=None,
-        height=700
+        height=750
     )
 
 
