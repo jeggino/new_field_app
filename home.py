@@ -3120,16 +3120,16 @@ if page == "HTML-generator":
     # )
 
 elif page == "Gegenereerde output":
-    reports_df = load_table("report")
-    
-    observations_df = load_table("observations")
-    
-    project_df = load_table("projects")
-    st.write("here i am")
+    projects = supabase.table("projects").select("*").execute().data
+    reports = supabase.table("report").select("*").execute().data
+    observations = supabase.table("observations").select("*").execute().data
 
-    observations_df
-    project_df
-    reports_df
+    df_projects = pd.DataFrame(projects)
+    df_reports = pd.DataFrame(reports)
+    df_obs = pd.DataFrame(observations)
+
+    df_projects
+    df_reports
 
     
 
