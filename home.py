@@ -3125,10 +3125,14 @@ if page == "HTML-generator":
     #     width=None,
     #     height=750
     # )
-
+#-------
+#----PAGE 5---
+#--------
 elif page == "Gegenereerde output":
 
     st.set_page_config(layout="wide")
+
+    dagverslagen_overview()
     
     BUCKET = "observation_photos"
     projects = supabase.table("projects").select("*").execute().data
@@ -3198,9 +3202,6 @@ elif page == "Gegenereerde output":
     polygons_gdf = load_polygons()
 
 
-    import pandas as pd
-    import streamlit as st
-    import re
     
     # ==========================================================
     # FORMAT VELDBEZOEK
@@ -3241,6 +3242,7 @@ elif page == "Gegenereerde output":
     # ==========================================================
     # PROJECT FILTER
     # ==========================================================
+    dagverslagen_overview()
     
     projects = sorted(
         df_reports["project"]
