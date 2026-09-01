@@ -1523,7 +1523,7 @@ elif page == "Gegenereerde output":
         df_huismus,
         use_container_width=True,
         hide_index=True,
-        height=(len(df_huismus_tabel) + 1) * 35
+        height=(len(df_huismus) + 1) * 35
     )
     
     
