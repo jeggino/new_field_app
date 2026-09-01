@@ -1348,8 +1348,8 @@ elif page == "Gegenereerde output":
         )
     
     
-    # Load once and cache
-    polygons_gdf = load_polygons()
+    # # Load once and cache
+    # polygons_gdf = load_polygons()
 
 
     
