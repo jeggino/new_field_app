@@ -3507,6 +3507,97 @@ elif page == "Gegenereerde output":
         height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
+    "---"
+
+    # ---------------------------------------------------------
+    # HUISMUS OBSERVATIONS
+    # ---------------------------------------------------------
+    
+    # Filter reports for selected project
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
+    
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
+    
+    # Only Huismus observations
+    df_huismus = df_obs_project[
+        df_obs_project["species"] == "Huismus"
+    ].copy()
+    
+    # Make sure dates have same format
+    df_filtered["date"] = pd.to_datetime(
+        df_filtered["date"]
+    ).dt.date
+    
+    df_huismus["date"] = pd.to_datetime(
+        df_huismus["date"]
+    ).dt.date
+    
+    # Get only Huismus surveys
+    df_kind_lookup = df_filtered[
+        df_filtered["kind"].str.startswith(
+            "Huismus",
+            na=False
+        )
+    ].copy()
+    
+    # Keep only one survey per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge survey type into observations
+    df_huismus = df_huismus.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek
+    df_huismus["Veldbezoek"] = (
+        df_huismus["kind"]
+        .fillna("Huismus")
+        .apply(format_veldbezoek)
+    )
+    
+    # Final table
+    df_huismus_tabel = pd.DataFrame({
+        "Veldbezoek": df_huismus["Veldbezoek"],
+        "Soort": df_huismus["species"],
+        "Aantal individuen": df_huismus["aantal"],
+        "Functie": df_huismus["function"]
+    })
+    
+    df_huismus_tabel = df_huismus_tabel.sort_values(
+        by="Veldbezoek"
+    )
+    
+    # ---------------------------------------------------------
+    # DISPLAY
+    # ---------------------------------------------------------
+    
+    st.markdown(
+        """
+        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+            Waarnemingen en aantallen van huismussen gedurende de veldbezoeken.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    st.dataframe(
+        df_huismus_tabel,
+        use_container_width=True,
+        hide_index=True,
+        height=(len(df_huismus_tabel) + 1) * 35
+    )
+
 
 
 
