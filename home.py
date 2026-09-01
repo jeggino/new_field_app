@@ -1391,10 +1391,7 @@ elif page == "Gegenereerde output":
 
     st.set_page_config(layout="wide")
 
-    if st.sidebar.button("Clear Cache"):
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        st.rerun()
+
 
     with st.expander("Projectoverzicht", expanded=False):
         dagverslagen_overview()
