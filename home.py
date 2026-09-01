@@ -1520,13 +1520,13 @@ elif page == "Gegenereerde output":
         lambda row: get_address(row['lat'], row['lon']),
         axis=1
     )
-
-    st.dataframe(
-        df_huismus,
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_huismus) + 1) * 35
-    )
+    # "---"
+    # st.dataframe(
+    #     df_huismus,
+    #     use_container_width=True,
+    #     hide_index=True,
+    #     height=(len(df_huismus) + 1) * 35
+    # )
     
     
     # Make sure dates have same format
@@ -1573,7 +1573,8 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Soort": df_huismus["species"],
         "Aantal individuen": df_huismus["aantal"],
-        "Functie": df_huismus["function"]
+        "Functie": df_huismus["function"],
+        "Adress": df_huismus['address']
     })
     
     df_huismus_tabel = df_huismus_tabel.sort_values(
