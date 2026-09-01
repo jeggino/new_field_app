@@ -1275,6 +1275,7 @@ elif page == "Gegenereerde output":
         """,
         unsafe_allow_html=True
     )
+    st.title(f":blue[**Veldbezoeken - {selected_project}**]", help=None, width="stretch", text_alignment="left",divider='blue',)
     
     st.markdown(
         """
