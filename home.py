@@ -3491,7 +3491,8 @@ elif page == "Gegenereerde output":
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken (allen in het onderzoeksgebied).
+            Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken
+            <span style='color:#c0392b; font-weight:bold;'>(allen in het onderzoeksgebied)</span>.
         </p>
         """,
         unsafe_allow_html=True
