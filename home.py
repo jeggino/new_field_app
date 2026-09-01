@@ -3190,6 +3190,7 @@ elif page == "Gegenereerde output":
         df_reports["project"] == selected_project
     ].copy()
     
+    
     # ==========================================================
     # WEATHER COLUMN
     # ==========================================================
