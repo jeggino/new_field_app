@@ -3131,8 +3131,8 @@ if page == "HTML-generator":
 elif page == "Gegenereerde output":
 
     st.set_page_config(layout="wide")
-
-    dagverslagen_overview()
+    with st.expander("Filters", expanded=True):
+        dagverslagen_overview()
     
     BUCKET = "observation_photos"
     projects = supabase.table("projects").select("*").execute().data
@@ -3242,7 +3242,6 @@ elif page == "Gegenereerde output":
     # ==========================================================
     # PROJECT FILTER
     # ==========================================================
-    dagverslagen_overview()
     
     projects = sorted(
         df_reports["project"]
