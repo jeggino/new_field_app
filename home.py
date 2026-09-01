@@ -3283,16 +3283,16 @@ elif page == "Gegenereerde output":
         (df_obs_project["function"] != "vleermuis waarneming")
     ].copy()
     
-    # Make sure dates have the same format
-    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
-    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
+    # # Make sure dates have the same format
+    # df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    # df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
     
-    # Get survey type (kind) from reports
-    df_bats = df_bats.merge(
-        df_filtered[["date", "kind"]],
-        on="date",
-        how="left"
-    )
+    # # Get survey type (kind) from reports
+    # df_bats = df_bats.merge(
+    #     df_filtered[["date", "kind"]],
+    #     on="date",
+    #     how="left"
+    # )
     
     df_bats
 
