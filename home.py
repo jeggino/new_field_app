@@ -1268,7 +1268,7 @@ elif page == "Gegenereerde output":
     # ==========================================================
     
     # title = 
-    st.title(f":blue[**Veldbezoeken - _{selected_project.replace('_', ' ')}_**]", help=None, width="stretch", text_alignment="left")
+    st.title(f":blue[**{selected_project.replace('_', ' ')}**]", help=None, width="stretch", text_alignment="center")
 
     st.text(" ") # Adds a blank line
     # st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
