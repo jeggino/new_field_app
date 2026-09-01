@@ -3523,9 +3523,10 @@ elif page == "Gegenereerde output":
         df_obs["project"] == selected_project
     ].copy()
     
-    # Only Huismus observations
+    # Only Huismus nest locations
     df_huismus = df_obs_project[
-        df_obs_project["species"] == "Huismus"
+        (df_obs_project["species"] == "Huismus") &
+        (df_obs_project["function"] == "nestlocatie")
     ].copy()
     
     # Make sure dates have same format
@@ -3544,6 +3545,8 @@ elif page == "Gegenereerde output":
             na=False
         )
     ].copy()
+
+    df_kind_lookup
     
     # Keep only one survey per date
     df_kind_lookup = (
@@ -3559,12 +3562,12 @@ elif page == "Gegenereerde output":
         how="left"
     )
     
-    # # Create Veldbezoek
-    # df_huismus["Veldbezoek"] = (
-    #     df_huismus["kind"]
-    #     .fillna("Huismus")
-    #     .apply(format_veldbezoek)
-    # )
+    # Create Veldbezoek
+    df_huismus["Veldbezoek"] = (
+        df_huismus["kind"]
+        .fillna("Huismus")
+        .apply(format_veldbezoek)
+    )
     
     # Final table
     df_huismus_tabel = pd.DataFrame({
