@@ -1863,92 +1863,92 @@ elif page == "Gegenereerde output":
         return files
     
     
-    import os
-    import tempfile
-    import geopandas as gpd
-    import streamlit as st
+    # import os
+    # import tempfile
+    # import geopandas as gpd
+    # import streamlit as st
     
-    from shapely.ops import unary_union
-    
-    
-    @st.cache_data(show_spinner="Loading project polygons...")
-    def build_polygons_gdf(geojson_files, bucket_name):
-    
-        records = []
-        crs = None
-    
-        for filepath in geojson_files:
-    
-            tmp_path = None
-    
-            try:
-                file_content = (
-                    supabase.storage
-                    .from_(bucket_name)
-                    .download(filepath)
-                )
-    
-                with tempfile.NamedTemporaryFile(
-                    suffix=".geojson",
-                    delete=False
-                ) as tmp:
-    
-                    tmp.write(file_content)
-                    tmp_path = tmp.name
-    
-                gdf = gpd.read_file(tmp_path)
-    
-                if gdf.empty:
-                    continue
-    
-                if crs is None:
-                    crs = gdf.crs
-    
-                records.append(
-                    {
-                        "project_polygon": os.path.splitext(
-                            os.path.basename(filepath)
-                        )[0],
-                        "geometry": unary_union(gdf.geometry)
-                    }
-                )
-    
-            except Exception as e:
-    
-                st.warning(
-                    f"Error loading {filepath}: {e}"
-                )
-    
-            finally:
-    
-                if (
-                    tmp_path is not None
-                    and os.path.exists(tmp_path)
-                ):
-                    os.remove(tmp_path)
-    
-        return gpd.GeoDataFrame(
-            records,
-            geometry="geometry",
-            crs=crs
-        )
+    # from shapely.ops import unary_union
     
     
-    # =====================================================
-    # BUILD PROJECT POLYGONS
-    # =====================================================
-    geojson_files = sorted(
-        list_all_geojson(BUCKET)
-    )
-    polygons_gdf = build_polygons_gdf(
-        geojson_files,
-        BUCKET
-    )
+    # @st.cache_data(show_spinner="Loading project polygons...")
+    # def build_polygons_gdf(geojson_files, bucket_name):
     
-    # Optional debug
-    st.write(
-        f"{len(polygons_gdf)} project polygons loaded."
-    )
+    #     records = []
+    #     crs = None
+    
+    #     for filepath in geojson_files:
+    
+    #         tmp_path = None
+    
+    #         try:
+    #             file_content = (
+    #                 supabase.storage
+    #                 .from_(bucket_name)
+    #                 .download(filepath)
+    #             )
+    
+    #             with tempfile.NamedTemporaryFile(
+    #                 suffix=".geojson",
+    #                 delete=False
+    #             ) as tmp:
+    
+    #                 tmp.write(file_content)
+    #                 tmp_path = tmp.name
+    
+    #             gdf = gpd.read_file(tmp_path)
+    
+    #             if gdf.empty:
+    #                 continue
+    
+    #             if crs is None:
+    #                 crs = gdf.crs
+    
+    #             records.append(
+    #                 {
+    #                     "project_polygon": os.path.splitext(
+    #                         os.path.basename(filepath)
+    #                     )[0],
+    #                     "geometry": unary_union(gdf.geometry)
+    #                 }
+    #             )
+    
+    #         except Exception as e:
+    
+    #             st.warning(
+    #                 f"Error loading {filepath}: {e}"
+    #             )
+    
+    #         finally:
+    
+    #             if (
+    #                 tmp_path is not None
+    #                 and os.path.exists(tmp_path)
+    #             ):
+    #                 os.remove(tmp_path)
+    
+    #     return gpd.GeoDataFrame(
+    #         records,
+    #         geometry="geometry",
+    #         crs=crs
+    #     )
+    
+    
+    # # =====================================================
+    # # BUILD PROJECT POLYGONS
+    # # =====================================================
+    # geojson_files = sorted(
+    #     list_all_geojson(BUCKET)
+    # )
+    # polygons_gdf = build_polygons_gdf(
+    #     geojson_files,
+    #     BUCKET
+    # )
+    
+    # # Optional debug
+    # st.write(
+    #     f"{len(polygons_gdf)} project polygons loaded."
+    # )
     
     # st.write(f"Loaded {len(polygons_gdf)} polygons")
     # st.dataframe(polygons_gdf[["project_polygon"]])
