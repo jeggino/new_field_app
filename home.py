@@ -1293,6 +1293,13 @@ elif page == "Gegenereerde output":
         height=(len(df_veldbezoeken) + 1) * 35
     )
 
+    st.markdown(
+        """
+        <hr style="height:2px;border:none;background-color:#1f77b4;">
+        """,
+        unsafe_allow_html=True
+    )
+
     #----------------
     # Filter reports for selected project
     df_filtered = df_reports[
@@ -1356,7 +1363,6 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    "---"
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
@@ -1475,8 +1481,12 @@ elif page == "Gegenereerde output":
         height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
-    "---"
-
+    st.markdown(
+        """
+        <hr style="height:2px;border:none;background-color:#1f77b4;">
+        """,
+        unsafe_allow_html=True
+    )
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
