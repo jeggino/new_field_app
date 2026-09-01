@@ -3075,7 +3075,6 @@ if page == "HTML-generator":
     {species_html}
     
     </div>
-    """
     
     <h4 style="margin-top:0;">
     {PROJECT_NAME}
