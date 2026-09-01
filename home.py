@@ -9,6 +9,7 @@ import altair as alt
 import geopandas as gpd
 from folium.plugins.pattern import StripePattern
 from folium.plugins.pattern import CirclePattern
+import re
 
 
 
