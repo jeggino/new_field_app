@@ -3243,9 +3243,9 @@ elif page == "Gegenereerde output":
     
     st.markdown(
         f"""
-        <h1 style='color:#1f77b4; margin-bottom:0;'>
+        <h2 style='color:#1f77b4; margin-bottom:0;'>
             Veldbezoeken - {selected_project}
-        </h1>
+        </h2>
         """,
         unsafe_allow_html=True
     )
@@ -3320,7 +3320,7 @@ elif page == "Gegenereerde output":
     )
 
     st.dataframe(
-        df_verblijven,
+        df_verblijfplaatsen,
         use_container_width=True,
         hide_index=True
     )
