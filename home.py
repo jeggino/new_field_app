@@ -3764,7 +3764,7 @@ elif page == "Gegenereerde output":
     #     list(project_df['name'].unique()),
     #     index=0
     # )
-    
+    project_name = selected_project
     df = observations_df[
         observations_df["project"] == project_name
     ].copy()
