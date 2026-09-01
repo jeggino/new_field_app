@@ -3287,9 +3287,24 @@ elif page == "Gegenereerde output":
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
     
-    # Get survey type (kind) from reports
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ("Huismus", "Gierzwaluw", "Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
     df_bats = df_bats.merge(
-        df_filtered[["date", "kind"]],
+        df_kind_lookup,
         on="date",
         how="left"
     )
