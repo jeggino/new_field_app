@@ -3241,8 +3241,12 @@ elif page == "Gegenereerde output":
     # SHOW TABLE
     # ==========================================================
     
-    st.subheader(
+    st.header(
         f"Veldbezoeken - {selected_project}"
+    )
+
+    st.subheader(
+        f"Uitgevoerde veldbezoeken gedurende het aanvullend onderzoek. "
     )
     
     st.dataframe(
@@ -3251,30 +3255,34 @@ elif page == "Gegenereerde output":
         hide_index=True
     )
 
-#----------------
-    # Filter reports for selected project
+    #----------------
+    # Reports for selected project
     df_filtered = df_reports[
         df_reports["project"] == selected_project
     ].copy()
     
-    # Filter observations for selected project
-    df_obs_project = df_obs[
-        df_obs["project"] == selected_project
+    df_filtered["date"] = pd.to_datetime(
+        df_filtered["date"]
+    ).dt.date
+    
+    # Exclude bird surveys
+    bat_kinds = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ("Huismus", "Gierzwaluw", "Steenuil"),
+            na=False
+        )
     ].copy()
     
-    # Only bats and exclude generic observations
-    df_bats = df_obs_project[
-        (df_obs_project["animal_type"] == "bat") &
-        (df_obs_project["function"] != "vleermuis waarneming")
-    ].copy()
+    # If multiple bat survey kinds exist on the same date,
+    # keep only one (the first)
+    bat_kinds = bat_kinds.drop_duplicates(
+        subset=["date"],
+        keep="first"
+    )
     
-    # Make sure dates have the same format
-    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
-    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
-    
-    # Get survey type (kind) from reports
+    # Merge one bat survey kind per date
     df_bats = df_bats.merge(
-        df_filtered[["date", "kind"]],
+        bat_kinds[["date", "kind"]],
         on="date",
         how="left"
     )
