@@ -3133,53 +3133,105 @@ elif page == "Gegenereerde output":
 
     import pandas as pd
     import streamlit as st
+    import re
     
-    # --------------------------------------------------------
+    # ==========================================================
+    # FORMAT VELDBEZOEK
+    # ==========================================================
+    
+    def format_veldbezoek(value):
+        value = str(value)
+    
+        # Extract first number from patterns like (1/3)
+        match = re.search(r"\((\d+)\s*/\s*\d+\)", value)
+    
+        if match:
+            nr = match.group(1)
+    
+            name = re.sub(
+                r"\s*\(\d+\s*/\s*\d+\)",
+                "",
+                value
+            ).strip()
+    
+            formatted = f"{name} ({nr})"
+    
+        else:
+            formatted = value
+    
+        # Keep these groups unchanged
+        if (
+            formatted.startswith("Huismus")
+            or formatted.startswith("Gierzwaluw")
+            or formatted.startswith("Steenuil")
+        ):
+            return formatted
+    
+        # Everything else is a bat survey
+        return f"Vleermuis - {formatted}"
+    
+    
+    # ==========================================================
     # PROJECT FILTER
-    # --------------------------------------------------------
+    # ==========================================================
     
-    projects = sorted(df_reports["project"].dropna().unique())
+    projects = sorted(
+        df_reports["project"]
+        .dropna()
+        .unique()
+    )
     
-    selected_projects = st.multiselect(
-        "Select project(s)",
-        options=projects,
-        default=projects
+    selected_project = st.selectbox(
+        "Project",
+        projects
     )
     
     df_filtered = df_reports[
-        df_reports["project"].isin(selected_projects)
+        df_reports["project"] == selected_project
     ].copy()
     
-    # --------------------------------------------------------
+    # ==========================================================
     # WEATHER COLUMN
-    # --------------------------------------------------------
+    # ==========================================================
     
     df_filtered["Weersomstandigheden"] = (
         df_filtered["temperature"].astype(str)
         + "°C, "
         + df_filtered["wind"].astype(str)
         + " Bft, "
-        + df_filtered["rain"].astype(str)
+        + df_filtered["rain"].fillna("").astype(str)
     )
     
-    # --------------------------------------------------------
+    # ==========================================================
     # OUTPUT TABLE
-    # --------------------------------------------------------
+    # ==========================================================
     
-    df_veldbezoeken = pd.DataFrame({
-        "Veldbezoek": df_filtered["kind"],
-        "Datum": pd.to_datetime(df_filtered["date"]).dt.strftime("%d-%m-%Y"),
-        "Aantal pers.": 2,
-        "Starttijd": df_filtered["start_time"],
-        "Eindtijd": df_filtered["end_time"],
-        "Weersomstandigheden": df_filtered["Weersomstandigheden"]
-    })
+    df_veldbezoeken = pd.DataFrame(
+        {
+            "Veldbezoek": df_filtered["kind"].apply(format_veldbezoek),
+            "Datum": pd.to_datetime(
+                df_filtered["date"]
+            ).dt.strftime("%d-%m-%Y"),
+            "Aantal pers.": 2,
+            "Starttijd": df_filtered["start_time"],
+            "Eindtijd": df_filtered["end_time"],
+            "Weersomstandigheden": df_filtered["Weersomstandigheden"],
+        }
+    )
     
-    # --------------------------------------------------------
-    # DISPLAY
-    # --------------------------------------------------------
+    # Optional: sort by date
     
-    st.subheader("Veldbezoeken")
+    df_veldbezoeken = df_veldbezoeken.sort_values(
+        "Datum"
+    )
+    
+    # ==========================================================
+    # SHOW TABLE
+    # ==========================================================
+    
+    st.subheader(
+        f"Veldbezoeken - {selected_project}"
+    )
     
     st.dataframe(
         df_veldbezoeken,
