@@ -3129,8 +3129,6 @@ elif page == "Gegenereerde output":
     df_obs = pd.DataFrame(observations)
 
     df_projects
-    df_reports
-    df_obs
 
     import pandas as pd
     import streamlit as st
@@ -3252,6 +3250,66 @@ elif page == "Gegenereerde output":
         use_container_width=True,
         hide_index=True
     )
+
+    df_obs
+
+    # Filter reports for selected project
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
+    
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
+    
+    # Only bats and exclude generic observations
+    df_bats = df_obs_project[
+        (df_obs_project["animal_type"] == "bat") &
+        (df_obs_project["function"] != "vleermuis waarneming")
+    ].copy()
+    
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
+    
+    # Get survey type (kind) from reports
+    df_bats = df_bats.merge(
+        df_filtered[["date", "kind"]],
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_bats["Veldbezoek"] = (
+        pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y")
+        + " "
+        + df_bats["kind"].fillna("Onbekend")
+    )
+    
+    
+    # Apply your formatter
+    df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
+    
+    # Create output table
+    df_verblijven = df_bats.rename(
+        columns={
+            "species": "Soort",
+            "aantal": "Aantal individuen",
+            "function": "Verblijplaatsen",
+        }
+    )[
+        [
+            "Veldbezoek",
+            "Soort",
+            "Aantal individuen",
+            "Verblijplaatsen",
+        ]
+    ]
+    
+    # Optional: sort by date if needed
+    # df_verblijven = df_verblijven.sort_values("Veldbezoek")
+
 
     
 
