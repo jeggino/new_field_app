@@ -3321,7 +3321,8 @@ elif page == "Gegenereerde output":
     st.dataframe(
         df_veldbezoeken,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        height=(len(df_veldbezoeken) + 1) * 35
     )
 
     #----------------
@@ -3400,7 +3401,8 @@ elif page == "Gegenereerde output":
     st.dataframe(
         df_verblijfplaatsen,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        height=(len(df_verblijfplaatsen) + 1) * 35
     )
     
     # Optional: sort by date if needed
@@ -3501,7 +3503,8 @@ elif page == "Gegenereerde output":
     st.dataframe(
         df_verblijfplaatsen,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
 
