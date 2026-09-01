@@ -3408,12 +3408,10 @@ elif page == "Gegenereerde output":
 
 #--------------------
     import geopandas as gpd
-
-    polygons_gdf
     
     # Filter polygons for selected project
     polygons_project = polygons_gdf[
-        polygons_gdf["project"] == selected_project
+        polygons_gdf["project_polygon"] == selected_project
     ].copy()
     
     # Only bats and exclude generic observations
