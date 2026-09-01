@@ -3120,7 +3120,18 @@ if page == "HTML-generator":
     # )
 
 elif page == "Gegenereerde output":
+    reports_df = load_table("report")
+    
+    observations_df = load_table("observations")
+    
+    project_df = load_table("projects")
     st.write("here i am")
+
+    observations_df
+    project_df
+    reports_df
+
+    
 
 
     
