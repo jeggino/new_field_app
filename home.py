@@ -1518,8 +1518,14 @@ elif page == "Gegenereerde output":
         lambda row: get_address(row['lat'], row['lon']),
         axis=1
     )
+
+    st.dataframe(
+        df_huismus,
+        use_container_width=True,
+        hide_index=True,
+        height=(len(df_huismus_tabel) + 1) * 35
+    )
     
-    st.write(df_huismus)
     
     # Make sure dates have same format
     df_filtered["date"] = pd.to_datetime(
