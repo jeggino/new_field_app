@@ -1233,30 +1233,30 @@ elif page == "Gegenereerde output":
     df_obs = pd.DataFrame(observations)
 
 
-import streamlit as st
-import pandas as pd
-from io import BytesIO
-
-def create_excel_file(dataframes):
-    """
-    dataframes = {
-        "Sheet name": dataframe,
-        ...
-    }
-    """
-
-    output = BytesIO()
-
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        for sheet_name, df in dataframes.items():
-            df.to_excel(
-                writer,
-                sheet_name=sheet_name[:31],  # Excel limit
-                index=False
-            )
-
-    output.seek(0)
-    return output
+    import streamlit as st
+    import pandas as pd
+    from io import BytesIO
+    
+    def create_excel_file(dataframes):
+        """
+        dataframes = {
+            "Sheet name": dataframe,
+            ...
+        }
+        """
+    
+        output = BytesIO()
+    
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            for sheet_name, df in dataframes.items():
+                df.to_excel(
+                    writer,
+                    sheet_name=sheet_name[:31],  # Excel limit
+                    index=False
+                )
+    
+        output.seek(0)
+        return output
 
 
 
