@@ -1363,6 +1363,8 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
+    st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="center")
+
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
@@ -1481,12 +1483,7 @@ elif page == "Gegenereerde output":
         height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
-    st.markdown(
-        """
-        <hr style="height:2px;border:none;background-color:#1f77b4;">
-        """,
-        unsafe_allow_html=True
-    )
+
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
@@ -1563,14 +1560,7 @@ elif page == "Gegenereerde output":
     # DISPLAY
     # ---------------------------------------------------------
     
-    st.markdown(
-        """
-        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantallen van huismussen gedurende de veldbezoeken.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="center")
     
     st.dataframe(
         df_huismus_tabel,
