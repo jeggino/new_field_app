@@ -3130,6 +3130,7 @@ elif page == "Gegenereerde output":
 
     df_projects
     df_reports
+    df_obs
 
     import pandas as pd
     import streamlit as st
@@ -3225,7 +3226,7 @@ elif page == "Gegenereerde output":
             "Datum": pd.to_datetime(
                 df_filtered["date"]
             ).dt.strftime("%d-%m-%Y"),
-            "Aantal pers.": "----",
+            "Aantal pers.": "???",
             "Tijdsblok": df_filtered["Tijdsblok"],
             "Weersomstandigheden": df_filtered["Weersomstandigheden"],
         }
