@@ -3024,62 +3024,28 @@ if page == "HTML-generator":
         <br>
         """
     
-    legend_html = f"""
-<div style="
-position: fixed;
-top: 10px;
-left: 10px;
-z-index:9999;
-background-color:white;
-color:black;
-padding:12px;
-border:2px solid grey;
-border-radius:8px;
-font-size:13px;
-font-family:Arial,sans-serif;
-width:280px;
-">
-
-<h4 style="margin:0 0 10px 0;color:black;">
-{PROJECT_NAME}
-</h4>
-
-<b style="color:black;">Groups</b><br>
-
-<span style="color:#d95f02;">●</span>
-<span style="color:black;">Sparrow ({group_counts['Sparrow']})</span><br>
-
-<span style="color:#1b9e77;">●</span>
-<span style="color:black;">Swift ({group_counts['Swift']})</span><br>
-
-<span style="color:#7570b3;">●</span>
-<span style="color:black;">Bat ({group_counts['Bat']})</span><br>
-
-<hr>
-
-<b style="color:black;">Functions</b><br>
-
-<span style="color:#e41a1c;">■</span>
-<span style="color:black;">Nesting</span><br>
-
-<span style="color:#377eb8;">■</span>
-<span style="color:black;">Feeding</span><br>
-
-<span style="color:#4daf4a;">■</span>
-<span style="color:black;">Roosting</span><br>
-
-<hr>
-
-<b style="color:black;">Species counts</b><br>
-
-{species_html}
-
-</div>
-"""
+    legend_html = """
+    <div style="
+    position:fixed;
+    top:10px;
+    left:10px;
+    z-index:9999;
+    background:white;
+    color:black;
+    padding:10px;
+    border:2px solid grey;
+    ">
+    Legend
+    </div>
+    """
     
     m.get_root().html.add_child(
-        folium.Element(legend)
+        folium.Element(legend_html)
     )
+    
+    # m.get_root().html.add_child(
+    #     folium.Element(legend)
+    # )
     
     # =====================================================
     # COMPASS ROSE
