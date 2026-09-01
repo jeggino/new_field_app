@@ -3306,6 +3306,12 @@ elif page == "Gegenereerde output":
             "Verblijplaatsen",
         ]
     ]
+
+    st.dataframe(
+        df_verblijven,
+        use_container_width=True,
+        hide_index=True
+    )
     
     # Optional: sort by date if needed
     # df_verblijven = df_verblijven.sort_values("Veldbezoek")
