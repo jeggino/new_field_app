@@ -3241,13 +3241,24 @@ elif page == "Gegenereerde output":
     # SHOW TABLE
     # ==========================================================
     
-    st.header(
-        f"Veldbezoeken - {selected_project}"
+    st.markdown(
+        f"""
+        <h1 style='color:#1f77b4; margin-bottom:0;'>
+            Veldbezoeken - {selected_project}
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    st.markdown(
+        """
+        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+            Uitgevoerde veldbezoeken gedurende het aanvullend onderzoek.
+        </p>
+        """,
+        unsafe_allow_html=True
     )
 
-    st.subheader(
-        f"Uitgevoerde veldbezoeken gedurende het aanvullend onderzoek. "
-    )
     
     st.dataframe(
         df_veldbezoeken,
@@ -3256,67 +3267,57 @@ elif page == "Gegenereerde output":
     )
 
     #----------------
-    # Reports for selected project
+    # Filter reports for selected project
     df_filtered = df_reports[
         df_reports["project"] == selected_project
     ].copy()
     
-    df_filtered["date"] = pd.to_datetime(
-        df_filtered["date"]
-    ).dt.date
-    
-    # Exclude bird surveys
-    bat_kinds = df_filtered[
-        ~df_filtered["kind"].str.startswith(
-            ("Huismus", "Gierzwaluw", "Steenuil"),
-            na=False
-        )
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
     ].copy()
     
-    # If multiple bat survey kinds exist on the same date,
-    # keep only one (the first)
-    bat_kinds = bat_kinds.drop_duplicates(
-        subset=["date"],
-        keep="first"
-    )
+    # Only bats and exclude generic observations
+    df_bats = df_obs_project[
+        (df_obs_project["animal_type"] == "bat") &
+        (df_obs_project["function"] != "vleermuis waarneming")
+    ].copy()
     
-    # Merge one bat survey kind per date
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
+    
+    # Get survey type (kind) from reports
     df_bats = df_bats.merge(
-        bat_kinds[["date", "kind"]],
+        df_filtered[["date", "kind"]],
         on="date",
         how="left"
     )
-
-    df_bats 
     
-    # # Create Veldbezoek from date + matched kind
-    # df_bats["Veldbezoek"] = (
-    #     pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y")
-    #     + " "
-    #     + df_bats["kind"].fillna("Onbekend")
-    # )
+    df_bats
     
     # Create Veldbezoek from date + matched kind
-    df_bats["Veldbezoek"] = (df_bats["kind"].fillna("Onbekend"))
+    df_bats["Veldbezoek"] = (
+        pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y")
+        + " "
+        + df_bats["kind"].fillna("Onbekend")
+    )
     
-    # Apply your formatter
+    # Apply existing formatter
     df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
     
-    # Create output table
-    df_verblijven = df_bats.rename(
-        columns={
-            "species": "Soort",
-            "aantal": "Aantal individuen",
-            "function": "Verblijplaatsen",
-        }
-    )[
-        [
-            "Veldbezoek",
-            "Soort",
-            "Aantal individuen",
-            "Verblijplaatsen",
-        ]
-    ]
+    # Final table
+    df_verblijfplaatsen = pd.DataFrame({
+        "Veldbezoek": df_bats["Veldbezoek"],
+        "Soort": df_bats["species"],
+        "Aantal individuen": df_bats["aantal"],
+        "Verblijplaatsen": df_bats["function"]
+    })
+    
+    # Optional: sort chronologically before displaying
+    df_verblijfplaatsen = df_verblijfplaatsen.sort_values(
+        by="Veldbezoek"
+    )
 
     st.dataframe(
         df_verblijven,
