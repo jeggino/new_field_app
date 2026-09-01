@@ -1394,9 +1394,7 @@ if page == "Projectoverzicht":
 #------------------------------------------
 if page == "HTML-generator":
 
-    with st.expander("Projectoverzicht", expanded=False):
 
-        dagverslagen_overview()
 
 
     import folium
@@ -1430,6 +1428,10 @@ if page == "HTML-generator":
     # =====================================================
     # DOWNLOAD TABLES
     # =====================================================
+
+    with st.expander("Projectoverzicht", expanded=False):
+
+        dagverslagen_overview()
     
     reports_df = load_table("report")
     
