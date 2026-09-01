@@ -3251,8 +3251,7 @@ elif page == "Gegenereerde output":
         hide_index=True
     )
 
-    df_obs
-
+#----------------
     # Filter reports for selected project
     df_filtered = df_reports[
         df_reports["project"] == selected_project
@@ -3279,6 +3278,8 @@ elif page == "Gegenereerde output":
         on="date",
         how="left"
     )
+
+    df_bats 
     
     # # Create Veldbezoek from date + matched kind
     # df_bats["Veldbezoek"] = (
