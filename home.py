@@ -656,7 +656,7 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht","HTML-generator"])
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht","HTML-generator","Gegenereerde output"])
 
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
@@ -3118,6 +3118,9 @@ if page == "HTML-generator":
     #     width=None,
     #     height=750
     # )
+
+elif page == "Gegenereerde output":
+st.write("here i am")
 
 
     
