@@ -1512,7 +1512,6 @@ elif page == "Gegenereerde output":
         )
     ].copy()
 
-    df_kind_lookup
     
     # Keep only one survey per date
     df_kind_lookup = (
@@ -1561,7 +1560,7 @@ elif page == "Gegenereerde output":
     )
 
 #------------------
-    "---"
+
     # Example
     excel_file = create_excel_file({
         "Veldbezoeken": df_veldbezoeken,
@@ -1576,8 +1575,11 @@ elif page == "Gegenereerde output":
         file_name=f"{selected_project}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+    st.video("https://i.makeagif.com/media/1-17-2023/JfKHrM.gif")
 # --------------HTML-----------------------------------
-    "---"
+    st.text(" ") # Adds a blank line
+    st.subheader("Kaart", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
 
     import folium
     from folium.plugins import MarkerCluster, BeautifyIcon
