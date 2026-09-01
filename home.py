@@ -3295,6 +3295,32 @@ elif page == "Gegenereerde output":
     )
     
     df_bats
+
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
+    
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ("Huismus", "Gierzwaluw", "Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_bats = df_bats.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
     
     # Create Veldbezoek from date + matched kind
     df_bats["Veldbezoek"] = (
@@ -3319,6 +3345,16 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
+    "---"
+    st.markdown(
+        """
+        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+            Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken in het onderzoeksgebied.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+    
     st.dataframe(
         df_verblijfplaatsen,
         use_container_width=True,
