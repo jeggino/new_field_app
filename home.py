@@ -1932,7 +1932,9 @@ elif page == "Gegenereerde output":
     # =====================================================
     # BUILD PROJECT POLYGONS
     # =====================================================
-    
+    geojson_files = sorted(
+        list_all_geojson(BUCKET)
+    )
     polygons_gdf = build_polygons_gdf(
         geojson_files,
         BUCKET
