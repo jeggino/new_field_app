@@ -2647,7 +2647,7 @@ if page == "HTML-generator":
     import base64
     from pathlib import Path
     
-    logo_path = Path("Screenshot 2026-08-05 165527.jpg")
+    logo_path = Path("signal-2026-08-31-14-39-37-051.jpg")
     
     with open(logo_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
