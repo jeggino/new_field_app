@@ -12,3 +12,4 @@ uuid
 plotly
 streamlit_cookies_manager 
 matplotlib
+openpyxl
