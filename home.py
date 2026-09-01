@@ -1267,15 +1267,8 @@ elif page == "Gegenereerde output":
     # SHOW TABLE
     # ==========================================================
     
-    st.markdown(
-        f"""
-        <h2 style='color:#1f77b4; margin-bottom:0;'>
-            Veldbezoeken - {selected_project}
-        </h2>
-        """,
-        unsafe_allow_html=True
-    )
-    st.title(f":blue[**Veldbezoeken - {selected_project}**]", help=None, width="stretch", text_alignment="left",divider='blue',)
+
+    st.title(f":blue[**Veldbezoeken - {selected_project}**]", help=None, width="stretch", text_alignment="left")
     
     st.markdown(
         """
