@@ -3408,6 +3408,8 @@ elif page == "Gegenereerde output":
 
 #--------------------
     import geopandas as gpd
+
+    polygons_gdf
     
     # Filter polygons for selected project
     polygons_project = polygons_gdf[
