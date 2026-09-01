@@ -1405,6 +1405,72 @@ elif page == "Gegenereerde output":
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
 
+
+    def list_folder_paginated(bucket, path=""):
+        items = []
+    
+        offset = 0
+        limit = 100
+    
+        while True:
+    
+            batch = supabase.storage.from_(bucket).list(
+                path,
+                {
+                    "limit": limit,
+                    "offset": offset
+                }
+            )
+    
+            if not batch:
+                break
+    
+            items.extend(batch)
+    
+            if len(batch) < limit:
+                break
+    
+            offset += limit
+    
+        return items
+    
+    
+    def list_all_geojson(bucket, path=""):
+        files = []
+    
+        items = list_folder_paginated(bucket, path)
+    
+        for item in items:
+    
+            name = item["name"]
+    
+            # folder
+            if item.get("id") is None:
+    
+                subpath = f"{path}/{name}" if path else name
+    
+                files.extend(
+                    list_all_geojson(bucket, subpath)
+                )
+    
+            # file
+            else:
+    
+                filepath = f"{path}/{name}" if path else name
+    
+                if filepath.lower().endswith(".geojson"):
+                    files.append(filepath)
+    
+        return files
+    
+    
+    geojson_files = sorted(
+        list_all_geojson(BUCKET)
+    )
+
+
+
+
     @st.cache_data(show_spinner="Loading project polygons...")
     def load_polygons():
     
