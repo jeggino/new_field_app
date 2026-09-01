@@ -3131,6 +3131,62 @@ elif page == "Gegenereerde output":
     df_projects
     df_reports
 
+    import pandas as pd
+    import streamlit as st
+    
+    # --------------------------------------------------------
+    # PROJECT FILTER
+    # --------------------------------------------------------
+    
+    projects = sorted(df_reports["project"].dropna().unique())
+    
+    selected_projects = st.multiselect(
+        "Select project(s)",
+        options=projects,
+        default=projects
+    )
+    
+    df_filtered = df_reports[
+        df_reports["project"].isin(selected_projects)
+    ].copy()
+    
+    # --------------------------------------------------------
+    # WEATHER COLUMN
+    # --------------------------------------------------------
+    
+    df_filtered["Weersomstandigheden"] = (
+        df_filtered["temperature"].astype(str)
+        + "°C, "
+        + df_filtered["wind"].astype(str)
+        + " Bft, "
+        + df_filtered["rain"].astype(str)
+    )
+    
+    # --------------------------------------------------------
+    # OUTPUT TABLE
+    # --------------------------------------------------------
+    
+    df_veldbezoeken = pd.DataFrame({
+        "Veldbezoek": df_filtered["kind"],
+        "Datum": pd.to_datetime(df_filtered["date"]).dt.strftime("%d-%m-%Y"),
+        "Aantal pers.": 2,
+        "Starttijd": df_filtered["start_time"],
+        "Eindtijd": df_filtered["end_time"],
+        "Weersomstandigheden": df_filtered["Weersomstandigheden"]
+    })
+    
+    # --------------------------------------------------------
+    # DISPLAY
+    # --------------------------------------------------------
+    
+    st.subheader("Veldbezoeken")
+    
+    st.dataframe(
+        df_veldbezoeken,
+        use_container_width=True,
+        hide_index=True
+    )
+
     
 
 
