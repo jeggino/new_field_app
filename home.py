@@ -1286,11 +1286,13 @@ elif page == "Gegenereerde output":
         return files
     
     
+    # geojson_files = sorted(
+    #     list_all_geojson(BUCKET)
+    # )
     geojson_files = sorted(
         list_all_geojson(BUCKET)
     )
-
-
+    geojson_files
 
 
     @st.cache_data(show_spinner="Loading project polygons...")
@@ -1348,8 +1350,8 @@ elif page == "Gegenereerde output":
         )
     
     
-    # # Load once and cache
-    # polygons_gdf = load_polygons()
+    # Load once and cache
+    polygons_gdf = load_polygons()
 
 
     
