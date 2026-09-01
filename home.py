@@ -3128,8 +3128,6 @@ elif page == "Gegenereerde output":
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
 
-    df_projects
-
     import pandas as pd
     import streamlit as st
     import re
@@ -3338,8 +3336,6 @@ elif page == "Gegenereerde output":
         """,
         unsafe_allow_html=True
     )
-
-    df_obs_project
     
     st.dataframe(
         df_verblijfplaatsen,
@@ -3349,6 +3345,9 @@ elif page == "Gegenereerde output":
     
     # Optional: sort by date if needed
     # df_verblijven = df_verblijven.sort_values("Veldbezoek")
+
+#--------------------
+
 
 
     
