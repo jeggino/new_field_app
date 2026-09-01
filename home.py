@@ -656,8 +656,8 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Projectoverzicht","Gegenereerde output"])
-#"HTML-generator",
+page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Gegenereerde output"])
+#"HTML-generator","Projectoverzicht",
 # ---------------------------------------------------------
 # PAGE 1 — CREATE PROJECT
 # ---------------------------------------------------------
@@ -1393,6 +1393,11 @@ if page == "Projectoverzicht":
 #PAGE 4
 #------------------------------------------
 if page == "HTML-generator":
+
+    with st.expander("Projectoverzicht", expanded=False):
+
+        dagverslagen_overview()
+
 
     import folium
     from folium.plugins import MarkerCluster, BeautifyIcon
