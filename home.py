@@ -422,6 +422,7 @@ def confirm_delete_dialog(project_name):
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
+st.set_page_config(layout="wide")
 page = st.sidebar.radio("Navigation", ["Create Project", "View Projects","Gegenereerde output"])
 #"HTML-generator","Projectoverzicht",
 # ---------------------------------------------------------
