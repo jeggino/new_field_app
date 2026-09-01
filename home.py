@@ -3295,10 +3295,7 @@ elif page == "Gegenereerde output":
     )
     
     # Create Veldbezoek from date + matched kind
-    df_bats["Veldbezoek"] = (
-        pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y")
-        + " "
-        + df_bats["kind"].fillna("Onbekend")
+    df_bats["Veldbezoek"] = (df_bats["kind"].fillna("Onbekend")
     )
     
     # Apply existing formatter
