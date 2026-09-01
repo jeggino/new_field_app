@@ -988,6 +988,9 @@ elif page == "Gegenereerde output":
 
     with st.expander("Projectoverzicht", expanded=False, type="compact"):
         dagverslagen_overview()
+
+    st.text(" ")
+    st.text(" ")
     
     BUCKET = "observation_photos"
     projects = supabase.table("projects").select("*").execute().data
@@ -1270,7 +1273,9 @@ elif page == "Gegenereerde output":
     # title = 
     st.title(f":blue[**{selected_project.replace('_', ' ')}**]", help=None, width="stretch", text_alignment="center")
 
-    st.text(" ") # Adds a blank line
+    st.text(" ")
+    st.text(" ")
+    st.text(" ")# Adds a blank line
     # st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
     st.markdown(
