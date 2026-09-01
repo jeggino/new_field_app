@@ -986,7 +986,7 @@ elif page == "Gegenereerde output":
 
     
 
-    with st.expander("Projectoverzicht", expanded=False):
+    with st.expander("Projectoverzicht", expanded=False, type="compact"):
         dagverslagen_overview()
     
     BUCKET = "observation_photos"
