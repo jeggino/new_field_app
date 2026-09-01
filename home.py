@@ -3120,6 +3120,7 @@ if page == "HTML-generator":
     # )
 
 elif page == "Gegenereerde output":
+    BUCKET = "observation_photos"
     projects = supabase.table("projects").select("*").execute().data
     reports = supabase.table("report").select("*").execute().data
     observations = supabase.table("observations").select("*").execute().data
@@ -3127,6 +3128,65 @@ elif page == "Gegenereerde output":
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
+
+    @st.cache_data(show_spinner="Loading project polygons...")
+    def load_polygons():
+    
+        geojson_files = sorted(list_all_geojson(BUCKET))
+    
+        records = []
+        crs = None
+    
+        for filepath in geojson_files:
+    
+            tmp_path = None
+    
+            try:
+                content = (
+                    supabase.storage
+                    .from_(BUCKET)
+                    .download(filepath)
+                )
+    
+                with tempfile.NamedTemporaryFile(
+                    suffix=".geojson",
+                    delete=False
+                ) as tmp:
+                    tmp.write(content)
+                    tmp_path = tmp.name
+    
+                gdf = gpd.read_file(tmp_path)
+    
+                if gdf.empty:
+                    continue
+    
+                if crs is None:
+                    crs = gdf.crs
+    
+                records.append(
+                    {
+                        "project_polygon": os.path.splitext(filepath)[0],
+                        "geometry": unary_union(gdf.geometry),
+                    }
+                )
+    
+            except Exception as e:
+                st.warning(f"Failed to load {filepath}: {e}")
+    
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+    
+        return gpd.GeoDataFrame(
+            records,
+            geometry="geometry",
+            crs=crs,
+        )
+    
+    
+    # Load once and cache
+    polygons_gdf = load_polygons()
+
 
     import pandas as pd
     import streamlit as st
@@ -3347,6 +3407,41 @@ elif page == "Gegenereerde output":
     # df_verblijven = df_verblijven.sort_values("Veldbezoek")
 
 #--------------------
+    import geopandas as gpd
+    
+    # Filter polygons for selected project
+    polygons_project = polygons_gdf[
+        polygons_gdf["project"] == selected_project
+    ].copy()
+    
+    # Only bats and exclude generic observations
+    df_bats = df_obs_project[
+        (df_obs_project["animal_type"] == "bat") &
+        (df_obs_project["function"] != "vleermuis waarneming")
+    ].copy()
+    
+    # Convert observations to GeoDataFrame
+    gdf_bats = gpd.GeoDataFrame(
+        df_bats,
+        geometry=gpd.points_from_xy(
+            df_bats["lon"],
+            df_bats["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+    
+    # Keep only observations inside a project polygon
+    gdf_bats = gpd.sjoin(
+        gdf_bats,
+        polygons_project[["geometry"]],
+        how="inner",
+        predicate="within"
+    )
+    
+    # Convert back to DataFrame if desired
+    df_bats = pd.DataFrame(gdf_bats.drop(columns=["geometry", "index_right"]))
+    "---"
+    df_bats
 
 
 
