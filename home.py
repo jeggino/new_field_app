@@ -1499,6 +1499,27 @@ elif page == "Gegenereerde output":
         (df_obs_project["species"] == "Huismus") &
         (df_obs_project["function"] == "nestlocatie")
     ].copy()
+
+    from geopy.geocoders import Nominatim
+    import time
+    
+    # Initialize geocoder
+    geolocator = Nominatim(user_agent="address_lookup")
+    
+    def get_address(lat, lon):
+        try:
+            location = geolocator.reverse((lat, lon), exactly_one=True)
+            return location.address if location else None
+        except Exception:
+            return None
+    
+    # Example: assuming columns are named 'lat' and 'lon'
+    df_huismus['address'] = df_huismus.apply(
+        lambda row: get_address(row['lat'], row['lon']),
+        axis=1
+    )
+    
+    st.write(df_huismus)
     
     # Make sure dates have same format
     df_filtered["date"] = pd.to_datetime(
