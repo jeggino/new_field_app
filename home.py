@@ -3294,8 +3294,6 @@ elif page == "Gegenereerde output":
     #     how="left"
     # )
     
-    df_bats
-
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
@@ -3354,6 +3352,8 @@ elif page == "Gegenereerde output":
         """,
         unsafe_allow_html=True
     )
+
+    df_obs_project
     
     st.dataframe(
         df_verblijfplaatsen,
