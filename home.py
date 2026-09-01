@@ -3283,45 +3283,23 @@ elif page == "Gegenereerde output":
         (df_obs_project["function"] != "vleermuis waarneming")
     ].copy()
     
-    # # Make sure dates have the same format
-    # df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
-    # df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
-    
-    # # Get survey type (kind) from reports
-    # df_bats = df_bats.merge(
-    #     df_filtered[["date", "kind"]],
-    #     on="date",
-    #     how="left"
-    # )
-    
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
     
-    # Remove bird survey kinds
-    df_kind_lookup = df_filtered[
-        ~df_filtered["kind"].str.startswith(
-            ("Huismus", "Gierzwaluw", "Steenuil"),
-            na=False
-        )
-    ].copy()
-    
-    # Keep only the first remaining kind per date
-    df_kind_lookup = (
-        df_kind_lookup
-        .groupby("date", as_index=False)
-        .first()[["date", "kind"]]
-    )
-    
-    # Merge into bat observations
+    # Get survey type (kind) from reports
     df_bats = df_bats.merge(
-        df_kind_lookup,
+        df_filtered[["date", "kind"]],
         on="date",
         how="left"
     )
     
     # Create Veldbezoek from date + matched kind
-    df_bats["Veldbezoek"] = (pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y"))
+    df_bats["Veldbezoek"] = (
+        pd.to_datetime(df_bats["date"]).dt.strftime("%d-%m-%Y")
+        + " "
+        + df_bats["kind"].fillna("Onbekend")
+    )
     
     # Apply existing formatter
     df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
