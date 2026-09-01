@@ -1233,6 +1233,35 @@ elif page == "Gegenereerde output":
     df_obs = pd.DataFrame(observations)
 
 
+import streamlit as st
+import pandas as pd
+from io import BytesIO
+
+def create_excel_file(dataframes):
+    """
+    dataframes = {
+        "Sheet name": dataframe,
+        ...
+    }
+    """
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        for sheet_name, df in dataframes.items():
+            df.to_excel(
+                writer,
+                sheet_name=sheet_name[:31],  # Excel limit
+                index=False
+            )
+
+    output.seek(0)
+    return output
+
+
+
+
+    
     import os
     import tempfile
     import geopandas as gpd
@@ -1774,6 +1803,23 @@ elif page == "Gegenereerde output":
         height=(len(df_huismus_tabel) + 1) * 35
     )
 
+#------------------
+    "---"
+    # Example
+    excel_file = create_excel_file({
+        "Veldbezoeken": df_veldbezoeken,
+        "Vleermuizen": df_verblijfplaatsen,
+        "Huismus": df_huismus_tabel,
+        "Rapporten": df_filtered
+    })
+    
+    st.download_button(
+        label="📥 Download Excel",
+        data=excel_file,
+        file_name=f"{selected_project}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+# --------------HTML-----------------------------------
     "---"
 
     import folium
