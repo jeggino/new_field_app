@@ -1511,7 +1511,7 @@ elif page == "Gegenereerde output":
         try:
             location = geolocator.reverse((lat, lon), exactly_one=True)
             return location.address if location else None
-        except Exception:
+        except Exception as e:
             print(e)
             return None
     
