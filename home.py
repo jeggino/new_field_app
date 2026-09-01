@@ -1228,77 +1228,78 @@ elif page == "Gegenereerde output":
     df_obs = pd.DataFrame(observations)
 
 
-    def list_folder_paginated(bucket, path=""):
-        items = []
+    import os
+    import tempfile
+    import geopandas as gpd
+    import streamlit as st
+    from shapely.ops import unary_union
     
-        offset = 0
-        limit = 100
-    
-        while True:
-    
-            batch = supabase.storage.from_(bucket).list(
-                path,
-                {
-                    "limit": limit,
-                    "offset": offset
-                }
-            )
-    
-            if not batch:
-                break
-    
-            items.extend(batch)
-    
-            if len(batch) < limit:
-                break
-    
-            offset += limit
-    
-        return items
+    BUCKET = "observation_photos"
     
     
-    def list_all_geojson(bucket, path=""):
-        files = []
+    @st.cache_data(show_spinner="Loading project polygons...")
+    def load_project_polygons():
     
-        items = list_folder_paginated(bucket, path)
+        def list_folder_paginated(bucket, path=""):
+            items = []
     
-        for item in items:
+            offset = 0
+            limit = 100
     
-            name = item["name"]
+            while True:
     
-            # folder
-            if item.get("id") is None:
-    
-                subpath = f"{path}/{name}" if path else name
-    
-                files.extend(
-                    list_all_geojson(bucket, subpath)
+                batch = supabase.storage.from_(bucket).list(
+                    path,
+                    {
+                        "limit": limit,
+                        "offset": offset
+                    }
                 )
     
-            # file
-            else:
+                if not batch:
+                    break
     
-                filepath = f"{path}/{name}" if path else name
+                items.extend(batch)
     
-                if filepath.lower().endswith(".geojson"):
-                    files.append(filepath)
+                if len(batch) < limit:
+                    break
     
-        return files
+                offset += limit
     
+            return items
     
-    # geojson_files = sorted(
-    #     list_all_geojson(BUCKET)
-    # )
-    geojson_files = sorted(
-        list_all_geojson(BUCKET)
-    )
-    geojson_files
-
-
-    @st.cache_data(show_spinner="Loading project polygons...")
-    def load_polygons():
+        def list_all_geojson(bucket, path=""):
     
-        geojson_files = sorted(list_all_geojson(BUCKET))
+            files = []
+    
+            items = list_folder_paginated(bucket, path)
+    
+            for item in items:
+    
+                name = item["name"]
+    
+                # Folder
+                if item.get("id") is None:
+    
+                    subpath = f"{path}/{name}" if path else name
+    
+                    files.extend(
+                        list_all_geojson(bucket, subpath)
+                    )
+    
+                # File
+                else:
+    
+                    filepath = f"{path}/{name}" if path else name
+    
+                    if filepath.lower().endswith(".geojson"):
+                        files.append(filepath)
+    
+            return files
+    
+        geojson_files = sorted(
+            list_all_geojson(BUCKET)
+        )
     
         records = []
         crs = None
@@ -1308,7 +1309,8 @@ elif page == "Gegenereerde output":
             tmp_path = None
     
             try:
-                content = (
+    
+                file_content = (
                     supabase.storage
                     .from_(BUCKET)
                     .download(filepath)
@@ -1318,7 +1320,8 @@ elif page == "Gegenereerde output":
                     suffix=".geojson",
                     delete=False
                 ) as tmp:
-                    tmp.write(content)
+    
+                    tmp.write(file_content)
                     tmp_path = tmp.name
     
                 gdf = gpd.read_file(tmp_path)
@@ -1337,23 +1340,25 @@ elif page == "Gegenereerde output":
                 )
     
             except Exception as e:
-                st.warning(f"Failed to load {filepath}: {e}")
+    
+                st.warning(
+                    f"Error loading {filepath}: {e}"
+                )
     
             finally:
+    
                 if tmp_path and os.path.exists(tmp_path):
                     os.remove(tmp_path)
     
-        return gpd.GeoDataFrame(
+        polygons_gdf = gpd.GeoDataFrame(
             records,
             geometry="geometry",
-            crs=crs,
+            crs=crs
         )
     
-    
-    # Load once and cache
-    polygons_gdf = load_polygons()
+        return polygons_gdf
 
-
+    polygons_gdf = load_project_polygons()
     
     # ==========================================================
     # FORMAT VELDBEZOEK
