@@ -1504,9 +1504,10 @@ elif page == "Gegenereerde output":
     import time
     
     # Initialize geocoder
-    geolocator = Nominatim(user_agent="address_lookup")
+    geolocator = Nominatim(user_agent="LG")
     
     def get_address(lat, lon):
+        time.sleep(1)  # Respect Nominatim usage policy
         try:
             location = geolocator.reverse((lat, lon), exactly_one=True)
             return location.address if location else None
