@@ -3559,12 +3559,12 @@ elif page == "Gegenereerde output":
         how="left"
     )
     
-    # Create Veldbezoek
-    df_huismus["Veldbezoek"] = (
-        df_huismus["kind"]
-        .fillna("Huismus")
-        .apply(format_veldbezoek)
-    )
+    # # Create Veldbezoek
+    # df_huismus["Veldbezoek"] = (
+    #     df_huismus["kind"]
+    #     .fillna("Huismus")
+    #     .apply(format_veldbezoek)
+    # )
     
     # Final table
     df_huismus_tabel = pd.DataFrame({
