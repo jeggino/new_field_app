@@ -1293,12 +1293,6 @@ elif page == "Gegenereerde output":
         height=(len(df_veldbezoeken) + 1) * 35
     )
 
-    st.markdown(
-        """
-        <hr style="height:2px;border:none;background-color:#1f77b4;">
-        """,
-        unsafe_allow_html=True
-    )
 
     #----------------
     # Filter reports for selected project
@@ -1362,8 +1356,8 @@ elif page == "Gegenereerde output":
     df_verblijfplaatsen = df_verblijfplaatsen.sort_values(
         by="Veldbezoek"
     )
-
-    st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="center")
+    st.text(" ") # Adds a blank line
+    st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
 
     st.markdown(
         """
@@ -1559,8 +1553,8 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # DISPLAY
     # ---------------------------------------------------------
-    
-    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="center")
+    st.text(" ") # Adds a blank line
+    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
     st.dataframe(
         df_huismus_tabel,
