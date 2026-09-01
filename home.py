@@ -1559,6 +1559,10 @@ elif page == "Gegenereerde output":
         height=(len(df_huismus_tabel) + 1) * 35
     )
 
+    gif_url = "https://i.makeagif.com/media/1-17-2023/JfKHrM.gif"
+    
+    st.image(gif_url)
+
 #------------------
 
     # Example
@@ -1576,7 +1580,7 @@ elif page == "Gegenereerde output":
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    st.video("https://i.makeagif.com/media/1-17-2023/JfKHrM.gif")
+    
 # --------------HTML-----------------------------------
     st.text(" ") # Adds a blank line
     st.subheader("Kaart", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
