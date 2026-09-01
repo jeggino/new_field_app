@@ -3189,6 +3189,18 @@ elif page == "Gegenereerde output":
     df_filtered = df_reports[
         df_reports["project"] == selected_project
     ].copy()
+
+    # ==========================================================
+    # TIME BLOCK COLUMN
+    # ==========================================================
+    
+    df_filtered["Tijdsblok"] = (
+        pd.to_datetime(df_filtered["start_time"].astype(str))
+        .dt.strftime("%H:%M")
+        + " / "
+        + pd.to_datetime(df_filtered["end_time"].astype(str))
+        .dt.strftime("%H:%M")
+    )                    
     
     
     # ==========================================================
@@ -3213,12 +3225,12 @@ elif page == "Gegenereerde output":
             "Datum": pd.to_datetime(
                 df_filtered["date"]
             ).dt.strftime("%d-%m-%Y"),
-            "Aantal pers.": 2,
-            "Starttijd": df_filtered["start_time"],
-            "Eindtijd": df_filtered["end_time"],
+            "Aantal pers.": "----",
+            "Tijdsblok": df_filtered["Tijdsblok"],
             "Weersomstandigheden": df_filtered["Weersomstandigheden"],
         }
     )
+
     
     # Optional: sort by date
     
