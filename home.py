@@ -997,9 +997,58 @@ elif page == "Gegenereerde output":
     reports = supabase.table("report").select("*").execute().data
     observations = supabase.table("observations").select("*").execute().data
 
+    import time
+    from geopy.geocoders import Nominatim
+    
+    geolocator = Nominatim(user_agent="address_lookup")
+    
+    RELEVANT_FUNCTIES = [
+        "nestlocatie",
+        "zomerverblijfplaats",
+        "kraamverblijfplaats",
+        "winterverblijfplaats",
+        "paarverblijfplaats",
+    ]
+    
+    @st.cache_data(show_spinner="Adressen ophalen...")
+    def enrich_addresses(observations):
+        df = observations.copy()
+
+        df = df[df["functie"].str.lower().isin(RELEVANT_FUNCTIES)]
+    
+        def get_address(lat, lon):
+            try:
+                location = geolocator.reverse((lat, lon), exactly_one=True)
+                return location.address if location else None
+            except Exception:
+                return None
+    
+        # Only geocode unique coordinates
+        unique_locations = (
+            df[['lat', 'lon']]
+            .dropna()
+            .drop_duplicates()
+        )
+    
+        unique_locations['address'] = unique_locations.apply(
+            lambda row: get_address(row['lat'], row['lon']),
+            axis=1
+        )
+    
+        df = df.merge(
+            unique_locations,
+            on=['lat', 'lon'],
+            how='left'
+        )
+    
+        return df
+
+
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
+
+    df_obs = enrich_addresses(df_obs)
 
 
     import streamlit as st
