@@ -1391,7 +1391,8 @@ elif page == "Gegenereerde output":
         "Plangebied": df_bats["Plangebied"],
         "Aantal individuen": df_bats["aantal"],
         "Verblijplaatsen": df_bats["function"],
-        "Adres": df_bats["address"]
+        "Adres": df_bats["address"],
+        "Fotolink": df_bats["photo_url"]        
     })
 
     
@@ -1476,21 +1477,7 @@ elif page == "Gegenereerde output":
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_huismus["date"] = pd.to_datetime(df_huismus["date"]).dt.date
     
-    # # Remove bird survey kinds
-    # df_kind_lookup = df_filtered[
-    #     ~df_filtered["kind"].str.startswith(
-    #         ("Steenuil"),
-    #         na=False
-    #     )
-    # ].copy()
-    
-    # # Keep only the first remaining kind per date
-    # df_kind_lookup = (
-    #     df_kind_lookup
-    #     .groupby("date", as_index=False)
-    #     .first()[["date", "kind"]]
-    # )
-    # Keep only the first remaining kind per date
+   
     df_kind_lookup = (
         df_filtered
         .groupby("date", as_index=False)
@@ -1518,7 +1505,8 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Plangebied": df_huismus["Plangebied"],
         "Aantal nestlocatie": df_huismus["aantal"],
-        "Adres": df_huismus["address"]
+        "Adres": df_huismus["address"],
+        "Fotolink": df_huismus["photo_url"]
     })
 
 
@@ -1559,90 +1547,9 @@ elif page == "Gegenereerde output":
         height=(len(df_hm_nestlocatie) + 1) * 35
     )
 
-    #--------------------------------------------------------
-    #-------------------------------
-    # Filter reports for selected project
-    df_filtered = df_reports[
-        df_reports["project"] == selected_project
-    ].copy()
-    
-    # Filter observations for selected project
-    df_obs_project = df_obs[
-        df_obs["project"] == selected_project
-    ].copy()
-    
-    # Only Huismus nest locations
-    df_huismus = df_obs_project[
-        (df_obs_project["species"] == "Huismus") &
-        (df_obs_project["function"] == "nestlocatie")
-    ].copy()
-  
-    
-    # Make sure dates have same format
-    df_filtered["date"] = pd.to_datetime(
-        df_filtered["date"]
-    ).dt.date
-    
-    df_huismus["date"] = pd.to_datetime(
-        df_huismus["date"]
-    ).dt.date
-    
-    # Get only Huismus surveys
-    df_kind_lookup = df_filtered[
-        df_filtered["kind"].str.startswith(
-            "Huismus",
-            na=False
-        )
-    ].copy()
-
-    
-    # Keep only one survey per date
-    df_kind_lookup = (
-        df_kind_lookup
-        .groupby("date", as_index=False)
-        .first()[["date", "kind"]]
-    )
-    
-    # Merge survey type into observations
-    df_huismus = df_huismus.merge(
-        df_kind_lookup,
-        on="date",
-        how="left"
-    )
-    
-    # Create Veldbezoek
-    df_huismus["Veldbezoek"] = (
-        df_huismus["kind"]
-        .fillna("Huismus")
-        .apply(format_veldbezoek)
-    )
-    
-    # Final table
-    df_huismus_tabel = pd.DataFrame({
-        "Veldbezoek": df_huismus["Veldbezoek"],
-        "Soort": df_huismus["species"],
-        "Aantal nestlocatie": df_huismus["aantal"],
-        "Adres": df_huismus["address"]
-    })
-    
-    df_huismus_tabel = df_huismus_tabel.sort_values(
-        by="Veldbezoek"
-    )
-    
     # ---------------------------------------------------------
-    # DISPLAY
+    # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
-    gif_url = "https://i.makeagif.com/media/1-17-2023/JfKHrM.gif"
-    # st.image(gif_url)
-    st.text(" ") # Adds a blank line
-    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
-    
-    st.dataframe(
-        df_huismus_tabel,
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_huismus_tabel) + 1) * 35
-    )
 
     
 # --------------HTML-----------------------------------
