@@ -1276,7 +1276,6 @@ elif page == "Gegenereerde output":
     st.text(" ")
     st.text(" ")
     st.text(" ")# Adds a blank line
-    # st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
     st.markdown(
         """
@@ -1519,15 +1518,7 @@ elif page == "Gegenereerde output":
     df_huismus['address'] = df_huismus.apply(
         lambda row: get_address(row['lat'], row['lon']),
         axis=1
-    )
-    # "---"
-    # st.dataframe(
-    #     df_huismus,
-    #     use_container_width=True,
-    #     hide_index=True,
-    #     height=(len(df_huismus) + 1) * 35
-    # )
-    
+    )    
     
     # Make sure dates have same format
     df_filtered["date"] = pd.to_datetime(
@@ -1572,8 +1563,7 @@ elif page == "Gegenereerde output":
     df_huismus_tabel = pd.DataFrame({
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Soort": df_huismus["species"],
-        "Aantal individuen": df_huismus["aantal"],
-        "Functie": df_huismus["function"],
+        "Aantal nestlocatie": df_huismus["aantal"],
         "Adress": df_huismus['address']
     })
     
@@ -1585,7 +1575,7 @@ elif page == "Gegenereerde output":
     # DISPLAY
     # ---------------------------------------------------------
     gif_url = "https://i.makeagif.com/media/1-17-2023/JfKHrM.gif"
-    st.image(gif_url)
+    # st.image(gif_url)
     st.text(" ") # Adds a blank line
     st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
@@ -1595,10 +1585,6 @@ elif page == "Gegenereerde output":
         hide_index=True,
         height=(len(df_huismus_tabel) + 1) * 35
     )
-
-
-
-
 
     
 # --------------HTML-----------------------------------
@@ -1697,95 +1683,6 @@ elif page == "Gegenereerde output":
         return files
     
     
-    # import os
-    # import tempfile
-    # import geopandas as gpd
-    # import streamlit as st
-    
-    # from shapely.ops import unary_union
-    
-    
-    # @st.cache_data(show_spinner="Loading project polygons...")
-    # def build_polygons_gdf(geojson_files, bucket_name):
-    
-    #     records = []
-    #     crs = None
-    
-    #     for filepath in geojson_files:
-    
-    #         tmp_path = None
-    
-    #         try:
-    #             file_content = (
-    #                 supabase.storage
-    #                 .from_(bucket_name)
-    #                 .download(filepath)
-    #             )
-    
-    #             with tempfile.NamedTemporaryFile(
-    #                 suffix=".geojson",
-    #                 delete=False
-    #             ) as tmp:
-    
-    #                 tmp.write(file_content)
-    #                 tmp_path = tmp.name
-    
-    #             gdf = gpd.read_file(tmp_path)
-    
-    #             if gdf.empty:
-    #                 continue
-    
-    #             if crs is None:
-    #                 crs = gdf.crs
-    
-    #             records.append(
-    #                 {
-    #                     "project_polygon": os.path.splitext(
-    #                         os.path.basename(filepath)
-    #                     )[0],
-    #                     "geometry": unary_union(gdf.geometry)
-    #                 }
-    #             )
-    
-    #         except Exception as e:
-    
-    #             st.warning(
-    #                 f"Error loading {filepath}: {e}"
-    #             )
-    
-    #         finally:
-    
-    #             if (
-    #                 tmp_path is not None
-    #                 and os.path.exists(tmp_path)
-    #             ):
-    #                 os.remove(tmp_path)
-    
-    #     return gpd.GeoDataFrame(
-    #         records,
-    #         geometry="geometry",
-    #         crs=crs
-    #     )
-    
-    
-    # # =====================================================
-    # # BUILD PROJECT POLYGONS
-    # # =====================================================
-    # geojson_files = sorted(
-    #     list_all_geojson(BUCKET)
-    # )
-    # polygons_gdf = build_polygons_gdf(
-    #     geojson_files,
-    #     BUCKET
-    # )
-    
-    # # Optional debug
-    # st.write(
-    #     f"{len(polygons_gdf)} project polygons loaded."
-    # )
-    
-    # st.write(f"Loaded {len(polygons_gdf)} polygons")
-    # st.dataframe(polygons_gdf[["project_polygon"]])
 #------------------------
 
     OBS_POLYGONS = 'polygons_app'
