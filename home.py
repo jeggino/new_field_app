@@ -997,62 +997,14 @@ elif page == "Gegenereerde output":
     reports = supabase.table("report").select("*").execute().data
     observations = supabase.table("observations").select("*").execute().data
 
-    import time
-    from geopy.geocoders import Nominatim
-    
-    # geolocator = Nominatim(user_agent="address_lookup")
-    
-    # RELEVANT_FUNCTIES = [
-    #     "nestlocatie",
-    #     "zomerverblijfplaats",
-    #     "kraamverblijfplaats",
-    #     "winterverblijfplaats",
-    #     "paarverblijfplaats",
-    # ]
-    
-    # @st.cache_data(show_spinner="Adressen ophalen...")
-    # def enrich_addresses(observations):
-    #     df = observations.copy()
-
-    #     df = df[df["function"].str.lower().isin(RELEVANT_FUNCTIES)]
-    
-    #     def get_address(lat, lon):
-    #         try:
-    #             location = geolocator.reverse((lat, lon), exactly_one=True)
-    #             return location.address if location else None
-    #         except Exception:
-    #             return None
-    
-    #     # Only geocode unique coordinates
-    #     unique_locations = (
-    #         df[['lat', 'lon']]
-    #         .dropna()
-    #         .drop_duplicates()
-    #     )
-    
-    #     unique_locations['address'] = unique_locations.apply(
-    #         lambda row: get_address(row['lat'], row['lon']),
-    #         axis=1
-    #     )
-    
-    #     df = df.merge(
-    #         unique_locations,
-    #         on=['lat', 'lon'],
-    #         how='left'
-    #     )
-    
-    #     return df
-
+   
 
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
 
-    # df_obs = enrich_addresses(df_obs)
 
 
-    import streamlit as st
-    import pandas as pd
     from io import BytesIO
     
     def create_excel_file(dataframes):
@@ -1083,7 +1035,6 @@ elif page == "Gegenereerde output":
     import os
     import tempfile
     import geopandas as gpd
-    import streamlit as st
     from shapely.ops import unary_union
     
     BUCKET = "observation_photos"
@@ -1452,14 +1403,32 @@ elif page == "Gegenereerde output":
         ),
         crs=polygons_project.crs
     )
-    
-    # Keep only observations inside a project polygon
+
+    # Spatial join
     gdf_bats = gpd.sjoin(
         gdf_bats,
         polygons_project[["geometry"]],
-        how="inner",
+        how="left",
         predicate="within"
     )
+    
+    # Create Plangebied column
+    gdf_bats["Plangebied"] = (
+        gdf_bats["index_right"]
+        .notna()
+        .map({True: "Binnen", False: "Buiten"})
+    )
+    
+    # Optional: remove join helper column
+    gdf_bats = gdf_bats.drop(columns=["index_right"])
+    
+    # # Keep only observations inside a project polygon
+    # gdf_bats = gpd.sjoin(
+    #     gdf_bats,
+    #     polygons_project[["geometry"]],
+    #     how="inner",
+    #     predicate="within"
+    # )
     
     # Convert back to DataFrame if desired
     df_bats = pd.DataFrame(gdf_bats.drop(columns=["geometry", "index_right"]))
@@ -1501,6 +1470,7 @@ elif page == "Gegenereerde output":
     df_verblijfplaatsen = pd.DataFrame({
         "Veldbezoek": df_bats["Veldbezoek"],
         "Soort": df_bats["species"],
+        "Plangebied": df_bats["Plangebied"],
         "Aantal individuen": df_bats["aantal"],
         "Verblijplaatsen": df_bats["function"],
         "Adres": df_bats["address"]
