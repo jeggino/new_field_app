@@ -1523,7 +1523,7 @@ elif page == "Gegenereerde output":
         .map({True: "Binnen", False: "Buiten"})
     )
     
-    
+    gdf_huismus
     # Convert back to DataFrame if desired
     df_huismus = pd.DataFrame(gdf_huismus.drop(columns=["geometry", "index_right"]))
 
