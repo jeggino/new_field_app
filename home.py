@@ -1672,7 +1672,9 @@ elif page == "Gegenereerde output":
         (~df_obs_project["species"].isin([
             "Gierzwaluw",
             "Boerenzwaluw",
-            "Huiszwaluw"
+            "Huiszwaluw",
+            "Huismus",
+            "Spreeuw"
         ]))
     ].copy()
     
