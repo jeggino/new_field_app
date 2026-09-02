@@ -1044,8 +1044,8 @@ elif page == "Gegenereerde output":
     #     return df
 
 
-    # df_projects = pd.DataFrame(projects)
-    # df_reports = pd.DataFrame(reports)
+    df_projects = pd.DataFrame(projects)
+    df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
 
     # df_obs = enrich_addresses(df_obs)
