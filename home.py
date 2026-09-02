@@ -1446,7 +1446,6 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
-    import geopandas as gpd
     
     
     # Only Huismus nest locations
@@ -1537,14 +1536,7 @@ elif page == "Gegenereerde output":
 
     st.text(" ") # Adds a blank line
     st.subheader("Huismussen en Spreeuwen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
-    # st.markdown(
-    #     """
-    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-    #         Waarnemingen en aantallen van nestlocaties van huismussen en spreeuwen gedurende de veldbezoeken.
-    #     </p>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
+
     
 
     st.dataframe(
@@ -1561,9 +1553,117 @@ elif page == "Gegenereerde output":
         height=(len(df_hm_nestlocatie) + 1) * 35
     )
 
-    # ---------------------------------------------------------
-    # Srewen OBSERVATIONS
-    # ---------------------------------------------------------
+    #  --------------------------------
+    #  Gierzwaluwen, boerenzwaluwen en huiszwaluwen OBSERVATIONS
+    #  --------------------------------
+    
+    
+    
+    # Only Huismus nest locations
+    df_huismus = df_obs_project[
+        (df_obs_project["species"].isin(["Gierzwaluw","Boerenzwaluw","Huiszwaluw"])) &
+        (df_obs_project["function"] == "nestlocatie")
+    ].copy()
+    
+    # Convert observations to GeoDataFrame
+    gdf_huismus = gpd.GeoDataFrame(
+        df_huismus,
+        geometry=gpd.points_from_xy(
+            df_huismus["lon"],
+            df_huismus["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+
+    # Spatial join
+    gdf_huismus = gpd.sjoin(
+        gdf_huismus,
+        polygons_project[["geometry"]],
+        how="left",
+        predicate="within"
+    )
+    
+    # Create Plangebied column
+    gdf_huismus["Plangebied"] = (
+        gdf_huismus["index_right"]
+        .notna()
+        .map({True: "Binnen", False: "Buiten"})
+    )
+    
+    # Convert back to DataFrame if desired
+    df_huismus = pd.DataFrame(gdf_huismus.drop(columns=["geometry", "index_right"]))
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_huismus["date"] = pd.to_datetime(df_huismus["date"]).dt.date
+    
+   
+    df_kind_lookup = (
+        df_filtered
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_huismus = df_huismus.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_huismus["Veldbezoek"] = (df_huismus["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_huismus["Veldbezoek"] = df_huismus["Veldbezoek"].apply(format_veldbezoek)
+
+
+    
+    # Final table
+    df_hm_nestlocatie = pd.DataFrame({
+        "Veldbezoek": df_huismus["Veldbezoek"],
+        "Soort": df_huismus["species"],
+        "Plangebied": df_huismus["Plangebied"],
+        "Aantal nestlocatie": df_huismus["aantal"],
+        "Adres": df_huismus["address"],
+        "Fotolink": df_huismus["photo_url"]
+    })
+
+
+    
+    # Optional: sort chronologically before displaying
+    df_hm_nestlocatie = df_hm_nestlocatie.sort_values(
+        by="Veldbezoek"
+    )
+
+    df_hm_nestlocatie["Plangebied"] = (
+        df_hm_nestlocatie["Plangebied"]
+        .map({
+            "Binnen": "🔴 Binnen",
+            "Buiten": "🟢 Buiten"
+        })
+    )
+
+
+    st.text(" ") # Adds a blank line
+    st.subheader("Gierzwaluwen, boerenzwaluwen en huiszwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
+
+    
+
+    st.dataframe(
+        df_hm_nestlocatie,
+        column_config={
+            "Fotolink": st.column_config.ImageColumn(
+                "Foto",
+                help="Waarnemingsfoto",
+                width="medium",
+            )
+        },
+        use_container_width=True,
+        hide_index=True,
+        height=(len(df_hm_nestlocatie) + 1) * 35
+    )
+
 
     
 # --------------HTML-----------------------------------
