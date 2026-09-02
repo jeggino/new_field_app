@@ -1465,6 +1465,8 @@ elif page == "Gegenereerde output":
     
     # Apply existing formatter
     df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
+
+
     
     # Final table
     df_verblijfplaatsen = pd.DataFrame({
@@ -1475,30 +1477,49 @@ elif page == "Gegenereerde output":
         "Verblijplaatsen": df_bats["function"],
         "Adres": df_bats["address"]
     })
+
+
     
     # Optional: sort chronologically before displaying
     df_verblijfplaatsen = df_verblijfplaatsen.sort_values(
         by="Veldbezoek"
     )
 
+    def kleur_plangebied(val):
+        if val == "Binnen":
+            return "color: red; font-weight: bold"
+        elif val == "Buiten":
+            return "color: green; font-weight: bold"
+        return ""
+    
+    styled_df = df_verblijfplaatsen.style.map(
+        kleur_plangebied,
+        subset=["Plangebied"]
+    )
+    
+
     "---"
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
             Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken
-            <span style='color:#c0392b; font-weight:bold;'>(allen in het onderzoeksgebied)</span>.
         </p>
         """,
         unsafe_allow_html=True
     )
     
+    # st.dataframe(
+    #     df_verblijfplaatsen,
+    #     use_container_width=True,
+    #     hide_index=True,
+    #     height=(len(df_verblijfplaatsen) + 1) * 35
+    # )
     st.dataframe(
-        df_verblijfplaatsen,
+        styled_df,
         use_container_width=True,
         hide_index=True,
         height=(len(df_verblijfplaatsen) + 1) * 35
     )
-
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
