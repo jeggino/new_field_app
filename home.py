@@ -1431,7 +1431,7 @@ elif page == "Gegenereerde output":
     # )
     
     # Convert back to DataFrame if desired
-    df_bats = pd.DataFrame(gdf_bats.drop(columns=["geometry", "index_right"]))
+    # df_bats = pd.DataFrame(gdf_bats.drop(columns=["geometry", "index_right"]))
 
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
