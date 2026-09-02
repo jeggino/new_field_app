@@ -1014,7 +1014,7 @@ elif page == "Gegenereerde output":
     def enrich_addresses(observations):
         df = observations.copy()
 
-        df = df[df["functie"].str.lower().isin(RELEVANT_FUNCTIES)]
+        df = df[df["function"].str.lower().isin(RELEVANT_FUNCTIES)]
     
         def get_address(lat, lon):
             try:
