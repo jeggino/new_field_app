@@ -1283,13 +1283,15 @@ elif page == "Gegenereerde output":
     st.text(" ")
 
 
-    
-    st.dataframe(
-        df_veldbezoeken,
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_veldbezoeken) + 1) * 35
-    )
+    if df_veldbezoeken.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_veldbezoeken,
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_veldbezoeken) + 1) * 35
+        )
 
 
     #  --------------------------------
@@ -1415,20 +1417,22 @@ elif page == "Gegenereerde output":
     
 
     
-
-    st.dataframe(
-        df_verblijfplaatsen_2,
-        column_config={
-            "Fotolink": st.column_config.ImageColumn(
-                "Foto",
-                help="Waarnemingsfoto",
-                width="medium",
-            )
-        },
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_verblijfplaatsen_2) + 1) * 35
-    )
+    if df_verblijfplaatsen_2.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_verblijfplaatsen_2,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_verblijfplaatsen_2) + 1) * 35
+        )
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
@@ -1524,20 +1528,22 @@ elif page == "Gegenereerde output":
     st.subheader("Huismussen en Spreeuwen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
 
     
-
-    st.dataframe(
-        df_hm_nestlocatie_2,
-        column_config={
-            "Fotolink": st.column_config.ImageColumn(
-                "Foto",
-                help="Waarnemingsfoto",
-                width="medium",
-            )
-        },
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_hm_nestlocatie) + 1) * 35
-    )
+    if df_hm_nestlocatie_2.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_hm_nestlocatie_2,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_hm_nestlocatie) + 1) * 35
+        )
 
     #  --------------------------------
     #  Gierzwaluwen, boerenzwaluwen en huiszwaluwen OBSERVATIONS
@@ -1636,19 +1642,22 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Gierzwaluwen, boerenzwaluwen en huiszwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
 
-    st.dataframe(
-        df_zw_nestlocatie_2,
-        column_config={
-            "Fotolink": st.column_config.ImageColumn(
-                "Foto",
-                help="Waarnemingsfoto",
-                width="medium",
-            )
-        },
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_zw_nestlocatie_2) + 1) * 35
-    )
+    if df_zw_nestlocatie_2.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_zw_nestlocatie_2,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_zw_nestlocatie_2) + 1) * 35
+        )
 
     #  --------------------------------
     #  Andere vogels OBSERVATIONS
@@ -1751,19 +1760,22 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Overige vogels", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
 
-    st.dataframe(
-        df_vg_nestlocatie_2,
-        column_config={
-            "Fotolink": st.column_config.ImageColumn(
-                "Foto",
-                help="Waarnemingsfoto",
-                width="medium",
-            )
-        },
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_vg_nestlocatie) + 1) * 35
-    )
+    if df_vg_nestlocatie_2.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_vg_nestlocatie_2,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_vg_nestlocatie) + 1) * 35
+        )
 
 
     #  --------------------------------
