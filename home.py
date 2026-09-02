@@ -1397,9 +1397,10 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-
-    df_verblijfplaatsen["Plangebied"] = (
-        df_verblijfplaatsen["Plangebied"]
+    df_verblijfplaatsen_2 = df_verblijfplaatsen.copy()
+    
+    df_verblijfplaatsen_2["Plangebied"] = (
+        df_verblijfplaatsen_2["Plangebied"]
         .map({
             "Binnen": "🔴 Binnen",
             "Buiten": "🟢 Buiten"
@@ -1412,18 +1413,11 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
-    # st.markdown(
-    #     """
-    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-    #         Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken
-    #     </p>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
+
     
 
     st.dataframe(
-        df_verblijfplaatsen,
+        df_verblijfplaatsen_2,
         column_config={
             "Fotolink": st.column_config.ImageColumn(
                 "Foto",
@@ -1433,14 +1427,12 @@ elif page == "Gegenereerde output":
         },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 35
+        height=(len(df_verblijfplaatsen_2) + 1) * 35
     )
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
-    
-    
     # Only Huismus nest locations
     df_huismus = df_obs_project[
         (df_obs_project["species"].isin(["Huismus","Spreeuw"])) &
@@ -1517,9 +1509,10 @@ elif page == "Gegenereerde output":
     df_hm_nestlocatie = df_hm_nestlocatie.sort_values(
         by="Veldbezoek"
     )
-
-    df_hm_nestlocatie["Plangebied"] = (
-        df_hm_nestlocatie["Plangebied"]
+    df_hm_nestlocatie_2 = df_hm_nestlocatie.copy()
+    
+    df_hm_nestlocatie_2["Plangebied"] = (
+        df_hm_nestlocatie_2["Plangebied"]
         .map({
             "Binnen": "🔴 Binnen",
             "Buiten": "🟢 Buiten"
@@ -1533,7 +1526,7 @@ elif page == "Gegenereerde output":
     
 
     st.dataframe(
-        df_hm_nestlocatie,
+        df_hm_nestlocatie_2,
         column_config={
             "Fotolink": st.column_config.ImageColumn(
                 "Foto",
@@ -1629,8 +1622,10 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    df_zw_nestlocatie["Plangebied"] = (
-        df_zw_nestlocatie["Plangebied"]
+    df_zw_nestlocatie_2 = df_zw_nestlocatie.copy()
+    
+    df_zw_nestlocatie_2["Plangebied"] = (
+        df_zw_nestlocatie_2["Plangebied"]
         .map({
             "Binnen": "🔴 Binnen",
             "Buiten": "🟢 Buiten"
@@ -1642,7 +1637,7 @@ elif page == "Gegenereerde output":
     st.subheader("Gierzwaluwen, boerenzwaluwen en huiszwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
 
     st.dataframe(
-        df_zw_nestlocatie,
+        df_zw_nestlocatie_2,
         column_config={
             "Fotolink": st.column_config.ImageColumn(
                 "Foto",
@@ -1652,7 +1647,7 @@ elif page == "Gegenereerde output":
         },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_zw_nestlocatie) + 1) * 35
+        height=(len(df_zw_nestlocatie_2) + 1) * 35
     )
 
     #  --------------------------------
@@ -1742,8 +1737,10 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    df_vg_nestlocatie["Plangebied"] = (
-        df_vg_nestlocatie["Plangebied"]
+    df_vg_nestlocatie_2 = df_vg_nestlocatie.copy()
+    
+    df_vg_nestlocatie_2["Plangebied"] = (
+        df_vg_nestlocatie_2["Plangebied"]
         .map({
             "Binnen": "🔴 Binnen",
             "Buiten": "🟢 Buiten"
@@ -1755,7 +1752,7 @@ elif page == "Gegenereerde output":
     st.subheader("Overige vogels", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
 
     st.dataframe(
-        df_vg_nestlocatie,
+        df_vg_nestlocatie_2,
         column_config={
             "Fotolink": st.column_config.ImageColumn(
                 "Foto",
@@ -1769,8 +1766,14 @@ elif page == "Gegenereerde output":
     )
 
 
+    #  --------------------------------
+    #  SUMMARY
+    #  --------------------------------
+
     
-# --------------HTML-----------------------------------
+    #  --------------------------------
+    #  HTML
+    #  --------------------------------
     st.text(" ") # Adds a blank line
     st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
 
