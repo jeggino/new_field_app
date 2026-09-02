@@ -1846,7 +1846,7 @@ elif page == "Gegenereerde output":
             [
                 "Categorie",
                 "Soort",
-                "function",
+                "Functie",
                 "Plangebied"
             ]
         )
