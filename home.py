@@ -1412,7 +1412,7 @@ elif page == "Gegenereerde output":
     # Remove bird survey kinds
     df_kind_lookup = df_filtered[
         ~df_filtered["kind"].str.startswith(
-            ("Huismus", "Gierzwaluw", "Steenuil"),
+            ( "Gierzwaluw", "Steenuil"),
             na=False
         )
     ].copy()
@@ -1489,7 +1489,126 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
     # ---------------------------------------------------------
+    import geopandas as gpd
     
+    
+    # Only Huismus nest locations
+    df_huismus = df_obs_project[
+        (df_obs_project["species"] == "Huismus") &
+        (df_obs_project["function"] == "nestlocatie")
+    ].copy()
+    
+    # Convert observations to GeoDataFrame
+    gdf_huismus = gpd.GeoDataFrame(
+        df_huismus,
+        geometry=gpd.points_from_xy(
+            df_huismus["lon"],
+            df_huismus["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+
+    # Spatial join
+    gdf_huismus = gpd.sjoin(
+        gdf_huismus,
+        polygons_project[["geometry"]],
+        how="left",
+        predicate="within"
+    )
+    
+    # Create Plangebied column
+    gdf_huismus["Plangebied"] = (
+        gdf_huismus["index_right"]
+        .notna()
+        .map({True: "Binnen", False: "Buiten"})
+    )
+    
+    
+    # Convert back to DataFrame if desired
+    df_huismus = pd.DataFrame(gdf_huismus.drop(columns=["geometry", "index_right"]))
+
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_huismus["date"] = pd.to_datetime(df_huismus["date"]).dt.date
+    
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ("Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_huismus = df_huismus.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_huismus["Veldbezoek"] = (df_huismus["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_huismus["Veldbezoek"] = df_huismus["Veldbezoek"].apply(format_veldbezoek)
+
+
+    
+    # Final table
+    df_hm_nestlocatie = pd.DataFrame({
+        "Veldbezoek": df_huismus["Veldbezoek"],
+        "Plangebied": df_huismus["Plangebied"],
+        "Aantal nestlocatie": df_huismus["aantal"],
+        "Adres": df_bats["address"]
+    })
+
+
+    
+    # Optional: sort chronologically before displaying
+    df_hm_nestlocatie = df_hm_nestlocatie.sort_values(
+        by="Veldbezoek"
+    )
+
+    def kleur_plangebied(val):
+        if val == "Binnen":
+            return "color: red; font-weight: bold"
+        elif val == "Buiten":
+            return "color: green; font-weight: bold"
+        return ""
+    
+    styled_df_hm = df_hm_nestlocatie.style.map(
+        kleur_plangebied,
+        subset=["Plangebied"]
+    )
+    
+    st.markdown(
+        """
+        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+            Waarnemingen en aantal nestlocatie van huismussen gedurende de veldbezoeken
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+    
+
+    st.dataframe(
+        styled_df_hm,
+        use_container_width=True,
+        hide_index=True,
+        height=(len(df_verblijfplaatsen) + 1) * 35
+    )
+
+    "---"
+    #--------------------------------------------------------
+    #-------------------------------
     # Filter reports for selected project
     df_filtered = df_reports[
         df_reports["project"] == selected_project
