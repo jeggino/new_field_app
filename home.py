@@ -1279,7 +1279,7 @@ elif page == "Gegenereerde output":
     st.text(" ")# Adds a blank line
 
     st.text(" ") # Adds a blank line
-    st.header("Dagverslagen", anchor=None, help=None, divider=None, width="stretch", text_alignment="left")
+    st.header("Dagverslagen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")
     st.text(" ")
     st.markdown(
         """
@@ -1415,7 +1415,7 @@ elif page == "Gegenereerde output":
 
     
     st.text(" ") # Adds a blank line
-    st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="left")    
+    st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")    
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
@@ -1620,7 +1620,7 @@ elif page == "Gegenereerde output":
 
     
     # Final table
-    df_hm_nestlocatie = pd.DataFrame({
+    df_zw_nestlocatie = pd.DataFrame({
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Soort": df_huismus["species"],
         "Plangebied": df_huismus["Plangebied"],
@@ -1632,12 +1632,12 @@ elif page == "Gegenereerde output":
 
     
     # Optional: sort chronologically before displaying
-    df_hm_nestlocatie = df_hm_nestlocatie.sort_values(
+    df_zw_nestlocatie = df_zm_nestlocatie.sort_values(
         by="Veldbezoek"
     )
 
-    df_hm_nestlocatie["Plangebied"] = (
-        df_hm_nestlocatie["Plangebied"]
+    df_zw_nestlocatie["Plangebied"] = (
+        df_zw_nestlocatie["Plangebied"]
         .map({
             "Binnen": "🔴 Binnen",
             "Buiten": "🟢 Buiten"
@@ -1648,10 +1648,8 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Gierzwaluwen, boerenzwaluwen en huiszwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
 
-    
-
     st.dataframe(
-        df_hm_nestlocatie,
+        df_zw_nestlocatie,
         column_config={
             "Fotolink": st.column_config.ImageColumn(
                 "Foto",
@@ -1661,7 +1659,118 @@ elif page == "Gegenereerde output":
         },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_hm_nestlocatie) + 1) * 35
+        height=(len(df_zw_nestlocatie) + 1) * 35
+    )
+
+    #  --------------------------------
+    #  Andere vogels OBSERVATIONS
+    #  --------------------------------
+    # Only Andere vogels nest locations
+    df_vogels = df_obs_project[
+        (df_obs_project["animal_type"] == "bird") &
+        (df_obs_project["function"] == "nestlocatie") &
+        (~df_obs_project["species"].isin([
+            "Gierzwaluw",
+            "Boerenzwaluw",
+            "Huiszwaluw"
+        ]))
+    ].copy()
+    
+    # Convert observations to GeoDataFrame
+    gdf_vogels = gpd.GeoDataFrame(
+        df_vogels,
+        geometry=gpd.points_from_xy(
+            df_vogels["lon"],
+            df_vogels["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+
+    # Spatial join
+    gdf_vogels = gpd.sjoin(
+        gdf_vogels,
+        polygons_project[["geometry"]],
+        how="left",
+        predicate="within"
+    )
+    
+    # Create Plangebied column
+    gdf_vogels["Plangebied"] = (
+        gdf_vogels["index_right"]
+        .notna()
+        .map({True: "Binnen", False: "Buiten"})
+    )
+    
+    # Convert back to DataFrame if desired
+    df_vogels = pd.DataFrame(gdf_vogels.drop(columns=["geometry", "index_right"]))
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_vogels["date"] = pd.df_vogels(df_huismus["date"]).dt.date
+    
+   
+    df_kind_lookup = (
+        df_filtered
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_vogels = df_vogels.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_vogels["Veldbezoek"] = (df_vogels["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_vogels["Veldbezoek"] = df_vogels["Veldbezoek"].apply(format_veldbezoek)
+
+
+    
+    # Final table
+    df_vg_nestlocatie = pd.DataFrame({
+        "Veldbezoek": df_vogels["Veldbezoek"],
+        "Soort": df_vogels["species"],
+        "Plangebied": df_vogels["Plangebied"],
+        "Aantal nestlocatie": df_vogels["aantal"],
+        "Adres": df_vogels["address"],
+        "Fotolink": df_vogels["photo_url"]
+    })
+
+
+    
+    # Optional: sort chronologically before displaying
+    df_vg_nestlocatie = df_vg_nestlocatie.sort_values(
+        by="Veldbezoek"
+    )
+
+    df_vg_nestlocatie["Plangebied"] = (
+        df_vg_nestlocatie["Plangebied"]
+        .map({
+            "Binnen": "🔴 Binnen",
+            "Buiten": "🟢 Buiten"
+        })
+    )
+
+
+    st.text(" ") # Adds a blank line
+    st.subheader("Overige vogels", anchor=None, help=None, divider='brown', width="stretch", text_alignment="left")
+
+    st.dataframe(
+        df_vg_nestlocatie,
+        column_config={
+            "Fotolink": st.column_config.ImageColumn(
+                "Foto",
+                help="Waarnemingsfoto",
+                width="medium",
+            )
+        },
+        use_container_width=True,
+        hide_index=True,
+        height=(len(df_vg_nestlocatie) + 1) * 35
     )
 
 
