@@ -1502,6 +1502,7 @@ elif page == "Gegenereerde output":
         "Soort": df_bats["species"],
         "Aantal individuen": df_bats["aantal"],
         "Verblijplaatsen": df_bats["function"]
+        "Adres": df_bats["address"]
     })
     
     # Optional: sort chronologically before displaying
@@ -1547,27 +1548,7 @@ elif page == "Gegenereerde output":
         (df_obs_project["species"] == "Huismus") &
         (df_obs_project["function"] == "nestlocatie")
     ].copy()
-
-    from geopy.geocoders import Nominatim
-    import time
-    
-    # Initialize geocoder
-    geolocator = Nominatim(user_agent="LG")
-    
-    def get_address(lat, lon):
-        time.sleep(1)  # Respect Nominatim usage policy
-        try:
-            location = geolocator.reverse((lat, lon), exactly_one=True)
-            return location.address if location else None
-        except Exception as e:
-            print(e)
-            return None
-    
-    # Example: assuming columns are named 'lat' and 'lon'
-    df_huismus['address'] = df_huismus.apply(
-        lambda row: get_address(row['lat'], row['lon']),
-        axis=1
-    )    
+  
     
     # Make sure dates have same format
     df_filtered["date"] = pd.to_datetime(
@@ -1613,7 +1594,7 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Soort": df_huismus["species"],
         "Aantal nestlocatie": df_huismus["aantal"],
-        "Adress": df_huismus['address']
+        "Adres": df_huismus["address"]
     })
     
     df_huismus_tabel = df_huismus_tabel.sort_values(
