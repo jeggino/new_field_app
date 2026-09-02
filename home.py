@@ -1401,17 +1401,6 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    # def kleur_plangebied(val):
-    #     if val == "Binnen":
-    #         return "color: red; font-weight: bold"
-    #     elif val == "Buiten":
-    #         return "color: green; font-weight: bold"
-    #     return ""
-    
-    # styled_df = df_verblijfplaatsen.style.map(
-    #     kleur_plangebied,
-    #     subset=["Plangebied"]
-    # )
 
     df_verblijfplaatsen["Plangebied"] = (
         df_verblijfplaatsen["Plangebied"]
@@ -1435,13 +1424,6 @@ elif page == "Gegenereerde output":
     )
     
 
-    # st.dataframe(
-    #     styled_df,
-    #     use_container_width=True,
-    #     hide_index=True,
-    #     height=(len(df_verblijfplaatsen) + 1) * 35
-    # )
-
     st.dataframe(
         df_verblijfplaatsen,
         column_config={
@@ -1453,7 +1435,7 @@ elif page == "Gegenereerde output":
         },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 75
+        height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
     # ---------------------------------------------------------
@@ -1538,17 +1520,14 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    def kleur_plangebied(val):
-        if val == "Binnen":
-            return "color: red; font-weight: bold"
-        elif val == "Buiten":
-            return "color: green; font-weight: bold"
-        return ""
-    
-    styled_df_hm = df_hm_nestlocatie.style.map(
-        kleur_plangebied,
-        subset=["Plangebied"]
+    df_hm_nestlocatie["Plangebied"] = (
+        df_hm_nestlocatie["Plangebied"]
+        .map({
+            "Binnen": "🔴 Binnen",
+            "Buiten": "🟢 Buiten"
+        })
     )
+
 
     st.text(" ") # Adds a blank line
     st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
@@ -1563,10 +1542,17 @@ elif page == "Gegenereerde output":
     
 
     st.dataframe(
-        styled_df_hm,
+        df_hm_nestlocatie,
+        column_config={
+            "Fotolink": st.column_config.ImageColumn(
+                "Foto",
+                help="Waarnemingsfoto",
+                width="medium",
+            )
+        },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_hm_nestlocatie) + 1) * 35
+        height=(len(df_verblijfplaatsen) + 1) * 35
     )
 
     # ---------------------------------------------------------
