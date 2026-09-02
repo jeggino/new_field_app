@@ -1857,6 +1857,14 @@ elif page == "Gegenereerde output":
         display_df[col] = display_df[col].mask(
             display_df[col].duplicated()
         )
+        
+    display_df = display_df.rename(columns={
+        "species": "Soort",
+        "function": "Functie",
+        "Binnen": "Binnen plangebied",
+        "Buiten": "Buiten plangebied"
+    })
+
 
     st.table(display_df)
 
@@ -3172,7 +3180,9 @@ elif page == "Gegenereerde output":
             "Vleermuizen": df_verblijfplaatsen,
             "Huismussen en Spreeuwen": df_hm_nestlocatie,
             "Gierzwaluwen, boerenzwaluwen en huiszwaluwen": df_zw_nestlocatie,
-            "Overige vogels": df_vg_nestlocatie
+            "Overige vogels": df_vg_nestlocatie,
+            "Samenvatting": samenvatting,
+            
         })
         
         st.download_button(
