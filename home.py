@@ -1781,7 +1781,7 @@ elif page == "Gegenereerde output":
     #  --------------------------------
 
     st.text(" ") # Adds a blank line
-    st.subheader("Samenvatting", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
+    st.subheader("Samenvatting", anchor=None, help=None, divider='rainbow', width="stretch", text_alignment="left")
     df_relevant = df_obs_project[
         (
             (df_obs_project["animal_type"] == "bat") &
