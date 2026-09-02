@@ -3064,7 +3064,8 @@ elif page == "Gegenereerde output":
         # Example
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
-            "Huismussen en Spreeuwen": df_verblijfplaatsen,
+            "Vleermuizen": df_verblijfplaatsen,
+            "Huismussen en Spreeuwen": df_hm_nestlocatie,
             "Gierzwaluwen, boerenzwaluwen en huiszwaluwen": df_zw_nestlocatie,
             "Overige vogels": df_vg_nestlocatie
         })
