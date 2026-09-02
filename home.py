@@ -1497,8 +1497,6 @@ elif page == "Gegenereerde output":
         subset=["Plangebied"]
     )
     
-
-    "---"
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
@@ -1508,12 +1506,7 @@ elif page == "Gegenereerde output":
         unsafe_allow_html=True
     )
     
-    # st.dataframe(
-    #     df_verblijfplaatsen,
-    #     use_container_width=True,
-    #     hide_index=True,
-    #     height=(len(df_verblijfplaatsen) + 1) * 35
-    # )
+
     st.dataframe(
         styled_df,
         use_container_width=True,
