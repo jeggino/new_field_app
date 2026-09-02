@@ -1523,10 +1523,9 @@ elif page == "Gegenereerde output":
         .map({True: "Binnen", False: "Buiten"})
     )
     
-    gdf_huismus
     # Convert back to DataFrame if desired
     df_huismus = pd.DataFrame(gdf_huismus.drop(columns=["geometry", "index_right"]))
-
+    df_huismus
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_huismus["date"] = pd.to_datetime(df_huismus["date"]).dt.date
