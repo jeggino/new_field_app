@@ -1399,7 +1399,8 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_bats["Veldbezoek"],
         "Soort": df_bats["species"],
         "Aantal individuen": df_bats["aantal"],
-        "Verblijplaatsen": df_bats["function"]
+        "Verblijplaatsen": df_bats["function"],
+        "Adres": df_bats["address"]
     })
     
     # Optional: sort chronologically before displaying
@@ -1501,7 +1502,7 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_bats["Veldbezoek"],
         "Soort": df_bats["species"],
         "Aantal individuen": df_bats["aantal"],
-        "Verblijplaatsen": df_bats["function"]
+        "Verblijplaatsen": df_bats["function"],
         "Adres": df_bats["address"]
     })
     
