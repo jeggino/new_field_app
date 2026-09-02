@@ -1632,7 +1632,7 @@ elif page == "Gegenereerde output":
 
     
     # Optional: sort chronologically before displaying
-    df_zw_nestlocatie = df_zm_nestlocatie.sort_values(
+    df_zw_nestlocatie = df_zw_nestlocatie.sort_values(
         by="Veldbezoek"
     )
 
