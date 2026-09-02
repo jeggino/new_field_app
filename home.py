@@ -1778,6 +1778,98 @@ elif page == "Gegenereerde output":
     #  SUMMARY
     #  --------------------------------
 
+    st.text(" ") # Adds a blank line
+    st.subheader("Samenvatting", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
+    df_relevant = df_obs_project[
+        (
+            (df_obs_project["animal_type"] == "bat") &
+            (df_obs_project["function"] != "vleermuis waarneming")
+        )
+        |
+        (
+            (df_obs_project["animal_type"] == "bird") &
+            (df_obs_project["function"] == "nestlocatie")
+        )
+    ].copy()
+
+    gdf = gpd.GeoDataFrame(
+        df_relevant,
+        geometry=gpd.points_from_xy(
+            df_relevant["lon"],
+            df_relevant["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+    
+    gdf = gpd.sjoin(
+        gdf,
+        polygons_project[["geometry"]],
+        how="left",
+        predicate="within"
+    )
+    
+    gdf["Plangebied"] = np.where(
+        gdf["index_right"].notna(),
+        "Binnen",
+        "Buiten"
+    )
+
+    # Adjust column names as needed (species vs species_name):
+    CAT2_VOGELS = ["Gierzwaluw", "Huismus"]
+    
+    def bepaal_categorie(row):
+        if row["animal_type"] == "bat":
+            return "Vleermuizen"
+    
+        if row["animal_type"] == "bird":
+            if row["species"] in CAT2_VOGELS:
+                return "Cat. 2 vogels"
+            return "Cat. 5 vogels"
+    
+        return None
+    
+    gdf["Categorie"] = gdf.apply(
+        bepaal_categorie,
+        axis=1
+    )
+
+    #Create summary table
+    samenvatting = (
+        gdf.groupby(
+            [
+                "Categorie",
+                "species",
+                "function",
+                "Plangebied"
+            ]
+        )
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+
+    #Make repeated category labels visually disappear
+    display_df = samenvatting.copy()
+    
+    for col in ["Categorie", "species"]:
+        display_df[col] = display_df[col].mask(
+            display_df[col].duplicated()
+        )
+
+    st.table(display_df)
+
+
+
+
+
+
+
+
+
+
+
+
+    
     
     #  --------------------------------
     #  HTML
