@@ -1705,7 +1705,7 @@ elif page == "Gegenereerde output":
     df_vogels = pd.DataFrame(gdf_vogels.drop(columns=["geometry", "index_right"]))
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
-    df_vogels["date"] = pd.df_vogels(df_huismus["date"]).dt.date
+    df_vogels["date"] = pd.to_datetime(df_vogels["date"]).dt.date
     
    
     df_kind_lookup = (
