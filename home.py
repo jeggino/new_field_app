@@ -1446,7 +1446,7 @@ elif page == "Gegenereerde output":
     
     # Only Huismus nest locations
     df_huismus = df_obs_project[
-        (df_obs_project["species"].isin("Huismus","Spreeuw")) &
+        (df_obs_project["species"].isin(["Huismus","Spreeuw"])) &
         (df_obs_project["function"] == "nestlocatie")
     ].copy()
     
