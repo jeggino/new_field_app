@@ -1361,21 +1361,21 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
 
-    st.markdown(
-        """
-        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    # st.markdown(
+    #     """
+    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+    #         Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken.
+    #     </p>
+    #     """,
+    #     unsafe_allow_html=True
+    # )
     
-    st.dataframe(
-        df_verblijfplaatsen,
-        use_container_width=True,
-        hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 35
-    )
+    # st.dataframe(
+    #     df_verblijfplaatsen,
+    #     use_container_width=True,
+    #     hide_index=True,
+    #     height=(len(df_verblijfplaatsen) + 1) * 35
+    # )
     
     # Optional: sort by date if needed
     # df_verblijven = df_verblijven.sort_values("Veldbezoek")
