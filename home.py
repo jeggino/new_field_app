@@ -1507,6 +1507,7 @@ elif page == "Gegenereerde output":
     # Final table
     df_hm_nestlocatie = pd.DataFrame({
         "Veldbezoek": df_huismus["Veldbezoek"],
+        "Soort": df_huismus["species"],
         "Plangebied": df_huismus["Plangebied"],
         "Aantal nestlocatie": df_huismus["aantal"],
         "Adres": df_huismus["address"],
@@ -1552,7 +1553,7 @@ elif page == "Gegenereerde output":
         },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 35
+        height=(len(df_hm_nestlocatie) + 1) * 35
     )
 
     # ---------------------------------------------------------
