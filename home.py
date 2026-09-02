@@ -1401,16 +1401,24 @@ elif page == "Gegenereerde output":
         by="Veldbezoek"
     )
 
-    def kleur_plangebied(val):
-        if val == "Binnen":
-            return "color: red; font-weight: bold"
-        elif val == "Buiten":
-            return "color: green; font-weight: bold"
-        return ""
+    # def kleur_plangebied(val):
+    #     if val == "Binnen":
+    #         return "color: red; font-weight: bold"
+    #     elif val == "Buiten":
+    #         return "color: green; font-weight: bold"
+    #     return ""
     
-    styled_df = df_verblijfplaatsen.style.map(
-        kleur_plangebied,
-        subset=["Plangebied"]
+    # styled_df = df_verblijfplaatsen.style.map(
+    #     kleur_plangebied,
+    #     subset=["Plangebied"]
+    # )
+
+    df_verblijfplaatsen["Plangebied"] = (
+        df_verblijfplaatsen["Plangebied"]
+        .map({
+            "Binnen": "🔴 Binnen",
+            "Buiten": "🟢 Buiten"
+        })
     )
 
 
@@ -1427,11 +1435,25 @@ elif page == "Gegenereerde output":
     )
     
 
+    # st.dataframe(
+    #     styled_df,
+    #     use_container_width=True,
+    #     hide_index=True,
+    #     height=(len(df_verblijfplaatsen) + 1) * 35
+    # )
+
     st.dataframe(
-        styled_df,
+        df_verblijfplaatsen,
+        column_config={
+            "Fotolink": st.column_config.ImageColumn(
+                "Foto",
+                help="Waarnemingsfoto",
+                width="medium",
+            )
+        },
         use_container_width=True,
         hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 35
+        height=(len(df_verblijfplaatsen) + 1) * 75
     )
 
     # ---------------------------------------------------------
