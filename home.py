@@ -14,6 +14,8 @@ from openpyxl.workbook import Workbook
 
 import geopandas as gpd
 
+import numpy as np
+
 
 # ---------------------------------------------------------
 # USERNAME + PASSWORD LOGIN (from st.secrets)
