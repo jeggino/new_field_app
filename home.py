@@ -1439,7 +1439,7 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # Only Huismus nest locations
     df_huismus = df_obs_project[
-        (df_obs_project["species"].isin(["Huismus","Spreeuw"])) &
+        (df_obs_project["species"].isin(["Huismus"])) &
         (df_obs_project["function"] == "nestlocatie")
     ].copy()
     
@@ -1525,7 +1525,7 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Huismussen en Spreeuwen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
+    st.subheader("Huismussen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
 
     
     if df_hm_nestlocatie_2.empty:
@@ -1545,15 +1545,14 @@ elif page == "Gegenereerde output":
             height=(len(df_hm_nestlocatie) + 1) * 35
         )
 
+
     #  --------------------------------
-    #  Gierzwaluwen, boerenzwaluwen en huiszwaluwen OBSERVATIONS
+    #  Gierzwaluw
     #  --------------------------------
-    
-    
-    
+
     # Only Huismus nest locations
     df_huismus = df_obs_project[
-        (df_obs_project["species"].isin(["Gierzwaluw","Boerenzwaluw","Huiszwaluw"])) &
+        (df_obs_project["species"].isin(["Gierzwaluw"])) &
         (df_obs_project["function"] == "nestlocatie")
     ].copy()
     
@@ -1640,7 +1639,7 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Gierzwaluwen, boerenzwaluwen en huiszwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
+    st.subheader("Gierzwaluwen", anchor=None, help=None, divider='orange', width="stretch", text_alignment="left")
 
     if df_zw_nestlocatie_2.empty:
         st.info("Geen waarnemingen gevonden.")
@@ -1660,7 +1659,7 @@ elif page == "Gegenereerde output":
         )
 
     #  --------------------------------
-    #  Andere vogels OBSERVATIONS
+    #  Nesten broedvogels en cat. 5 vogels
     #  --------------------------------
     # Only Andere vogels nest locations
     df_vogels = df_obs_project[
@@ -1668,10 +1667,7 @@ elif page == "Gegenereerde output":
         (df_obs_project["function"] == "nestlocatie") &
         (~df_obs_project["species"].isin([
             "Gierzwaluw",
-            "Boerenzwaluw",
-            "Huiszwaluw",
             "Huismus",
-            "Spreeuw"
         ]))
     ].copy()
     
@@ -1758,7 +1754,7 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Overige vogels", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
+    st.subheader("Nesten broedvogels en cat. 5 vogels", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
 
     if df_vg_nestlocatie_2.empty:
         st.info("Geen waarnemingen gevonden.")
