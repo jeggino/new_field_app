@@ -1757,7 +1757,7 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Overige vogels", anchor=None, help=None, divider='brown', width="stretch", text_alignment="left")
+    st.subheader("Overige vogels", anchor=None, help=None, divider='violet', width="stretch", text_alignment="left")
 
     st.dataframe(
         df_vg_nestlocatie,
