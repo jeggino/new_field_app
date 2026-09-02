@@ -1812,9 +1812,14 @@ elif page == "Gegenereerde output":
     
     gdf["Plangebied"] = np.where(
         gdf["index_right"].notna(),
-        "Binnen",
-        "Buiten"
+        "Binnen plangebied",
+        "Buiten plangebied"
     )
+
+    gdf = gdf.rename(columns={
+        "species": "Soort",
+        "function": "Functie",
+    })
 
     # Adjust column names as needed (species vs species_name):
     CAT2_VOGELS = ["Gierzwaluw", "Huismus"]
@@ -1824,7 +1829,7 @@ elif page == "Gegenereerde output":
             return "Vleermuizen"
     
         if row["animal_type"] == "bird":
-            if row["species"] in CAT2_VOGELS:
+            if row["Soort"] in CAT2_VOGELS:
                 return "Cat. 2 vogels"
             return "Cat. 5 vogels"
     
@@ -1840,7 +1845,7 @@ elif page == "Gegenereerde output":
         gdf.groupby(
             [
                 "Categorie",
-                "species",
+                "Soort",
                 "function",
                 "Plangebied"
             ]
@@ -1853,18 +1858,11 @@ elif page == "Gegenereerde output":
     #Make repeated category labels visually disappear
     display_df = samenvatting.copy()
     
-    for col in ["Categorie", "species"]:
+    for col in ["Categorie", "Soort"]:
         display_df[col] = display_df[col].mask(
             display_df[col].duplicated()
         )
-        
-    display_df = display_df.rename(columns={
-        "species": "Soort",
-        "function": "Functie",
-        "Binnen": "Binnen plangebied",
-        "Buiten": "Buiten plangebied"
-    })
-
+    
 
     st.table(display_df)
 
