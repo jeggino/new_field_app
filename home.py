@@ -1000,55 +1000,55 @@ elif page == "Gegenereerde output":
     import time
     from geopy.geocoders import Nominatim
     
-    geolocator = Nominatim(user_agent="address_lookup")
+    # geolocator = Nominatim(user_agent="address_lookup")
     
-    RELEVANT_FUNCTIES = [
-        "nestlocatie",
-        "zomerverblijfplaats",
-        "kraamverblijfplaats",
-        "winterverblijfplaats",
-        "paarverblijfplaats",
-    ]
+    # RELEVANT_FUNCTIES = [
+    #     "nestlocatie",
+    #     "zomerverblijfplaats",
+    #     "kraamverblijfplaats",
+    #     "winterverblijfplaats",
+    #     "paarverblijfplaats",
+    # ]
     
-    @st.cache_data(show_spinner="Adressen ophalen...")
-    def enrich_addresses(observations):
-        df = observations.copy()
+    # @st.cache_data(show_spinner="Adressen ophalen...")
+    # def enrich_addresses(observations):
+    #     df = observations.copy()
 
-        df = df[df["function"].str.lower().isin(RELEVANT_FUNCTIES)]
+    #     df = df[df["function"].str.lower().isin(RELEVANT_FUNCTIES)]
     
-        def get_address(lat, lon):
-            try:
-                location = geolocator.reverse((lat, lon), exactly_one=True)
-                return location.address if location else None
-            except Exception:
-                return None
+    #     def get_address(lat, lon):
+    #         try:
+    #             location = geolocator.reverse((lat, lon), exactly_one=True)
+    #             return location.address if location else None
+    #         except Exception:
+    #             return None
     
-        # Only geocode unique coordinates
-        unique_locations = (
-            df[['lat', 'lon']]
-            .dropna()
-            .drop_duplicates()
-        )
+    #     # Only geocode unique coordinates
+    #     unique_locations = (
+    #         df[['lat', 'lon']]
+    #         .dropna()
+    #         .drop_duplicates()
+    #     )
     
-        unique_locations['address'] = unique_locations.apply(
-            lambda row: get_address(row['lat'], row['lon']),
-            axis=1
-        )
+    #     unique_locations['address'] = unique_locations.apply(
+    #         lambda row: get_address(row['lat'], row['lon']),
+    #         axis=1
+    #     )
     
-        df = df.merge(
-            unique_locations,
-            on=['lat', 'lon'],
-            how='left'
-        )
+    #     df = df.merge(
+    #         unique_locations,
+    #         on=['lat', 'lon'],
+    #         how='left'
+    #     )
     
-        return df
+    #     return df
 
 
-    df_projects = pd.DataFrame(projects)
-    df_reports = pd.DataFrame(reports)
+    # df_projects = pd.DataFrame(projects)
+    # df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
 
-    df_obs = enrich_addresses(df_obs)
+    # df_obs = enrich_addresses(df_obs)
 
 
     import streamlit as st
