@@ -1361,24 +1361,6 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
 
-    # st.markdown(
-    #     """
-    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-    #         Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken.
-    #     </p>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
-    
-    # st.dataframe(
-    #     df_verblijfplaatsen,
-    #     use_container_width=True,
-    #     hide_index=True,
-    #     height=(len(df_verblijfplaatsen) + 1) * 35
-    # )
-    
-    # Optional: sort by date if needed
-    # df_verblijven = df_verblijven.sort_values("Veldbezoek")
 
 #--------------------
     import geopandas as gpd
@@ -1419,16 +1401,6 @@ elif page == "Gegenereerde output":
         .map({True: "Binnen", False: "Buiten"})
     )
     
-    # Optional: remove join helper column
-    # gdf_bats = gdf_bats.drop(columns=["index_right"])
-    
-    # # Keep only observations inside a project polygon
-    # gdf_bats = gpd.sjoin(
-    #     gdf_bats,
-    #     polygons_project[["geometry"]],
-    #     how="inner",
-    #     predicate="within"
-    # )
     
     # Convert back to DataFrame if desired
     df_bats = pd.DataFrame(gdf_bats.drop(columns=["geometry", "index_right"]))
