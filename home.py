@@ -1295,69 +1295,69 @@ elif page == "Gegenereerde output":
     )
 
 
-    #----------------
-    # Filter reports for selected project
-    df_filtered = df_reports[
-        df_reports["project"] == selected_project
-    ].copy()
+    # #----------------
+    # # Filter reports for selected project
+    # df_filtered = df_reports[
+    #     df_reports["project"] == selected_project
+    # ].copy()
     
-    # Filter observations for selected project
-    df_obs_project = df_obs[
-        df_obs["project"] == selected_project
-    ].copy()
+    # # Filter observations for selected project
+    # df_obs_project = df_obs[
+    #     df_obs["project"] == selected_project
+    # ].copy()
     
-    # Only bats and exclude generic observations
-    df_bats = df_obs_project[
-        (df_obs_project["animal_type"] == "bat") &
-        (df_obs_project["function"] != "vleermuis waarneming")
-    ].copy()
+    # # Only bats and exclude generic observations
+    # df_bats = df_obs_project[
+    #     (df_obs_project["animal_type"] == "bat") &
+    #     (df_obs_project["function"] != "vleermuis waarneming")
+    # ].copy()
     
-    # Make sure dates have the same format
-    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
-    df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
+    # # Make sure dates have the same format
+    # df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    # df_bats["date"] = pd.to_datetime(df_bats["date"]).dt.date
     
-    # Remove bird survey kinds
-    df_kind_lookup = df_filtered[
-        ~df_filtered["kind"].str.startswith(
-            ("Huismus", "Gierzwaluw", "Steenuil"),
-            na=False
-        )
-    ].copy()
+    # # Remove bird survey kinds
+    # df_kind_lookup = df_filtered[
+    #     ~df_filtered["kind"].str.startswith(
+    #         ("Huismus", "Gierzwaluw", "Steenuil"),
+    #         na=False
+    #     )
+    # ].copy()
     
-    # Keep only the first remaining kind per date
-    df_kind_lookup = (
-        df_kind_lookup
-        .groupby("date", as_index=False)
-        .first()[["date", "kind"]]
-    )
+    # # Keep only the first remaining kind per date
+    # df_kind_lookup = (
+    #     df_kind_lookup
+    #     .groupby("date", as_index=False)
+    #     .first()[["date", "kind"]]
+    # )
     
-    # Merge into bat observations
-    df_bats = df_bats.merge(
-        df_kind_lookup,
-        on="date",
-        how="left"
-    )
+    # # Merge into bat observations
+    # df_bats = df_bats.merge(
+    #     df_kind_lookup,
+    #     on="date",
+    #     how="left"
+    # )
     
-    # Create Veldbezoek from date + matched kind
-    df_bats["Veldbezoek"] = (df_bats["kind"].fillna("Onbekend")
-    )
+    # # Create Veldbezoek from date + matched kind
+    # df_bats["Veldbezoek"] = (df_bats["kind"].fillna("Onbekend")
+    # )
     
-    # Apply existing formatter
-    df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
+    # # Apply existing formatter
+    # df_bats["Veldbezoek"] = df_bats["Veldbezoek"].apply(format_veldbezoek)
     
-    # Final table
-    df_verblijfplaatsen = pd.DataFrame({
-        "Veldbezoek": df_bats["Veldbezoek"],
-        "Soort": df_bats["species"],
-        "Aantal individuen": df_bats["aantal"],
-        "Verblijplaatsen": df_bats["function"],
-        "Adres": df_bats["address"]
-    })
+    # # Final table
+    # df_verblijfplaatsen = pd.DataFrame({
+    #     "Veldbezoek": df_bats["Veldbezoek"],
+    #     "Soort": df_bats["species"],
+    #     "Aantal individuen": df_bats["aantal"],
+    #     "Verblijplaatsen": df_bats["function"],
+    #     "Adres": df_bats["address"]
+    # })
     
-    # Optional: sort chronologically before displaying
-    df_verblijfplaatsen = df_verblijfplaatsen.sort_values(
-        by="Veldbezoek"
-    )
+    # # Optional: sort chronologically before displaying
+    # df_verblijfplaatsen = df_verblijfplaatsen.sort_values(
+    #     by="Veldbezoek"
+    # )
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
 
