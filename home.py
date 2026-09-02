@@ -1277,7 +1277,10 @@ elif page == "Gegenereerde output":
     st.text(" ")
     st.text(" ")
     st.text(" ")# Adds a blank line
-    
+
+    st.text(" ") # Adds a blank line
+    st.header("Dagverslagen", anchor=None, help=None, divider=None, width="stretch", text_alignment="left")
+    st.text(" ")
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
@@ -1410,18 +1413,20 @@ elif page == "Gegenereerde output":
         })
     )
 
-
+    
+    st.text(" ") # Adds a blank line
+    st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="left")    
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     
-    st.markdown(
-        """
-        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    # st.markdown(
+    #     """
+    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+    #         Waarnemingen en aantallen van vleermuizen gedurende de veldbezoeken
+    #     </p>
+    #     """,
+    #     unsafe_allow_html=True
+    # )
     
 
     st.dataframe(
@@ -1531,15 +1536,15 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Huismussen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
-    st.markdown(
-        """
-        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantallen van nestlocaties van huismussen en spreeuwen gedurende de veldbezoeken.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    st.subheader("Huismussen en Spreeuwen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
+    # st.markdown(
+    #     """
+    #     <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
+    #         Waarnemingen en aantallen van nestlocaties van huismussen en spreeuwen gedurende de veldbezoeken.
+    #     </p>
+    #     """,
+    #     unsafe_allow_html=True
+    # )
     
 
     st.dataframe(
