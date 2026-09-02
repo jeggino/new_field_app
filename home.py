@@ -1297,20 +1297,15 @@ elif page == "Gegenereerde output":
 
     # #----------------
     # # Filter reports for selected project
-    # df_filtered = df_reports[
-    #     df_reports["project"] == selected_project
-    # ].copy()
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
     
-    # # Filter observations for selected project
-    # df_obs_project = df_obs[
-    #     df_obs["project"] == selected_project
-    # ].copy()
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
     
-    # # Only bats and exclude generic observations
-    # df_bats = df_obs_project[
-    #     (df_obs_project["animal_type"] == "bat") &
-    #     (df_obs_project["function"] != "vleermuis waarneming")
-    # ].copy()
     
     # # Make sure dates have the same format
     # df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
