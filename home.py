@@ -1472,7 +1472,6 @@ elif page == "Gegenereerde output":
     
     # Convert back to DataFrame if desired
     df_huismus = pd.DataFrame(gdf_huismus.drop(columns=["geometry", "index_right"]))
-    df_huismus
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_huismus["date"] = pd.to_datetime(df_huismus["date"]).dt.date
@@ -1519,7 +1518,7 @@ elif page == "Gegenereerde output":
         "Veldbezoek": df_huismus["Veldbezoek"],
         "Plangebied": df_huismus["Plangebied"],
         "Aantal nestlocatie": df_huismus["aantal"],
-        "Adres": df_bats["address"]
+        "Adres": df_huismus["address"]
     })
 
 
@@ -1540,7 +1539,9 @@ elif page == "Gegenereerde output":
         kleur_plangebied,
         subset=["Plangebied"]
     )
-    
+
+    st.text(" ") # Adds a blank line
+    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
@@ -1555,10 +1556,9 @@ elif page == "Gegenereerde output":
         styled_df_hm,
         use_container_width=True,
         hide_index=True,
-        height=(len(df_verblijfplaatsen) + 1) * 35
+        height=(len(df_hm_nestlocatie) + 1) * 35
     )
 
-    "---"
     #--------------------------------------------------------
     #-------------------------------
     # Filter reports for selected project
