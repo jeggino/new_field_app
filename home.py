@@ -1531,11 +1531,11 @@ elif page == "Gegenereerde output":
 
 
     st.text(" ") # Adds a blank line
-    st.subheader("Huismussen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
+    st.subheader("Huismussen", anchor=None, help=None, divider='red', width="stretch", text_alignment="left")
     st.markdown(
         """
         <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Waarnemingen en aantal nestlocatie van huismussen gedurende de veldbezoeken
+            Waarnemingen en aantallen van nestlocaties van huismussen en spreeuwen gedurende de veldbezoeken.
         </p>
         """,
         unsafe_allow_html=True
@@ -1563,7 +1563,7 @@ elif page == "Gegenereerde output":
     
 # --------------HTML-----------------------------------
     st.text(" ") # Adds a blank line
-    st.subheader("Kaart", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
+    st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
 
     import folium
     from folium.plugins import MarkerCluster, BeautifyIcon
