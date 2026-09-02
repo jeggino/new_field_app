@@ -3037,6 +3037,16 @@ elif page == "Gegenereerde output":
     # Display map
     st_folium(m, use_container_width=True)
     
+
+
+# --------------------------------------------------
+# DOWNLOAD SECTION
+# --------------------------------------------------
+    st.text(" ")
+    st.text(" ") # Adds a blank line
+    st.header("Downloadsectie", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")
+    st.text(" ")
+
     # Save map as HTML string
     html_map = m.get_root().render()
 
@@ -3045,24 +3055,22 @@ elif page == "Gegenereerde output":
     with col1:
         # Download button
         st.download_button(
-            label="📥 Download HTML Map",
+            label="🗺️ HTML-kaart downloaden",
             data=html_map,
             file_name=f"{safe_project_name}_HTML.html",
             mime="text/html"
         )
-
-#------------------
     with col2:
         # Example
         excel_file = create_excel_file({
-            "Veldbezoeken": df_veldbezoeken,
-            "Vleermuizen": df_verblijfplaatsen,
-            "Huismus": df_huismus_tabel,
-            "Rapporten": df_filtered
+            "Dagverslagen": df_veldbezoeken,
+            "Huismussen en Spreeuwen": df_verblijfplaatsen,
+            "Gierzwaluwen, boerenzwaluwen en huiszwaluwen": df_zw_nestlocatie,
+            "Overige vogels": df_vg_nestlocatie
         })
         
         st.download_button(
-            label="📥 Download Excel",
+            label="📋 Exporteren naar Excel",
             data=excel_file,
             file_name=f"{selected_project}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
