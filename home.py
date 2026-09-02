@@ -1281,14 +1281,7 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.header("Dagverslagen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")
     st.text(" ")
-    st.markdown(
-        """
-        <p style='font-size:16px; color:#555; margin-top:0.2rem;'>
-            Uitgevoerde veldbezoeken gedurende het aanvullend onderzoek.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+
 
     
     st.dataframe(
@@ -1413,7 +1406,7 @@ elif page == "Gegenereerde output":
         })
     )
 
-    
+    st.text(" ")
     st.text(" ") # Adds a blank line
     st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")    
     st.text(" ") # Adds a blank line
