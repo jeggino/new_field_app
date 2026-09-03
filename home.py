@@ -2085,7 +2085,11 @@ elif page == "Gegenereerde output":
         location=[center_lat, center_lon],
         zoom_start=8,
         zoom_control=False,
-        tiles=None
+        tiles=None,
+
+        # Smooth zoom animation
+        zoom_animation=True,
+        zoom_animation_threshold=0,   # forces animation even for small zoom changes
     )
     
     tiles = 'https://api.mapbox.com/styles/v1/jeggino/cmn7ms1u3001f01pl691k0eyu/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ'
