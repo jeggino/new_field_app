@@ -2906,7 +2906,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="direction-north-round-white-icon-701751694974261sa3icvfsop.png">
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/North_arrow.svg/512px-North_arrow.svg.png">
     </div>
     
     <script>
