@@ -2884,64 +2884,55 @@ elif page == "Gegenereerde output":
     m.get_root().html.add_child(Element(logo_html))
     
     # --------------------------------------------------
-    # NORTH ARROW
+    # NORTH ARROW (PHOTO URL VERSION)
     # --------------------------------------------------
-    import base64
-    from pathlib import Path
-    
-    logo_path = Path("direction-north-round-white-icon-701751694974261sa3icvfsop.png")
-    
-    with open(logo_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-    
-    
     
     from branca.element import Element
     
-    arrow_html = f"""
+    arrow_html = """
     <style>
-    #map-arrow {{
+    #map-arrow {
         position: fixed;
         top: 15px;
         right: 15px;
         z-index: 999999;
-    }}
+    }
     
-    #map-arrow img {{
+    #map-arrow img {
         width: 100px;
         cursor: pointer;
-    }}
+    }
     
-    @keyframes arrowIntro {{
-        from {{
+    @keyframes arrowIntro {
+        from {
             opacity: 0;
             transform: translateY(-100px);
-        }}
-        to {{
+        }
+        to {
             opacity: 1;
             transform: translateY(0);
-        }}
-    }}
+        }
+    }
     
-    #map-arrow {{
+    #map-arrow {
         animation: arrowIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-    }}
-    
+    }
     </style>
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="data:image/jpeg;base64,{encoded}">
+             src="https://flyclipart.com/thumb2/png-north-arrow-transparent-north-arrow-images-88306.png">
     </div>
     
     <script>
-    document.getElementByIdk', function() {{
+    document.getElementById('arrow-img').addEventListener('click', function() {
         alert('Arrow clicked');
-    }});
+    });
     </script>
     """
     
-    m.get_root().html.add_child(Element(arrow_html)) 
+    m.get_root().html.add_child(Element(arrow_html))
+
 
     #--------------------------
     # DISPLAY MAP
