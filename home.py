@@ -2485,10 +2485,388 @@ elif page == "Gegenereerde output":
             if pattern:
                 geojson.options["fillPattern"] = pattern
     
-    # --------------------------------------------------
-    # PROFESSIONAL LEGEND
-    # --------------------------------------------------
+    # # --------------------------------------------------
+    # # PROFESSIONAL LEGEND
+    # # --------------------------------------------------
     
+    # from branca.element import MacroElement, Template
+    # import folium
+    
+    
+    # points_df = (
+    #     df.fillna({
+    #         "animal_type": "Unknown",
+    #         "function": "Unknown",
+    #         "species": "Unknown"
+    #     })
+    #     .groupby(["animal_type", "function", "species"])
+    #     .size()
+    #     .reset_index(name="count")
+    # )
+    
+    # points_df["source"] = "point"
+    
+    # if len(polygon_rows) == 0:
+    #     combined_df = points_df.copy()
+    # else:
+    
+    #     polygon_df = pd.DataFrame(polygon_rows)
+        
+    #     polygon_df = (
+    #         polygon_df.fillna({
+    #             "group": "Unknown",
+    #             "function": "Unknown",
+    #             "species": "Unknown"
+    #         })
+    #         .groupby(["group", "function", "species"])
+    #         .size()
+    #         .reset_index(name="count")
+    #     )
+        
+    #     polygon_df["source"] = "polygon"
+        
+    #     polygon_df.rename(
+    #         columns={"group": "animal_type"},
+    #         inplace=True
+    #     )
+    
+    #     combined_df = pd.concat(
+    #         [points_df, polygon_df],
+    #         ignore_index=True
+    #     )
+    
+    
+    
+    # # Load Font Awesome
+    # m.get_root().header.add_child(
+    #     folium.Element(
+    #         '<link rel="stylesheet" '
+    #         'href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">'
+    #     )
+    # )
+    
+    # project_title = project_name.replace("_", " ")
+    
+    
+    # legend_html = f"""
+    # {{% macro html(this, kwargs) %}}
+    
+    # <button id="legendButton"
+    #         onclick="toggleLegend()"
+    #         style="
+    #             position:fixed;
+    #             bottom:24px;
+    #             left:24px;
+    #             z-index:99999;
+    
+    #             display:flex;
+    #             align-items:center;
+    #             gap:10px;
+    
+    #             padding:12px 18px;
+    
+    #             background:linear-gradient(
+    #                 135deg,
+    #                 #2563eb,
+    #                 #1d4ed8
+    #             );
+    
+    #             color:white;
+    
+    #             border:none;
+    #             border-radius:14px;
+    
+    #             font-family:'Segoe UI',Arial,sans-serif;
+    #             font-size:14px;
+    #             font-weight:600;
+    
+    #             cursor:pointer;
+    
+    #             box-shadow:
+    #                 0 8px 20px rgba(37,99,235,.30),
+    #                 0 2px 6px rgba(0,0,0,.15);
+    
+    #             transition:all .25s ease;
+    #         "
+    
+    #         onmouseover="
+    #             this.style.transform='translateY(-3px) scale(1.02)';
+    #             this.style.boxShadow='0 12px 28px rgba(37,99,235,.40)';
+    #         "
+    
+    #         onmouseout="
+    #             this.style.transform='translateY(0) scale(1)';
+    #             this.style.boxShadow='0 8px 20px rgba(37,99,235,.30),0 2px 6px rgba(0,0,0,.15)';
+    #         ">
+    
+    #     <i class="fa-solid fa-list"
+    #        style="font-size:16px;"></i>
+    
+    #     <span>Legende</span>
+    
+    # </button>
+    
+    # <div id="legendDialog"
+    #      style="
+    #         display:none;
+    #         position:fixed;
+    #         bottom:85px;
+    #         left:24px;
+    #         z-index:99998;
+    
+    #         width:350px;
+    #         max-height:500px;
+    #         overflow-y:auto;
+    
+    #         background:rgba(255,255,255,0.82);
+    #         backdrop-filter:blur(12px);
+    #         -webkit-backdrop-filter:blur(12px);
+    
+    #         border-radius:18px;
+    
+    #         border:1px solid rgba(37,99,235,.15);
+    
+    #         padding:18px;
+    
+    #         box-shadow:
+    #             0 12px 28px rgba(37,99,235,.20),
+    #             0 4px 12px rgba(0,0,0,.12);
+    
+    #         font-family:'Segoe UI',Arial,sans-serif;
+    #         font-size:13px;
+    
+    #         transition:all .25s ease;
+    #      ">
+    
+    #     <div style="
+    #         font-size:17px;
+    #         font-weight:700;
+    #         margin-bottom:12px;
+    #         padding-bottom:8px;
+        
+    #         color:#001b15;
+        
+    #         border-bottom:
+    #             2px solid rgba(37,99,235,.15);
+    #     ">
+    
+        
+    #         {project_title}
+    #     </div>
+    
+    #     <div style="
+    #         display:flex;
+    #         align-items:center;
+    #         margin-bottom:10px;
+    #     ">
+    #         <span style="
+    #             width:18px;
+    #             height:12px;
+    #             background:rgba(255,0,0,0.15);
+    #             border:2px solid #b30000;
+    #             display:inline-block;
+    #             margin-right:8px;
+    #         "></span>
+    
+    #         <span>Onderzoeksgebied</span>
+    #     </div>
+    #     <div style="height:10px;"></div>
+    
+    
+    
+    # """
+    
+    
+    
+    
+    
+        
+    # # Animal Type → Function → Species
+    # for animal_type in sorted(combined_df["animal_type"].unique()):
+    
+    #     label = ANIMAL_TYPE_LABELS.get(
+    #         str(animal_type).lower(),
+    #         animal_type
+    #     )
+    
+    #     legend_html += f"""
+    #     <div style="
+    #         font-size:15px;
+    #         font-weight:bold;
+    #         margin-top:12px;
+    #         margin-bottom:6px;
+    #         color:#111827;
+    #         border-bottom:1px solid #d1d5db;
+    #         padding-bottom:3px;
+    #     ">
+    #         {label}
+    #     </div>
+    #     """
+    
+    #     animal_subset = combined_df[
+    #         combined_df["animal_type"] == animal_type
+    #     ]
+    
+    #     for function_name in sorted(animal_subset["function"].unique()):
+        
+    #         function_subset = (
+    #             animal_subset[
+    #                 animal_subset["function"] == function_name
+    #             ]
+    #             .sort_values("species")
+    #         )
+        
+    #         source = function_subset["source"].iloc[0]
+    
+    #         if source == "polygon":
+            
+    #             if function_name.lower() == "foerageergebied":
+    #                 # striped square
+    #                 symbol = """
+    #                 <span style="
+    #                     display:inline-block;
+    #                     width:14px;
+    #                     height:14px;
+    #                     border:1px solid #444;
+    #                     background:
+    #                     repeating-linear-gradient(
+    #                         45deg,
+    #                         #666,
+    #                         #666 2px,
+    #                         white 2px,
+    #                         white 5px
+    #                     );
+    #                     margin-right:6px;
+    #                 "></span>
+    #                 """
+            
+    #             elif function_name.lower() == "paarterritorium":
+    #                 # dotted square
+    #                 symbol = """
+    #                 <span style="
+    #                     display:inline-block;
+    #                     width:14px;
+    #                     height:14px;
+    #                     border:1px solid #444;
+    #                     background-color:white;
+    #                     background-image:radial-gradient(
+    #                         #666 1.5px,
+    #                         transparent 1.5px
+    #                     );
+    #                     background-size:5px 5px;
+    #                     margin-right:6px;
+    #                 "></span>
+    #                 """
+            
+    #             else:
+    #                 # fallback
+    #                 symbol = """
+    #                 <span style="
+    #                     display:inline-block;
+    #                     width:14px;
+    #                     height:14px;
+    #                     border:1px solid #444;
+    #                     background:#999;
+    #                     margin-right:6px;
+    #                 "></span>
+    #                 """
+    
+        
+    
+    #         elif source == "point": #HERE
+        
+    #             icon = FUNCTION_ICONS.get(
+    #                 function_name,
+    #                 "circle-info"
+    #             )
+        
+    #             symbol = f"""
+    #             <i class="fa-solid fa-{icon}"
+    #                style="margin-right:6px;"></i>
+    #             """
+    
+    
+    #         legend_html += f"""
+    #         <div style="
+    #             margin-top:6px;
+    #             margin-bottom:4px;
+    #             margin-left:10px;
+    #             font-weight:bold;
+    #             color:#374151;
+    #             display:flex;
+    #             align-items:center;
+    #         ">
+    #             {symbol}
+    #             <span>{function_name}</span>
+    #         </div>
+    #         """
+    
+    
+    
+    #         for _, row in function_subset.iterrows():
+    
+    #             species = row["species"]
+    #             count = row["count"]
+    
+    #             color = species_colors.get(
+    #                 species,
+    #                 "#999999"
+    #             )
+    
+    #             legend_html += f"""
+    #             <div style="
+    #                 display:flex;
+    #                 align-items:center;
+    #                 margin-bottom:5px;
+    #                 margin-left:25px;
+    #             ">
+    #                 <span style="
+    #                     width:14px;
+    #                     height:14px;
+    #                     background:{color};
+    #                     border-radius:50%;
+    #                     display:inline-block;
+    #                     margin-right:8px;
+    #                     border:1px solid #555;
+    #                     flex-shrink:0;
+    #                 "></span>
+    
+    #                 <span>
+    #                     {species} ({count})
+    #                 </span>
+    #             </div>
+    #             """
+    
+    # legend_html += """
+    # </div>
+    
+    # <script>
+    # function toggleLegend() {
+    
+    #     var legend =
+    #         document.getElementById("legendDialog");
+    
+    #     if (legend.style.display === "block") {
+    #         legend.style.display = "none";
+    #     } else {
+    #         legend.style.display = "block";
+    #     }
+    # }
+    # </script>
+    
+    # {% endmacro %}
+    # """
+    
+    
+    
+    # legend = MacroElement()
+    # legend._template = Template(legend_html)
+    
+    # m.get_root().add_child(legend)
+
+    # --------------------------------------------------
+    # NEW LEGGEND
+    # --------------------------------------------------
     from branca.element import MacroElement, Template
     import folium
     
@@ -2549,68 +2927,13 @@ elif page == "Gegenereerde output":
     
     
     legend_html = f"""
-    {{% macro html(this, kwargs) %}}
-    
-    <button id="legendButton"
-            onclick="toggleLegend()"
-            style="
-                position:fixed;
-                bottom:24px;
-                left:24px;
-                z-index:99999;
-    
-                display:flex;
-                align-items:center;
-                gap:10px;
-    
-                padding:12px 18px;
-    
-                background:linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #1d4ed8
-                );
-    
-                color:white;
-    
-                border:none;
-                border-radius:14px;
-    
-                font-family:'Segoe UI',Arial,sans-serif;
-                font-size:14px;
-                font-weight:600;
-    
-                cursor:pointer;
-    
-                box-shadow:
-                    0 8px 20px rgba(37,99,235,.30),
-                    0 2px 6px rgba(0,0,0,.15);
-    
-                transition:all .25s ease;
-            "
-    
-            onmouseover="
-                this.style.transform='translateY(-3px) scale(1.02)';
-                this.style.boxShadow='0 12px 28px rgba(37,99,235,.40)';
-            "
-    
-            onmouseout="
-                this.style.transform='translateY(0) scale(1)';
-                this.style.boxShadow='0 8px 20px rgba(37,99,235,.30),0 2px 6px rgba(0,0,0,.15)';
-            ">
-    
-        <i class="fa-solid fa-list"
-           style="font-size:16px;"></i>
-    
-        <span>Legende</span>
-    
-    </button>
+    {% macro html(this, kwargs) %}
     
     <div id="legendDialog"
          style="
-            display:none;
+            display:block;
             position:fixed;
-            bottom:85px;
+            bottom:24px;
             left:24px;
             z-index:99998;
     
@@ -2623,7 +2946,6 @@ elif page == "Gegenereerde output":
             -webkit-backdrop-filter:blur(12px);
     
             border-radius:18px;
-    
             border:1px solid rgba(37,99,235,.15);
     
             padding:18px;
@@ -2643,14 +2965,11 @@ elif page == "Gegenereerde output":
             font-weight:700;
             margin-bottom:12px;
             padding-bottom:8px;
-        
-            color:#001b15;
-        
-            border-bottom:
-                2px solid rgba(37,99,235,.15);
-        ">
     
-        
+            color:#001b15;
+    
+            border-bottom:2px solid rgba(37,99,235,.15);
+        ">
             {project_title}
         </div>
     
@@ -2670,11 +2989,10 @@ elif page == "Gegenereerde output":
     
             <span>Onderzoeksgebied</span>
         </div>
+    
         <div style="height:10px;"></div>
-    
-    
-    
     """
+
     
     
     
@@ -2863,6 +3181,7 @@ elif page == "Gegenereerde output":
     legend._template = Template(legend_html)
     
     m.get_root().add_child(legend)
+    
     
     # --------------------------------------------------
     # EXTRAS
