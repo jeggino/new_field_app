@@ -2903,23 +2903,16 @@ elif page == "Gegenereerde output":
         cursor: pointer;
         background: transparent;
     }
-
     </style>
     
     <div id="map-arrow">
-    <img id="arrow-img"
-         src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/North_arrow.svg/512px-North_arrow.svg.png">
-
+        <img id="arrow-img"
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/North_arrow.svg/512px-North_arrow.svg.png">
     </div>
-    
-    <script>
-    document.getElementById('arrow-img').addEventListener('click', function() {
-        alert('Arrow clicked');
-    });
-    </script>
     """
     
     m.get_root().html.add_child(Element(arrow_html))
+
 
 
 
