@@ -2987,7 +2987,7 @@ elif page == "Gegenereerde output":
                 margin-right:8px;
             "></span>
     
-            <span>Onderzoeksgebied</span>
+            <span style="color:#000000;">Onderzoeksgebied</span>
         </div>
     
         <div style="height:10px;"></div>
@@ -3199,197 +3199,197 @@ elif page == "Gegenereerde output":
     
     
     
-    # --------------------------------------------------
-    # LAYER CONTROL
-    # --------------------------------------------------
-    from branca.element import Element
+    # # --------------------------------------------------
+    # # LAYER CONTROL
+    # # --------------------------------------------------
+    # from branca.element import Element
     
-    folium.LayerControl(
-        position="topright",
-        collapsed=True
-    ).add_to(m)
+    # folium.LayerControl(
+    #     position="topright",
+    #     collapsed=True
+    # ).add_to(m)
     
-    css = """
-    <style>
+    # css = """
+    # <style>
     
-    /* Closed button */
-    .leaflet-control-layers-toggle{
-        width:42px !important;
-        height:42px !important;
+    # /* Closed button */
+    # .leaflet-control-layers-toggle{
+    #     width:42px !important;
+    #     height:42px !important;
     
-        background-size:22px 22px !important;
+    #     background-size:22px 22px !important;
     
-        border-radius:12px !important;
+    #     border-radius:12px !important;
     
-        box-shadow:
-            0 4px 12px rgba(0,0,0,0.15);
+    #     box-shadow:
+    #         0 4px 12px rgba(0,0,0,0.15);
     
-        transition:all 0.2s ease;
-    }
+    #     transition:all 0.2s ease;
+    # }
     
-    /* Open panel */
-    .leaflet-control-layers{
-        background:rgba(255,255,255,0.85)!important;
-        backdrop-filter:blur(8px);
+    # /* Open panel */
+    # .leaflet-control-layers{
+    #     background:rgba(255,255,255,0.85)!important;
+    #     backdrop-filter:blur(8px);
     
-        border:none!important;
+    #     border:none!important;
     
-        border-radius:16px!important;
+    #     border-radius:16px!important;
     
-        padding:12px!important;
+    #     padding:12px!important;
     
-        box-shadow:
-            0 8px 30px rgba(0,0,0,0.18)!important;
+    #     box-shadow:
+    #         0 8px 30px rgba(0,0,0,0.18)!important;
     
-        font-family:'Segoe UI', Arial, sans-serif;
+    #     font-family:'Segoe UI', Arial, sans-serif;
     
-        overflow:hidden;
-    }
+    #     overflow:hidden;
+    # }
     
-    /* Scroll area */
-    .leaflet-control-layers-list{
-        max-height:350px;
-        overflow-y:auto;
-    }
+    # /* Scroll area */
+    # .leaflet-control-layers-list{
+    #     max-height:350px;
+    #     overflow-y:auto;
+    # }
     
-    /* Labels */
-    .leaflet-control-layers label{
-        font-size:13px;
-        cursor:pointer;
-    }
+    # /* Labels */
+    # .leaflet-control-layers label{
+    #     font-size:13px;
+    #     cursor:pointer;
+    # }
     
-    /* Hover effect */
-    .leaflet-control-layers label:hover{
-        color:#2563eb;
-    }
+    # /* Hover effect */
+    # .leaflet-control-layers label:hover{
+    #     color:#2563eb;
+    # }
     
-    </style>
-    """
+    # </style>
+    # """
     
-    m.get_root().html.add_child(
-        Element(css)
-    )
+    # m.get_root().html.add_child(
+    #     Element(css)
+    # )
     
-    # --------------------------------------------------
-    # MEASURE CONTROL
-    # --------------------------------------------------
-    from folium.plugins import MeasureControl
+    # # --------------------------------------------------
+    # # MEASURE CONTROL
+    # # --------------------------------------------------
+    # from folium.plugins import MeasureControl
     
-    MeasureControl(
-        position="topright",
-        primary_length_unit="meters",
-        secondary_length_unit="kilometers",
-        primary_area_unit="sqmeters",
-        secondary_area_unit="hectares",
-        active_color="#2563eb",
-        completed_color="#1d4ed8"
-    ).add_to(m)
-    
-    
-    from branca.element import Element
-    
-    css = """
-    <style>
-    
-    /* -------------------------------------------------
-       MEASURE BUTTON
-    ------------------------------------------------- */
-    
-    .leaflet-control-measure-toggle {
-    
-        width:42px !important;
-        height:42px !important;
-    
-        border-radius:12px !important;
-    
-        box-shadow:
-            0 4px 12px rgba(0,0,0,0.15);
-    
-        transition:all 0.2s ease;
-    }
-    
-    .leaflet-control-measure-toggle:hover {
-    
-        transform:translateY(-2px);
-    
-        box-shadow:
-            0 8px 20px rgba(37,99,235,.25);
-    }
-    
-    /* -------------------------------------------------
-       MEASURE PANEL
-    ------------------------------------------------- */
-    
-    .leaflet-control-measure {
-    
-        background:rgba(255,255,255,0.85)!important;
-    
-        backdrop-filter:blur(8px);
-        -webkit-backdrop-filter:blur(8px);
-    
-        border:none!important;
-    
-        border-radius:16px!important;
-    
-        padding:12px!important;
-    
-        box-shadow:
-            0 8px 30px rgba(0,0,0,0.18)!important;
-    
-        font-family:'Segoe UI', Arial, sans-serif;
-    
-        overflow:hidden;
-    
-        transition:all .25s ease;
-    }
-    
-    /* -------------------------------------------------
-       PANEL CONTENT
-    ------------------------------------------------- */
-    
-    .leaflet-control-measure h3,
-    .leaflet-control-measure h4 {
-    
-        color:#1d4ed8;
-        font-weight:600;
-    }
-    
-    .leaflet-control-measure a {
-    
-        color:#2563eb;
-    }
-    
-    .leaflet-control-measure-resultpopup {
-    
-        border-radius:12px;
-        overflow:hidden;
-    }
-    
-    /* -------------------------------------------------
-       BUTTONS INSIDE PANEL
-    ------------------------------------------------- */
-    
-    .leaflet-control-measure .button {
-    
-        border-radius:8px !important;
-    
-        transition:all .2s ease;
-    }
-    
-    .leaflet-control-measure .button:hover {
-    
-        background:#2563eb !important;
-    
-        color:white !important;
-    }
-    
-    </style>
-    """
+    # MeasureControl(
+    #     position="topright",
+    #     primary_length_unit="meters",
+    #     secondary_length_unit="kilometers",
+    #     primary_area_unit="sqmeters",
+    #     secondary_area_unit="hectares",
+    #     active_color="#2563eb",
+    #     completed_color="#1d4ed8"
+    # ).add_to(m)
     
     
-    m.get_root().html.add_child(
-        Element(css)
-    )
+    # from branca.element import Element
+    
+    # css = """
+    # <style>
+    
+    # /* -------------------------------------------------
+    #    MEASURE BUTTON
+    # ------------------------------------------------- */
+    
+    # .leaflet-control-measure-toggle {
+    
+    #     width:42px !important;
+    #     height:42px !important;
+    
+    #     border-radius:12px !important;
+    
+    #     box-shadow:
+    #         0 4px 12px rgba(0,0,0,0.15);
+    
+    #     transition:all 0.2s ease;
+    # }
+    
+    # .leaflet-control-measure-toggle:hover {
+    
+    #     transform:translateY(-2px);
+    
+    #     box-shadow:
+    #         0 8px 20px rgba(37,99,235,.25);
+    # }
+    
+    # /* -------------------------------------------------
+    #    MEASURE PANEL
+    # ------------------------------------------------- */
+    
+    # .leaflet-control-measure {
+    
+    #     background:rgba(255,255,255,0.85)!important;
+    
+    #     backdrop-filter:blur(8px);
+    #     -webkit-backdrop-filter:blur(8px);
+    
+    #     border:none!important;
+    
+    #     border-radius:16px!important;
+    
+    #     padding:12px!important;
+    
+    #     box-shadow:
+    #         0 8px 30px rgba(0,0,0,0.18)!important;
+    
+    #     font-family:'Segoe UI', Arial, sans-serif;
+    
+    #     overflow:hidden;
+    
+    #     transition:all .25s ease;
+    # }
+    
+    # /* -------------------------------------------------
+    #    PANEL CONTENT
+    # ------------------------------------------------- */
+    
+    # .leaflet-control-measure h3,
+    # .leaflet-control-measure h4 {
+    
+    #     color:#1d4ed8;
+    #     font-weight:600;
+    # }
+    
+    # .leaflet-control-measure a {
+    
+    #     color:#2563eb;
+    # }
+    
+    # .leaflet-control-measure-resultpopup {
+    
+    #     border-radius:12px;
+    #     overflow:hidden;
+    # }
+    
+    # /* -------------------------------------------------
+    #    BUTTONS INSIDE PANEL
+    # ------------------------------------------------- */
+    
+    # .leaflet-control-measure .button {
+    
+    #     border-radius:8px !important;
+    
+    #     transition:all .2s ease;
+    # }
+    
+    # .leaflet-control-measure .button:hover {
+    
+    #     background:#2563eb !important;
+    
+    #     color:white !important;
+    # }
+    
+    # </style>
+    # """
+    
+    
+    # m.get_root().html.add_child(
+    #     Element(css)
+    # )
     
     # --------------------------------------------------
     # LOGO
@@ -3451,9 +3451,6 @@ elif page == "Gegenereerde output":
     
     m.get_root().html.add_child(Element(logo_html))
     
-    # --------------------------------------------------
-    # SAVE
-    # --------------------------------------------------
     
     import re
     
