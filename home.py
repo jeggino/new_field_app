@@ -3191,7 +3191,7 @@ elif page == "Gegenereerde output":
         )
 
 
-    st.iframe("https://veldwerk-app-luigi.streamlit.app/")
+    # st.iframe("https://veldwerk-app-luigi.streamlit.app/")
 
 
     
