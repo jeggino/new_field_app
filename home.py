@@ -2898,21 +2898,21 @@ elif page == "Gegenereerde output":
     
     from branca.element import Element
     
-    logo_html = f"""
+    arrow_html = f"""
     <style>
-    #map-logo {{
+    #map-arrow {{
         position: fixed;
         top: 15px;
         right: 15px;
         z-index: 999999;
     }}
     
-    #map-logo img {{
+    #map-arrow img {{
         width: 100px;
         cursor: pointer;
     }}
     
-    @keyframes logoIntro {{
+    @keyframes arrowIntro {{
         from {{
             opacity: 0;
             transform: translateY(-100px);
@@ -2923,26 +2923,31 @@ elif page == "Gegenereerde output":
         }}
     }}
     
-    #map-logo {{
-        animation: logoIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    #map-arrow {{
+        animation: arrowIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     }}
     
     </style>
     
-    <div id="map-logo">
-        <img id="logo-img"
+    <div id="map-arrow">
+        <img id="arrow-img"
              src="data:image/jpeg;base64,{encoded}">
     </div>
     
     <script>
     document.getElementByIdk', function() {{
-        alert('Logo clicked');
+        alert('Arrow clicked');
     }});
     </script>
     """
     
-    m.get_root().html.add_child(Element(logo_html))    
+    m.get_root().html.add_child(Element(arrow_html)) 
+
+    #--------------------------
+    # DISPLAY MAP
+    #--------------------------
     import re
+    
     
     safe_project_name = re.sub(
         r'[^A-Za-z0-9_-]+',
