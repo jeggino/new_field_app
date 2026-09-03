@@ -2901,7 +2901,9 @@ elif page == "Gegenereerde output":
     #map-arrow img {
         width: 100px;
         cursor: pointer;
+        background: transparent;
     }
+
     </style>
     
     <div id="map-arrow">
