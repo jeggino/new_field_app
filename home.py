@@ -2927,7 +2927,7 @@ elif page == "Gegenereerde output":
     
     
     legend_html = f"""
-    {% macro html(this, kwargs) %}
+    {{% macro html(this, kwargs) %}}
     
     <div id="legendDialog"
          style="
