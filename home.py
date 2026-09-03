@@ -2889,7 +2889,7 @@ elif page == "Gegenereerde output":
     import base64
     from pathlib import Path
     
-    logo_path = Path("png-north-arrow-transparent-north-arrow-images-88306.png")
+    logo_path = Path("direction-north-round-white-icon-701751694974261sa3icvfsop.png")
     
     with open(logo_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
