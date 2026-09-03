@@ -2887,62 +2887,24 @@ elif page == "Gegenereerde output":
     # NORTH ARROW (PHOTO URL VERSION)
     # --------------------------------------------------
     
-    import base64
-    from pathlib import Path
-    
-    arrow_path = Path("direction-north-round-white-icon-701751694974261sa3icvfsop.png")
-    
-    with open(arrow_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-    
-    
-    
-    from branca.element import Element
-    
-    arrow_html = f"""
-    <style>
-    #map-arrow {{
+    html = """
+    <div style="
         position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 999999;
-    }}
-    
-    #map-arrow img {{
-        width: 100px;
-        cursor: pointer;
-    }}
-    
-    @keyframes arrowIntro {{
-        from {{
-            opacity: 0;
-            transform: translateY(-100px);
-        }}
-        to {{
-            opacity: 1;
-            transform: translateY(0);
-        }}
-    }}
-    
-    #map-arrow {{
-        animation: arrowIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-    }}
-    
-    </style>
-    
-    <div id="map-arrow">
-        <img id="arrow-img"
-             src="data:image/jpeg;base64,{encoded}">
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        background: rgba(255,255,255,0.6);
+        border-radius: 8px;
+        padding: 4px;
+    ">
+        <img
+            src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
+            style="height:120px;"
+        >
     </div>
-    
-    <script>
-    document.getElementByIdk', function() {{
-        alert('arrow clicked');
-    }});
-    </script>
     """
     
-    m.get_root().html.add_child(Element(arrow_html))
+    m.get_root().html.add_child(Element(html))
 
 
 
