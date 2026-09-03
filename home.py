@@ -1916,6 +1916,7 @@ elif page == "Gegenereerde output":
     # =====================================================
     # DOWNLOAD TABLES
     # =====================================================
+    col1,col2 = st.columns([1,5])
     
     reports_df = load_table("report")
     
@@ -2891,13 +2892,204 @@ elif page == "Gegenereerde output":
         str(project_name)
     ).strip("_")
     
-
-    # Display map
-    st_folium(m, use_container_width=True)
+    wieth col2:
+        # Display map
+        st_folium(m, use_container_width=True)
     
 # --------------------------------------------------
 # DOWNLOAD MAP HTML
 # --------------------------------------------------
+
+    st.text(" ") # Adds a blank line
+    st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
+
+    import folium
+    from folium.plugins import MarkerCluster, BeautifyIcon
+    from branca.element import Template, MacroElement
+    import pandas as pd
+    import numpy as np
+    
+    # --------------------------------------------------
+    # CONFIGURATION
+    # --------------------------------------------------
+    
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+
+    # =====================================================
+    # HELPER FUNCTION
+    # =====================================================
+    
+    def load_table(table_name):
+    
+        response = (
+            supabase
+            .table(table_name)
+            .select("*")
+            .execute()
+        )
+    
+        return pd.DataFrame(response.data)
+    
+    # =====================================================
+    # DOWNLOAD TABLES
+    # =====================================================
+    
+    reports_df = load_table("report")
+    
+    observations_df = load_table("observations")
+    
+    project_df = load_table("projects")
+
+    # =====================================================
+    # SHOW MAP
+    # =====================================================
+    import os
+    import tempfile
+    import streamlit as st
+    import geopandas as gpd
+    
+    from shapely.ops import unary_union
+    
+    
+    BUCKET = "observation_photos"
+    
+    
+    def list_folder_paginated(bucket, path=""):
+        items = []
+        offset = 0
+        limit = 100
+    
+        while True:
+            batch = supabase.storage.from_(bucket).list(
+                path,
+                {"limit": limit, "offset": offset},
+            )
+    
+            if not batch:
+                break
+    
+            items.extend(batch)
+    
+            if len(batch) < limit:
+                break
+    
+            offset += limit
+    
+        return items
+    
+    
+    def list_all_geojson(bucket, path=""):
+        files = []
+    
+        for item in list_folder_paginated(bucket, path):
+            name = item["name"]
+    
+            if item.get("id") is None:
+                subpath = f"{path}/{name}" if path else name
+                files.extend(list_all_geojson(bucket, subpath))
+            else:
+                filepath = f"{path}/{name}" if path else name
+    
+                if filepath.lower().endswith(".geojson"):
+                    files.append(filepath)
+    
+        return files
+    
+    
+#------------------------
+
+    OBS_POLYGONS = 'polygons_app'
+
+    project_name = selected_project
+    df = observations_df[
+        observations_df["project"] == project_name
+    ].copy()
+    
+    survey_area = polygons_gdf[
+        polygons_gdf["project_polygon"] == project_name
+    ].copy()
+    
+    species_list = sorted(
+        df["species"].fillna("Unknown").unique()
+    )
+    
+    palette = (
+        list(plt.cm.tab20.colors)
+        + list(plt.cm.Set3.colors)
+        + list(plt.cm.Dark2.colors)
+    )
+    
+    species_colors = {
+        species: mcolors.to_hex(
+            palette[i % len(palette)]
+        )
+        for i, species in enumerate(species_list)
+    }
+    
+    # ==========================================================
+    # LOAD POLYGONS
+    # ==========================================================
+    polygon_rows = (
+    supabase
+    .table(OBS_POLYGONS)
+    .select("*")
+    .eq("project", project_name)
+    .execute()
+    ).data
+    
+    # --------------------------------------------------
+    # FUNCTION ICONS
+    # --------------------------------------------------
+    ANIMAL_TYPE_LABELS = {
+        "bat": "🦇 Vleermuizen",
+        "bird": "🪶 Vogels",
+        "plant": "🍃 Planten",
+        "amphibian": "🐸 Amfibieën",
+        "odonata": "≽༏≼ Libellen",
+        "unknown": "❓ Onbekend",
+    }
+    
+    FUNCTION_ICONS = {
+        # Bats
+        "vleermuis waarneming": "walkie-talkie",
+        "zomerverblijfplaats": "mars",
+        "kraamverblijfplaats": "venus",
+        "paarverblijfplaats": "heart",
+        "winterverblijfplaats": "snowflake",
+        "vleermuiskast": "box-archive",
+        "zender": "tower-broadcast",
+    
+        # Birds
+        "vogel waarneming": "binoculars",
+        "nestlocatie": "egg",
+        "mogelijke nestlocatie": "question",
+    
+        # Plants
+        "Aanwezig": "leaf",
+        "Bloeiend": "seedling",
+        "Vrucht": "apple-whole",
+        "Dood": "skull-crossbones",
+    
+        # Amphibians
+        "Adult": "frog",
+        "Roepend": "volume-high",
+        "Paring": "heart",
+        "Eieren": "egg",
+        "Larven": "water",
+        "Jong dier": "child",
+        "Foeragerend": "utensils",
+        "Trek": "route",
+    
+        # Odonata
+        "Eiafzet": "egg",
+        "Tandem": "link",
+        "Uitsluiping": "arrow-up-right-dots",
+        "Larve": "water",
+        "Exuvia": "shirt",
+        "Rustend": "pause",
+    }
+
     # --------------------------------------------------
     # CREATE MAP
     # --------------------------------------------------
