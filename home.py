@@ -2921,7 +2921,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="https://flyclipart.com/thumb2/png-north-arrow-transparent-north-arrow-images-88306.png">
+             src="https://pngset.com/images/clip-art-north-arrow-clip-art-north-arrow-clip-art-triangle-symbol-arrowhead-cone-transparent-png-1743720.png">
     </div>
     
     <script>
