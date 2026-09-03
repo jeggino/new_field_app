@@ -2892,7 +2892,7 @@ elif page == "Gegenereerde output":
         str(project_name)
     ).strip("_")
     
-    wieth col2:
+    with col2:
         # Display map
         st_folium(m, use_container_width=True)
     
