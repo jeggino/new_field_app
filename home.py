@@ -2089,19 +2089,24 @@ elif page == "Gegenereerde output":
 
     )
 
-    m.get_root().html.add_child(folium.Element(f"""
-    <script>
-        var map = {m.get_name()};
+    from branca.element import MacroElement, Template
     
-        // Enable fractional zoom
+    smooth_zoom = MacroElement()
+    smooth_zoom._template = Template("""
+    {% macro script(this, kwargs) %}
+        var map = {{this._parent.get_name()}};
+    
+        // Fractional zoom steps
         map.options.zoomSnap = 0.1;
         map.options.zoomDelta = 0.1;
     
-        // Make zoom animation smoother
+        // Smooth zoom animation
         map.options.zoomAnimation = true;
-        map.options.zoomAnimationDuration = 800;  // slower, smoother
-    </script>
-    """))
+        map.options.zoomAnimationDuration = 800;  // try 400–1200
+    {% endmacro %}
+    """)
+    
+    m.get_root().add_child(smooth_zoom)
 
 
     
