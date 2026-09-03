@@ -2091,6 +2091,15 @@ elif page == "Gegenereerde output":
         zoom_animation=True,
         zoom_animation_threshold=0,   # forces animation even for small zoom changes
     )
+
+    m.get_root().html.add_child(folium.Element("""
+    <script>
+        var map = window.map || document.querySelector('.leaflet-container')._leaflet_map;
+        map.options.zoomSnap = 0.1;   // allow 0.1 zoom increments
+        map.options.zoomDelta = 0.1;  // zoom wheel steps
+    </script>
+    """))
+
     
     tiles = 'https://api.mapbox.com/styles/v1/jeggino/cmn7ms1u3001f01pl691k0eyu/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiamVnZ2lubyIsImEiOiJjbHdscmRkZHAxMTl1MmlyeTJpb3Z2eHdzIn0.N9TRN7xxTikk235dVs1YeQ'
     folium.TileLayer(tiles=tiles,
