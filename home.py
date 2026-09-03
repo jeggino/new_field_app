@@ -2890,10 +2890,10 @@ elif page == "Gegenereerde output":
     import base64
     from pathlib import Path
     
-    arrow_path = Path("https://pngset.com/images/file-north-pointer-svg-wikimedia-commons-arrow-clip-north-arrow-gray-world-of-warcraft-transparent-png-192490.png")
+    arrow_path = Path("direction-north-round-white-icon-701751694974261sa3icvfsop.png")
     
-    # with open(arrow_path, "rb") as f:
-    #     encoded = base64.b64encode(f.read()).decode()
+    with open(arrow_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
     
     
     
@@ -2932,7 +2932,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="{arrow_path}">
+             src="data:image/jpeg;base64,{encoded}">
     </div>
     
     <script>
