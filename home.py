@@ -2908,7 +2908,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="https://p7.hiclipart.com/preview/185/95/816/north-arrow-clip-art-north-arrow.jpg">
+             src="https://as1.ftcdn.net/jpg/03/45/43/60/1000_F_345436090_cGtqLWNIOpIK74jSHJnaWRBIZVbYZNh2.jpg">
     </div>
     
     <script>
