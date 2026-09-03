@@ -3171,7 +3171,7 @@ elif page == "Gegenereerde output":
             file_name=f"{safe_project_name}_HTML.html",
             mime="text/html"
         )
-    with col2:
+    # with col2:
         # Example
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
@@ -3184,7 +3184,7 @@ elif page == "Gegenereerde output":
         })
         
         st.download_button(
-            label="📋 Exporteren naar Excel",
+            label="🗂️ Tabel exporteren",
             data=excel_file,
             file_name=f"{selected_project}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
