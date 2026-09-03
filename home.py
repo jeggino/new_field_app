@@ -2883,7 +2883,65 @@ elif page == "Gegenereerde output":
     
     m.get_root().html.add_child(Element(logo_html))
     
+    # --------------------------------------------------
+    # NORTH ARROW
+    # --------------------------------------------------
+    import base64
+    from pathlib import Path
     
+    logo_path = Path("direction-north-round-white-icon-701751694974261sa3icvfsop.png")
+    
+    with open(logo_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+    
+    
+    
+    from branca.element import Element
+    
+    logo_html = f"""
+    <style>
+    #map-logo {{
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 999999;
+    }}
+    
+    #map-logo img {{
+        width: 100px;
+        cursor: pointer;
+    }}
+    
+    @keyframes logoIntro {{
+        from {{
+            opacity: 0;
+            transform: translateY(-100px);
+        }}
+        to {{
+            opacity: 1;
+            transform: translateY(0);
+        }}
+    }}
+    
+    #map-logo {{
+        animation: logoIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }}
+    
+    </style>
+    
+    <div id="map-logo">
+        <img id="logo-img"
+             src="data:image/jpeg;base64,{encoded}">
+    </div>
+    
+    <script>
+    document.getElementByIdk', function() {{
+        alert('Logo clicked');
+    }});
+    </script>
+    """
+    
+    m.get_root().html.add_child(Element(logo_html))    
     import re
     
     safe_project_name = re.sub(
