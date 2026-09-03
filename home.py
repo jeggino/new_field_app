@@ -2907,7 +2907,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/North_arrow.svg/512px-North_arrow.svg.png">
+             src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Compass_rose_transparent.png">
     </div>
     """
     
