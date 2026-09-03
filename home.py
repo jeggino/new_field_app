@@ -3149,7 +3149,7 @@ elif page == "Gegenereerde output":
                         flex-shrink:0;
                     "></span>
     
-                    <span>
+                    <span style="color:#000000;">
                         {species} ({count})
                     </span>
                 </div>
