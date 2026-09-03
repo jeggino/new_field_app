@@ -2902,26 +2902,11 @@ elif page == "Gegenereerde output":
         width: 100px;
         cursor: pointer;
     }
-    
-    @keyframes arrowIntro {
-        from {
-            opacity: 0;
-            transform: translateY(-100px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    #map-arrow {
-        animation: arrowIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-    }
     </style>
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="https://p7.hiclipart.com/preview/185/95/816/north-arrow-clip-art-north-arrow.jpg">
+             src="direction-north-round-white-icon-701751694974261sa3icvfsop.png">
     </div>
     
     <script>
@@ -2932,6 +2917,7 @@ elif page == "Gegenereerde output":
     """
     
     m.get_root().html.add_child(Element(arrow_html))
+
 
 
     #--------------------------
