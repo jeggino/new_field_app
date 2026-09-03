@@ -3176,9 +3176,9 @@ elif page == "Gegenereerde output":
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
             "Vleermuizen": df_verblijfplaatsen,
-            "Huismussen en Spreeuwen": df_hm_nestlocatie,
-            "Gierzwaluwen, boerenzwaluwen en huiszwaluwen": df_zw_nestlocatie,
-            "Overige vogels": df_vg_nestlocatie,
+            "Huismussen": df_hm_nestlocatie,
+            "Gierzwaluwen": df_zw_nestlocatie,
+            "Nesten broedvogels en cat. 5 vogels": df_vg_nestlocatie,
             "Samenvatting": samenvatting,
             
         })
