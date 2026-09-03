@@ -2102,7 +2102,7 @@ elif page == "Gegenereerde output":
     
         // Smooth zoom animation
         map.options.zoomAnimation = true;
-        map.options.zoomAnimationDuration = 800;  // try 400–1200
+        map.options.zoomAnimationDuration = 1200;  // try 400–1200
     {% endmacro %}
     """)
     
