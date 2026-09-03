@@ -2892,8 +2892,8 @@ elif page == "Gegenereerde output":
     
     arrow_path = Path("https://pngset.com/images/file-north-pointer-svg-wikimedia-commons-arrow-clip-north-arrow-gray-world-of-warcraft-transparent-png-192490.png")
     
-    with open(arrow_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+    # with open(arrow_path, "rb") as f:
+    #     encoded = base64.b64encode(f.read()).decode()
     
     
     
@@ -2932,7 +2932,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="data:image/jpeg;base64,{encoded}">
+             src="{arrow_path}">
     </div>
     
     <script>
