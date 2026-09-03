@@ -2907,7 +2907,7 @@ elif page == "Gegenereerde output":
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="https://commons.wikimedia.org/wiki/File:Nordpfeil_1_schwarz_0_Grad_Landscape.svg#/media/File:Nordpfeil_1_schwarz_0_Grad_Landscape.svg">
+             src="direction-north-round-white-icon-701751694974261sa3icvfsop.png">
     </div>
     """
     
