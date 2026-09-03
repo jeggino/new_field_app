@@ -2887,28 +2887,59 @@ elif page == "Gegenereerde output":
     # NORTH ARROW (PHOTO URL VERSION)
     # --------------------------------------------------
     
+    import base64
+    from pathlib import Path
+    
+    arrow_path = Path("https://pngset.com/images/file-north-pointer-svg-wikimedia-commons-arrow-clip-north-arrow-gray-world-of-warcraft-transparent-png-192490.png")
+    
+    with open(arrow_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+    
+    
+    
     from branca.element import Element
     
-    arrow_html = """
+    arrow_html = f"""
     <style>
-    #map-arrow {
+    #map-arrow {{
         position: fixed;
         top: 15px;
         right: 15px;
         z-index: 999999;
-    }
+    }}
     
-    #map-arrow img {
+    #map-arrow img {{
         width: 100px;
         cursor: pointer;
-        background: transparent;
-    }
+    }}
+    
+    @keyframes arrowIntro {{
+        from {{
+            opacity: 0;
+            transform: translateY(-100px);
+        }}
+        to {{
+            opacity: 1;
+            transform: translateY(0);
+        }}
+    }}
+    
+    #map-arrow {{
+        animation: arrowIntro 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }}
+    
     </style>
     
     <div id="map-arrow">
         <img id="arrow-img"
-             src="direction-north-round-white-icon-701751694974261sa3icvfsop.png">
+             src="data:image/jpeg;base64,{encoded}">
     </div>
+    
+    <script>
+    document.getElementByIdk', function() {{
+        alert('arrow clicked');
+    }});
+    </script>
     """
     
     m.get_root().html.add_child(Element(arrow_html))
