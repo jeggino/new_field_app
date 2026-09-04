@@ -2911,7 +2911,11 @@ elif page == "Gegenereerde output":
     ">
         <img
             src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
-            style="height:60px; width:auto;"
+            style="
+                height:75px;
+                width:auto;
+                transform: translateY(-5px);
+            "
         >
     </div>
     """
