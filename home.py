@@ -2876,19 +2876,42 @@ elif page == "Gegenereerde output":
     # NORTH ARROW (PHOTO URL VERSION)
     # --------------------------------------------------
     
+    # html = """
+    # <div style="
+    #     position: fixed;
+    #     top: 10px;
+    #     right: 10px;
+    #     z-index: 9999;
+    #     background: rgba(255,255,255,0.6);
+    #     border-radius: 8px;
+    #     padding: 4px;
+    # ">
+    #     <img
+    #         src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
+    #         style="height:120px;"
+    #     >
+    # </div>
+    # """
+    
+    # m.get_root().html.add_child(Element(html))
+
     html = """
     <div style="
         position: fixed;
         top: 10px;
         right: 10px;
         z-index: 9999;
+        width: 80px;
+        height: 80px;
         background: rgba(255,255,255,0.6);
         border-radius: 8px;
-        padding: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     ">
         <img
             src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
-            style="height:120px;"
+            style="height:60px; width:auto;"
         >
     </div>
     """
@@ -2919,14 +2942,6 @@ elif page == "Gegenereerde output":
 # DOWNLOAD MAP HTML
 # --------------------------------------------------
 
-    st.text(" ") # Adds a blank line
-    st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
-
-    import folium
-    from folium.plugins import MarkerCluster, BeautifyIcon
-    from branca.element import Template, MacroElement
-    import pandas as pd
-    import numpy as np
     
     # --------------------------------------------------
     # CONFIGURATION
