@@ -2876,60 +2876,26 @@ elif page == "Gegenereerde output":
     # NORTH ARROW (PHOTO URL VERSION)
     # --------------------------------------------------
     
-    # html = """
-    # <div style="
-    #     position: fixed;
-    #     top: 10px;
-    #     right: 10px;
-    #     z-index: 9999;
-    #     background: rgba(255,255,255,0.6);
-    #     border-radius: 8px;
-    #     padding: 4px;
-    # ">
-    #     <img
-    #         src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
-    #         style="height:120px;"
-    #     >
-    # </div>
-    # """
-    
-    # m.get_root().html.add_child(Element(html))
-
     html = """
     <div style="
-
-        height:75px;
-        width:auto;
-        transform: translate(-3px, -5px);
-
         position: fixed;
         top: 10px;
         right: 10px;
         z-index: 9999;
-        width: 80px;
-        height: 80px;
         background: rgba(255,255,255,0.6);
         border-radius: 8px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        padding: 4px;
     ">
         <img
             src="https://static.vecteezy.com/system/resources/previews/075/215/464/large_2x/north-arrow-symbol-for-architecture-transparent-background-png.png"
-            style="
-                height:75px;
-                width:auto;
-                transform: translateY(-5px);
-            "
+            style="height:120px;"
         >
     </div>
     """
     
     m.get_root().html.add_child(Element(html))
 
-
-
-
+    
 
     #--------------------------
     # DISPLAY MAP
