@@ -2598,18 +2598,7 @@ elif page == "Gegenereerde output":
             transition:all .25s ease;
          ">
     
-        <div style="
-            font-size:17px;
-            font-weight:700;
-            margin-bottom:12px;
-            padding-bottom:8px;
-    
-            color:#001b15;
-    
-            border-bottom:2px solid rgba(37,99,235,.15);
-        ">
-            {project_title}
-        </div>
+
     
         <div style="
             display:flex;
