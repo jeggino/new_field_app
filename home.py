@@ -2897,6 +2897,11 @@ elif page == "Gegenereerde output":
 
     html = """
     <div style="
+
+        height:75px;
+        width:auto;
+        transform: translate(-3px, -5px);
+
         position: fixed;
         top: 10px;
         right: 10px;
