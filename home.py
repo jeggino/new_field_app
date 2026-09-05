@@ -1191,7 +1191,7 @@ elif page == "Gegenereerde output":
             formatted = value
     
         # Handle missing values
-        if formatted is None or formatted == "" or formatted == "NA":
+        if formatted == "Onbekend":
             return "Onbekend"
             
         if (
