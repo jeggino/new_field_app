@@ -1190,7 +1190,10 @@ elif page == "Gegenereerde output":
         else:
             formatted = value
     
-        # Keep these groups unchanged
+        # Handle missing values
+        if formatted is None or formatted == "" or formatted == "NA":
+            return "Onbekend"
+            
         if (
             formatted.startswith("Huismus")
             or formatted.startswith("Gierzwaluw")
