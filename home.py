@@ -2908,6 +2908,36 @@ elif page == "Gegenereerde output":
     
     m.get_root().html.add_child(Element(html))
 
+    #--------------------------
+    # SCALE KM
+    #--------------------------
+
+    scale_js = """
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Find the Leaflet map object created by Folium
+        var mapObject = null;
+        for (var key in window) {
+            if (key.startsWith("map_") && window[key] instanceof L.Map) {
+                mapObject = window[key];
+                break;
+            }
+        }
+    
+        // Add the scale bar
+        if (mapObject) {
+            L.control.scale({
+                position: 'bottomright',
+                metric: true,
+                imperial: false
+            }).addTo(mapObject);
+        }
+    });
+    </script>
+    """
+    
+    m.get_root().html.add_child(Element(scale_js))
+
     
 
     #--------------------------
