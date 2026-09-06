@@ -1447,7 +1447,7 @@ elif page == "Gegenereerde output":
             height=(len(df_verblijfplaatsen_2) + 1) * 35
         )
 
-    df_obs_project
+    df_polygon_app_project
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
