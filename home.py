@@ -999,12 +999,14 @@ elif page == "Gegenereerde output":
     projects = supabase.table("projects").select("*").execute().data
     reports = supabase.table("report").select("*").execute().data
     observations = supabase.table("observations").select("*").execute().data
+    polygon_rows = (supabase.table("polygons_app").select("*").execute()).data
 
    
 
     df_projects = pd.DataFrame(projects)
     df_reports = pd.DataFrame(reports)
     df_obs = pd.DataFrame(observations)
+    df_polygon_app = pd.DataFrame(polygon_rows)
 
 
 
@@ -1312,6 +1314,12 @@ elif page == "Gegenereerde output":
     df_obs_project = df_obs[
         df_obs["project"] == selected_project
     ].copy()
+
+
+    # Filter functional areas for selected project
+    df_polygon_app_project = df_polygon_app[
+        df_polygon_app["project"] == selected_project
+    ].copy()
     
     
     # Filter polygons for selected project
@@ -1438,6 +1446,8 @@ elif page == "Gegenereerde output":
             hide_index=True,
             height=(len(df_verblijfplaatsen_2) + 1) * 35
         )
+
+    df_obs_project
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
