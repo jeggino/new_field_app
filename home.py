@@ -4191,7 +4191,46 @@ elif page == "Gegenereerde output":
             mime="text/html"
         )
     # with col2:
-        # Example
+        # # Filter reports for selected project
+        df_filtered = df_reports[
+            df_reports["project"] == selected_project
+        ].copy()
+        
+        # Filter observations for selected project
+        df_obs_project = df_obs[
+            df_obs["project"] == selected_project
+        ].copy()
+
+        df_filtered_clean = (
+            df_filtered[["kind", "comment"]]
+            .rename(columns={
+                "kind": "Veldbezoek",
+                "comment": "Opmerking"
+            })
+        )
+        
+        df_obs_clean = (
+            df_obs_project[["date", "species", "function", "behavior"]]
+            .rename(columns={
+                "date": "Datum",
+                "species": "Soort",
+                "function": "Functie",
+                "behavior": "Opmerking"
+            })
+        )
+
+        allowed_functions = [
+            "zomerverblijfplaats",
+            "nestlocatie",
+            "kraamverblijfplaats",
+            "paarverblijfplaats",
+            "winterverblijfplaats"
+        ]
+        
+        df_obs_clean = df_obs_clean[df_obs_clean["Functie"].isin(allowed_functions)]
+        
+
+            # Example
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
             "Vleermuizen": df_verblijfplaatsen,
@@ -4199,9 +4238,11 @@ elif page == "Gegenereerde output":
             "Gierzwaluwen": df_zw_nestlocatie,
             "Nesten broedvogels en cat. 5 vogels": df_vg_nestlocatie,
             "Samenvatting": samenvatting,
-            
+            "Dagverslagen (opmerking)": df_filtered_clean,
+            "Waarnemingen (opmerking)": df_obs_clean
         })
-        
+
+
         st.download_button(
             label="🗂️ Tabel exporteren",
             data=excel_file,
@@ -4209,18 +4250,6 @@ elif page == "Gegenereerde output":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-    # # Filter reports for selected project
-    df_filtered = df_reports[
-        df_reports["project"] == selected_project
-    ].copy()
-    
-    # Filter observations for selected project
-    df_obs_project = df_obs[
-        df_obs["project"] == selected_project
-    ].copy()
-
-    df_filtered
-    df_obs_project
 
 
 
