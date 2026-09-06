@@ -4209,8 +4209,19 @@ elif page == "Gegenereerde output":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    # # Filter reports for selected project
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
+    
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
 
-    # st.iframe("https://veldwerk-app-tobias.streamlit.app/", height=600)
+    df_filtered
+    df_obs_project
+
 
 
     
