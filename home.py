@@ -1447,7 +1447,58 @@ elif page == "Gegenereerde output":
             height=(len(df_verblijfplaatsen_2) + 1) * 35
         )
 
-    df_polygon_app_project
+    "---"
+
+
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
+    
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ( "Gierzwaluw", "Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_polygon_app_project = df_polygon_app_project.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_polygon_app_project["Veldbezoek"] = df_polygon_app_project["Veldbezoek"].apply(format_veldbezoek)
+    
+    # Final table
+    df_bats_polygons = pd.DataFrame({
+        "Veldbezoek": df_polygon_app_project["Veldbezoek"],
+        "Soort": df_polygon_app_project["species"],
+        "Aantal individuen": df_polygon_app_project["aantal"],
+        "Functie": df_polygon_app_project["function"],
+        "Fotolink": df_polygon_app_project["photo_url"]        
+    })
+
+    
+    # Optional: sort chronologically before displaying
+    df_bats_polygons = df_bats_polygons.sort_values(
+        by="Veldbezoek"
+    )
+    
+    df_bats_polygons
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
