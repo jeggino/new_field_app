@@ -1427,6 +1427,7 @@ elif page == "Gegenereerde output":
     st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")    
     st.text(" ") # Adds a blank line
     st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
+    st.caption("Waarnemingen")
     
 
     
@@ -1497,8 +1498,27 @@ elif page == "Gegenereerde output":
     df_bats_polygons = df_bats_polygons.sort_values(
         by="Veldbezoek"
     )
+
     
-    df_bats_polygons
+    st.caption("Functionele gebieden")
+    
+    if df_bats_polygons.empty:
+        st.info("Geen functionele gebieden gevonden.")
+    else:
+        st.dataframe(
+            df_bats_polygons,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_bats_polygons) + 1) * 35
+        )
+    
 
     # ---------------------------------------------------------
     # HUISMUS OBSERVATIONS
@@ -4328,6 +4348,7 @@ elif page == "Gegenereerde output":
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
             "Vleermuizen": df_verblijfplaatsen,
+            "Vleermuizen (Functionele gebieden)": df_bats_polygons,
             "Huismussen": df_hm_nestlocatie,
             "Gierzwaluwen": df_zw_nestlocatie,
             "Nesten broedvogels en cat. 5 vogels": df_vg_nestlocatie,
