@@ -2914,9 +2914,11 @@ elif page == "Gegenereerde output":
 
     scale_js = """
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Find the Leaflet map object created by Folium
+    // Wait until ANY Leaflet map is fully initialized
+    setTimeout(function() {
         var mapObject = null;
+    
+        // Find the Folium Leaflet map object
         for (var key in window) {
             if (key.startsWith("map_") && window[key] instanceof L.Map) {
                 mapObject = window[key];
@@ -2932,11 +2934,12 @@ elif page == "Gegenereerde output":
                 imperial: false
             }).addTo(mapObject);
         }
-    });
+    }, 500);  // delay required for Streamlit iframe
     </script>
     """
     
     m.get_root().html.add_child(Element(scale_js))
+
 
     
 
