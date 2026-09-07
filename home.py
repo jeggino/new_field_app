@@ -38,12 +38,14 @@ WIDTH = 30
 
 # ----------------- TIME --------------------------
 now = datetime.now(ZoneInfo("Europe/Amsterdam"))
-# Keep only hour and second
+
+# Keep only hour and minute
 now_local = time(
     hour=now.hour,
     minute=now.minute,
     second=0
 )
+
 st.write(now_local)
 
 # ----------------- LOGO --------------------------
