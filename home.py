@@ -37,10 +37,6 @@ OPACITY = 1
 WIDTH = 30
 
 # ----------------- TIME --------------------------
-from datetime import datetime, time
-from zoneinfo import ZoneInfo
-import streamlit as st
-
 # Get local Amsterdam time
 now = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
 
