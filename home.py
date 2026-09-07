@@ -45,13 +45,11 @@ import streamlit as st
 # Get local Amsterdam time
 now = datetime.now(ZoneInfo("Europe/Amsterdam"))
 
-# Round minutes to nearest 15
-rounded_minute = (now.minute // 15) * 15
 
 # Build time object with hour + rounded minute
 now_local = time(
     hour=now.hour,
-    minute=rounded_minute,
+    minute=now.minute,
     second=0
 )
 
