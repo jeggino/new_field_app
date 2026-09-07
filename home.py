@@ -9,7 +9,7 @@ import json
 import pandas as pd
 import re
 import time
-
+from zoneinfo import ZoneInfo
 import colorsys
 
 
@@ -36,13 +36,16 @@ CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/74
 OPACITY = 1
 WIDTH = 30
 
+# ----------------- TIME --------------------------
+now_local = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
+
 # ----------------- LOGO --------------------------
 # IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 IMAGE = "https://media.licdn.com/dms/image/v2/C4D0BAQE9sKwGG06UPA/company-logo_200_200/company-logo_200_200/0/1631374822253?e=2147483647&v=beta&t=o0WOgRmlYwkShUAMXq8QGCcrWvlS84iLYNpsqqcWFLw"
 
 # ................. ICON CUSTUMIZE ----------------
-marker_size = 28
-inner_icon_px = 12
+marker_size = 30
+inner_icon_px = 14
 
 #------------------  MAP SIZE ---------------------
 map_height = 510
@@ -333,7 +336,7 @@ FUNCTION_SHORT = {
 FUNCTION_ICONS = {
     # Bats
     "vleermuis waarneming": "walkie-talkie",
-    "zomerverblijfplaats": "sun",
+    "zomerverblijfplaats": "mars",
     "kraamverblijfplaats": "venus",
     "paarverblijfplaats": "heart",
     "winterverblijfplaats": "snowflake",
@@ -699,8 +702,8 @@ def daily_report_dialog():
     with st.expander("Choose date"):
         date = st.date_input("Date", value=datetime.utcnow().date())
 
-    start_time = st.time_input("Start Time",value=None)
-    end_time = st.time_input("End Time",value=None)
+    start_time = st.time_input("Start Time",value=now_local)
+    end_time = st.time_input("End Time",value=now_local)
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=1)
@@ -1519,7 +1522,7 @@ def edit_polygon_dialog(obs):
         func_list = PLANT_FUNCTIONS_POLYGON
     
     # Use values from obs only if they are valid in the current group
-    species_value = obs.get("species")
+    species_value = obs['properties']["species"]
     if species_value in species_list:
         species_index = species_list.index(species_value)
     else:
@@ -1531,7 +1534,7 @@ def edit_polygon_dialog(obs):
         index=species_index,
     )
     
-    function_value = obs.get("function")
+    function_value = obs['properties']["function"]
     if function_value in func_list:
         function_index = func_list.index(function_value)
     else:
@@ -1559,7 +1562,7 @@ def edit_polygon_dialog(obs):
 
     if obs.get("photo_url"):
         st.image(
-            obs["photo_url"],
+            obs['properties']["photo_url"],
             width=150,
             caption="Current photo"
         )
