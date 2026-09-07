@@ -38,6 +38,7 @@ WIDTH = 30
 
 # ----------------- TIME --------------------------
 now_local = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
+st.write(now_local)
 
 # ----------------- LOGO --------------------------
 # IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
