@@ -43,15 +43,8 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 
 # Get local Amsterdam time
-now = datetime.now(ZoneInfo("Europe/Amsterdam"))
+now = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
 
-
-# Build time object with hour + rounded minute
-now_local = time(
-    hour=now.hour,
-    minute=now.minute,
-    second=0
-)
 
 # ----------------- LOGO --------------------------
 # IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
