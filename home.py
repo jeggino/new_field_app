@@ -53,14 +53,6 @@ now_local = time(
     second=0
 )
 
-# Streamlit dropdown time inputs
-start_time = st.time_input("Start Time", value=now_local, step=900)
-end_time = st.time_input("End Time", value=now_local, step=900)
-
-st.write("Start:", start_time)
-st.write("End:", end_time)
-
-
 # ----------------- LOGO --------------------------
 # IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
 IMAGE = "https://media.licdn.com/dms/image/v2/C4D0BAQE9sKwGG06UPA/company-logo_200_200/company-logo_200_200/0/1631374822253?e=2147483647&v=beta&t=o0WOgRmlYwkShUAMXq8QGCcrWvlS84iLYNpsqqcWFLw"
