@@ -56,7 +56,7 @@ now_local = time(
 )
 
 # Streamlit dropdown time inputs
-start_time = st.time_input("Start Time", value=now_local, step=900)
+start_time = st.time_input("Start Time",)
 end_time = st.time_input("End Time", value=now_local, step=900)
 
 st.write("Start:", start_time)
