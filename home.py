@@ -9,7 +9,7 @@ import json
 import pandas as pd
 import re
 import time
-
+from zoneinfo import ZoneInfo
 import colorsys
 
 
@@ -35,6 +35,9 @@ BUCKET = "observation_photos"
 CROSS_IMAGE_PATH = "https://static.vecteezy.com/system/resources/previews/031/742/868/non_2x/transparent-circle-cross-icon-free-png.png"
 OPACITY = 1
 WIDTH = 30
+
+# ----------------- TIME --------------------------
+now_local = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
 
 # ----------------- LOGO --------------------------
 # IMAGE = "https://www.nachtvandevleermuis.nl/wp-content/uploads/Elsken_Ecologie_LOGO-min-1024x748.png"
@@ -699,8 +702,8 @@ def daily_report_dialog():
     with st.expander("Choose date"):
         date = st.date_input("Date", value=datetime.utcnow().date())
 
-    start_time = st.time_input("Start Time",value="now")
-    end_time = st.time_input("End Time",value="now")
+    start_time = st.time_input("Start Time",value=now_local)
+    end_time = st.time_input("End Time",value=now_local)
     operator = st.text_input("Operator", value=st.session_state.user.email)
     extra_operator = st.text_input("Extra Operator")
     temperature = st.number_input("Temperature (°C)", step=1)
