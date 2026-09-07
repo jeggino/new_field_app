@@ -37,7 +37,13 @@ OPACITY = 1
 WIDTH = 30
 
 # ----------------- TIME --------------------------
-now_local = datetime.now(ZoneInfo("Europe/Amsterdam")).time()
+now = datetime.now(ZoneInfo("Europe/Amsterdam"))
+# Keep only hour and second
+now_local = time(
+    hour=now.hour,
+    minute=now.minute,
+    second=0
+)
 st.write(now_local)
 
 # ----------------- LOGO --------------------------
