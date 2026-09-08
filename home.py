@@ -3036,9 +3036,9 @@ elif page == "Gegenereerde output":
         str(project_name)
     ).strip("_")
     
-    with col2:
-        # Display map
-        st_folium(m, use_container_width=True)
+    # with col2:
+    # Display map
+    st_folium(m, use_container_width=True)
     
 # --------------------------------------------------
 # DOWNLOAD MAP HTML
