@@ -4410,6 +4410,20 @@ elif page == "Gegenereerde output":
     # Make GeoDataFrame
     obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
 
+    def fix_geometry(g):
+        # GeoJSON dict
+        if isinstance(g, dict):
+            return shape(g)
+    
+        # WKT string
+        if isinstance(g, str):
+            return wkt.loads(g)
+    
+        # Already shapely
+        return g
+    
+    df_polygon_rows_DL["geometry"] = df_polygon_rows_DL["geometry"].apply(fix_geometry)
+    
     poly_rows = df_polygon_rows_DL[["date", "group", "species", "function", "geometry", "aantal"]].copy()
     
     poly_rows = poly_rows.rename(columns={
@@ -4419,12 +4433,11 @@ elif page == "Gegenereerde output":
         "function": "functie",
         "aantal": "aantal"
     })
-
-    st.write(df_polygon_rows_DL["geometry"].iloc[0])
-    st.write(type(df_polygon_rows_DL["geometry"].iloc[0]))
-
     
     poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
+
+
+
 
     polygons = polygons_gdf[polygons_gdf["project_polygon"] == selected_project].copy()
     
