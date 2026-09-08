@@ -4408,7 +4408,7 @@ elif page == "Gegenereerde output":
     # Download file from storage
     boundary_path = f"{selected_project }.geojson"
     try:
-        boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
+        boundary_file = supabase.storage.from_("observation_photos").download(boundary_path)
     
         st.download_button(
             label="Download Boundary (GeoJSON)",
@@ -4418,7 +4418,7 @@ elif page == "Gegenereerde output":
         )
     
     except Exception as e:
-        st.warning(f"No boundary file found for {selected}.")
+        st.warning(f"No boundary file found for {selected_project}.")
 
     
 
