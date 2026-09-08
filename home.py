@@ -4378,8 +4378,6 @@ elif page == "Gegenereerde output":
     # ---------------------------------------------------------
     # DOWNLOAD REPORTS + OBSERVATIONS
     # ---------------------------------------------------------
-    st.markdown("---")
-    st.subheader("Download Data")
     observations_DL = supabase.table("observations").select("*").eq("project", selected_project ).execute().data
     polygon_rows_DL = (supabase.table("polygons_app").select("*").eq("project", selected_project ).execute()).data
     df_observations_DL = pd.DataFrame(observations_DL)
@@ -4388,6 +4386,7 @@ elif page == "Gegenereerde output":
 
     import geopandas as gpd
     from shapely.geometry import Point
+    import tempfile
     
     # Select columns
     obs = df_observations_DL[["lat", "lon", "species", "function", "animal_type", "aantal"]].copy()
@@ -4407,6 +4406,28 @@ elif page == "Gegenereerde output":
     
     # Make GeoDataFrame
     obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
+
+    # Functies die we willen behouden
+    valid_functions = [
+        "zomerverblijfplaats",
+        "nestlocatie",
+        "kraamverblijfplaats",
+        "paarverblijfplaats",
+        "winterverblijfplaats"
+    ]
+    
+    # Filter op functie
+    obs_filtered = obs_gdf[obs_gdf["functie"].isin(valid_functions)].copy()
+    
+    # Split op groep
+    obs_bats = obs_filtered[obs_filtered["groep"] == "bat"].copy()
+    obs_birds = obs_filtered[obs_filtered["groep"] == "bird"].copy()
+
+    obs_bats_gdf = gpd.GeoDataFrame(obs_bats, geometry="geometry", crs="EPSG:4326")
+    obs_birds_gdf = gpd.GeoDataFrame(obs_birds, geometry="geometry", crs="EPSG:4326")
+
+
+
 
     from shapely.geometry import shape
     from shapely import wkt
@@ -4456,8 +4477,6 @@ elif page == "Gegenereerde output":
     poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
 
 
-
-
     polygons = polygons_gdf[polygons_gdf["project_polygon"] == selected_project].copy()
     
     polygons = polygons.rename(columns={
@@ -4466,60 +4485,19 @@ elif page == "Gegenereerde output":
     
     polygons_gdf_clean = gpd.GeoDataFrame(polygons, geometry="geometry", crs="EPSG:4326")
 
-    # import json
     
-    # # Layer 1: Verblijfplaatsen (observaties)
-    # layer_verblijfplaatsen = {
-    #     "type": "FeatureCollection",
-    #     "name": "Verblijfplaatsen",
-    #     "features": json.loads(obs_gdf.to_json())["features"]
-    # }
-    
-    # # Layer 2: Functionele gebieden (polygon rows)
-    # layer_functionele_gebieden = {
-    #     "type": "FeatureCollection",
-    #     "name": "Functionele gebieden",
-    #     "features": json.loads(poly_rows_gdf.to_json())["features"]
-    # }
-    
-    # # Layer 3: Onderzoeksgebied (project polygons)
-    # layer_onderzoeksgebied = {
-    #     "type": "FeatureCollection",
-    #     "name": "Onderzoeksgebied",
-    #     "features": json.loads(polygons_gdf_clean.to_json())["features"]
-    # }
-    
-    # multi_layer_geojson = {
-    #     "type": "MultiLayerGeoJSON",
-    #     "layers": [
-    #         layer_verblijfplaatsen,
-    #         layer_functionele_gebieden,
-    #         layer_onderzoeksgebied
-    #     ]
-    # }
-    
-    # geojson_str = json.dumps(multi_layer_geojson)
-    
-    
-    
-    # st.download_button(
-    #     label="Download GeoJSON (meerdere lagen)",
-    #     file_name=f"{selected_project}_lagen.geojson",
-    #     mime="application/geo+json",
-    #     data=geojson_str
-    # )
-
     import tempfile
-    import geopandas as gpd
     
     # Maak een tijdelijk bestand
     tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
     gpkg_path = tmpfile.name
     
     # Schrijf elke laag apart in dezelfde GeoPackage
-    obs_gdf.to_file(gpkg_path, layer="Verblijfplaatsen", driver="GPKG")
+    obs_bats_gdf.to_file(gpkg_path, layer="Vleermuizen_verblijfplaatsen", driver="GPKG")
+    obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
     poly_rows_gdf.to_file(gpkg_path, layer="Functionele_gebieden", driver="GPKG")
     polygons_gdf_clean.to_file(gpkg_path, layer="Onderzoeksgebied", driver="GPKG")
+
     
     with open(gpkg_path, "rb") as f:
         st.download_button(
@@ -4528,3 +4506,4 @@ elif page == "Gegenereerde output":
             mime="application/geopackage+sqlite3",
             data=f.read()
         )
+
