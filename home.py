@@ -4388,6 +4388,80 @@ elif page == "Gegenereerde output":
     df_observations_DL
     df_polygon_rows_DL
     polygons_gdf
+    import geopandas as gpd
+    from shapely.geometry import Point
+    
+    # Select columns
+    obs = df_observations_DL[["lat", "lon", "species", "function", "animal_type", "aantal"]].copy()
+    
+    # Rename columns to Dutch
+    obs = obs.rename(columns={
+        "lat": "latitude",
+        "lon": "longitude",
+        "species": "soort",
+        "function": "functie",
+        "animal_type": "groep",
+        "aantal": "aantal"
+    })
+    
+    # Convert lat/lon → geometry
+    obs["geometry"] = obs.apply(lambda row: Point(row["longitude"], row["latitude"]), axis=1)
+    
+    # Make GeoDataFrame
+    obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
+
+    poly_rows = df_polygon_rows_DL[["date", "group", "species", "function", "geometry", "aantal"]].copy()
+    
+    poly_rows = poly_rows.rename(columns={
+        "date": "datum",
+        "group": "groep",
+        "species": "soort",
+        "function": "functie",
+        "aantal": "aantal"
+    })
+    
+    poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
+
+    polygons = polygons_gdf[polygons_gdf["project_polygon"] == selected_project].copy()
+    
+    polygons = polygons.rename(columns={
+        "project_polygon": "project"
+    })
+    
+    polygons_gdf_clean = gpd.GeoDataFrame(polygons, geometry="geometry", crs="EPSG:4326")
+
+    combined = pd.concat([obs_gdf, poly_rows_gdf, polygons_gdf_clean], ignore_index=True)
+    combined_gdf = gpd.GeoDataFrame(combined, geometry="geometry", crs="EPSG:4326")
+
+    geojson_str = combined_gdf.to_json()
+    
+    st.download_button(
+        label="Download GeoJSON",
+        file_name="combined_data.geojson",
+        mime="application/geo+json",
+        data=geojson_str
+    )
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     # # Observations
