@@ -4388,43 +4388,64 @@ elif page == "Gegenereerde output":
     from shapely.geometry import Point
     import tempfile
     
-    # Select columns
-    obs = df_observations_DL[["lat", "lon", "species", "function", "animal_type", "aantal"]].copy()
+    # Required columns for observations
+    required_obs_cols = ["lat", "lon", "species", "function", "animal_type", "aantal"]
     
-    # Rename columns to Dutch
-    obs = obs.rename(columns={
-        "lat": "latitude",
-        "lon": "longitude",
-        "species": "soort",
-        "function": "functie",
-        "animal_type": "groep",
-        "aantal": "aantal"
-    })
+    # Check if observations table has all required columns
+    has_observations = (
+        not df_observations_DL.empty
+        and all(col in df_observations_DL.columns for col in required_obs_cols)
+    )
     
-    # Convert lat/lon → geometry
-    obs["geometry"] = obs.apply(lambda row: Point(row["longitude"], row["latitude"]), axis=1)
+    if has_observations:
     
-    # Make GeoDataFrame
-    obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
+        # Select columns
+        obs = df_observations_DL[required_obs_cols].copy()
+        
+        # Rename columns to Dutch
+        obs = obs.rename(columns={
+            "lat": "latitude",
+            "lon": "longitude",
+            "species": "soort",
+            "function": "functie",
+            "animal_type": "groep",
+            "aantal": "aantal"
+        })
+        
+        # Convert lat/lon → geometry
+        obs["geometry"] = obs.apply(lambda row: Point(row["longitude"], row["latitude"]), axis=1)
+        
+        # Make GeoDataFrame
+        obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
+    
+        # Functies die we willen behouden
+        valid_functions = [
+            "zomerverblijfplaats",
+            "nestlocatie",
+            "kraamverblijfplaats",
+            "paarverblijfplaats",
+            "winterverblijfplaats"
+        ]
+        
+        # Filter op functie
+        obs_filtered = obs_gdf[obs_gdf["functie"].isin(valid_functions)].copy()
+        
+        # Split op groep
+        obs_bats = obs_filtered[obs_filtered["groep"] == "bat"].copy()
+        obs_birds = obs_filtered[obs_filtered["groep"] == "bird"].copy()
+    
+        # GeoDataFrames
+        obs_bats_gdf = gpd.GeoDataFrame(obs_bats, geometry="geometry", crs="EPSG:4326")
+        obs_birds_gdf = gpd.GeoDataFrame(obs_birds, geometry="geometry", crs="EPSG:4326")
+    
+    else:
+        # Create empty GeoDataFrames with correct structure
+        obs_bats_gdf = gpd.GeoDataFrame(columns=["latitude","longitude","soort","functie","groep","aantal","geometry"],
+                                        geometry="geometry", crs="EPSG:4326")
+    
+        obs_birds_gdf = gpd.GeoDataFrame(columns=["latitude","longitude","soort","functie","groep","aantal","geometry"],
+                                         geometry="geometry", crs="EPSG:4326")
 
-    # Functies die we willen behouden
-    valid_functions = [
-        "zomerverblijfplaats",
-        "nestlocatie",
-        "kraamverblijfplaats",
-        "paarverblijfplaats",
-        "winterverblijfplaats"
-    ]
-    
-    # Filter op functie
-    obs_filtered = obs_gdf[obs_gdf["functie"].isin(valid_functions)].copy()
-    
-    # Split op groep
-    obs_bats = obs_filtered[obs_filtered["groep"] == "bat"].copy()
-    obs_birds = obs_filtered[obs_filtered["groep"] == "bird"].copy()
-
-    obs_bats_gdf = gpd.GeoDataFrame(obs_bats, geometry="geometry", crs="EPSG:4326")
-    obs_birds_gdf = gpd.GeoDataFrame(obs_birds, geometry="geometry", crs="EPSG:4326")
 
 
 
@@ -4503,10 +4524,10 @@ elif page == "Gegenereerde output":
     tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
     gpkg_path = tmpfile.name
     
-    # Vleermuizen
-    obs_bats_gdf.to_file(gpkg_path, layer="Vleermuizen_verblijfplaatsen", driver="GPKG")
+    if not obs_bats_gdf.empty:
+        obs_bats_gdf.to_file(gpkg_path, layer="Vleermuizen_verblijfplaatsen", driver="GPKG")
     
-    # Vogels
+    if not obs_birds_gdf.empty:
     obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
     
     # Functionele gebieden (alleen als aanwezig)
