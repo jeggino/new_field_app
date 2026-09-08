@@ -1211,12 +1211,19 @@ elif page == "Gegenereerde output":
     # PROJECT FILTER
     # ==========================================================
     
+    # projects = sorted(
+    #     df_reports["project"]
+    #     .dropna()
+    #     .unique()
+    # )
+
     projects = sorted(
-        df_reports["project"]
+        df_projects["name"]
         .dropna()
         .unique()
     )
-    
+
+        
     selected_project = st.selectbox(
         "Project",
         projects
@@ -4347,7 +4354,7 @@ elif page == "Gegenereerde output":
             # Example
         excel_file = create_excel_file({
             "Dagverslagen": df_veldbezoeken,
-            "Vleermuizen": df_verblijfplaatsen,
+            "Vleermuizen (Verblijfplaatsen)": df_verblijfplaatsen,
             "Vleermuizen (Functionele gebieden)": df_bats_polygons,
             "Huismussen": df_hm_nestlocatie,
             "Gierzwaluwen": df_zw_nestlocatie,
