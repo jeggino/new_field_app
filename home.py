@@ -4528,7 +4528,7 @@ elif page == "Gegenereerde output":
         obs_bats_gdf.to_file(gpkg_path, layer="Vleermuizen_verblijfplaatsen", driver="GPKG")
     
     if not obs_birds_gdf.empty:
-    obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
+        obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
     
     # Functionele gebieden (alleen als aanwezig)
     if poly_rows_gdf is not None and not poly_rows_gdf.empty:
