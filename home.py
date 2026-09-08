@@ -1211,11 +1211,6 @@ elif page == "Gegenereerde output":
     # PROJECT FILTER
     # ==========================================================
     
-    # projects = sorted(
-    #     df_reports["project"]
-    #     .dropna()
-    #     .unique()
-    # )
 
     projects = sorted(
         df_projects["name"]
@@ -1223,11 +1218,19 @@ elif page == "Gegenereerde output":
         .unique()
     )
 
-        
-    selected_project = st.selectbox(
-        "Project",
-        projects
-    )
+    
+
+    # Create mapping: pretty → original
+    project_map = {
+        name.replace("_", " "): name
+        for name in projects_raw
+    }
+    
+    # Show pretty names in dropdown
+    selected_pretty = st.selectbox("Project", list(project_map.keys()))
+    
+    # Get original name for filtering
+    selected_project = project_map[selected_pretty]
     
     df_filtered = df_reports[
         df_reports["project"] == selected_project
