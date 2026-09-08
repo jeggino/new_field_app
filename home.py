@@ -4382,7 +4382,7 @@ elif page == "Gegenereerde output":
     st.subheader("Download Data")
     observations_DL = supabase.table("observations").select("*").eq("project", selected_project ).execute().data
     polygon_rows_DL = (supabase.table("polygons_app").select("*").eq("project", selected_project ).execute()).data
-    df_observations_DL = pd.DataFrame(observations)
+    df_observations_DL = pd.DataFrame(observations_DL)
     df_polygon_rows_DL = pd.DataFrame(polygon_rows_DL)
 
     df_observations_DL
