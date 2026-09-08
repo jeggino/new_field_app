@@ -4410,17 +4410,38 @@ elif page == "Gegenereerde output":
     # Make GeoDataFrame
     obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
 
+    from shapely.geometry import shape
+    from shapely import wkt
+    import shapely
+    
     def fix_geometry(g):
+        # Skip missing values
+        if g is None:
+            return None
+        if isinstance(g, float):  # NaN
+            return None
+    
         # GeoJSON dict
         if isinstance(g, dict):
-            return shape(g)
+            try:
+                return shape(g)
+            except Exception:
+                return None
     
         # WKT string
         if isinstance(g, str):
-            return wkt.loads(g)
+            try:
+                return wkt.loads(g)
+            except Exception:
+                return None
     
         # Already shapely
-        return g
+        if isinstance(g, shapely.geometry.base.BaseGeometry):
+            return g
+    
+        # Unknown type → skip
+        return None
+
     
     df_polygon_rows_DL["geometry"] = df_polygon_rows_DL["geometry"].apply(fix_geometry)
     
