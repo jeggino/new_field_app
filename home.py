@@ -4385,9 +4385,7 @@ elif page == "Gegenereerde output":
     df_observations_DL = pd.DataFrame(observations_DL)
     df_polygon_rows_DL = pd.DataFrame(polygon_rows_DL)
 
-    df_observations_DL
-    df_polygon_rows_DL
-    polygons_gdf
+
     import geopandas as gpd
     from shapely.geometry import Point
     
@@ -4468,71 +4466,47 @@ elif page == "Gegenereerde output":
     
     polygons_gdf_clean = gpd.GeoDataFrame(polygons, geometry="geometry", crs="EPSG:4326")
 
-    combined = pd.concat([obs_gdf, poly_rows_gdf, polygons_gdf_clean], ignore_index=True)
-    combined_gdf = gpd.GeoDataFrame(combined, geometry="geometry", crs="EPSG:4326")
-
-    geojson_str = combined_gdf.to_json()
+    import json
+    
+    # Layer 1: Verblijfplaatsen (observaties)
+    layer_verblijfplaatsen = {
+        "type": "FeatureCollection",
+        "name": "Verblijfplaatsen",
+        "features": json.loads(obs_gdf.to_json())["features"]
+    }
+    
+    # Layer 2: Functionele gebieden (polygon rows)
+    layer_functionele_gebieden = {
+        "type": "FeatureCollection",
+        "name": "Functionele gebieden",
+        "features": json.loads(poly_rows_gdf.to_json())["features"]
+    }
+    
+    # Layer 3: Onderzoeksgebied (project polygons)
+    layer_onderzoeksgebied = {
+        "type": "FeatureCollection",
+        "name": "Onderzoeksgebied",
+        "features": json.loads(polygons_gdf_clean.to_json())["features"]
+    }
+    
+    multi_layer_geojson = {
+        "type": "MultiLayerGeoJSON",
+        "layers": [
+            layer_verblijfplaatsen,
+            layer_functionele_gebieden,
+            layer_onderzoeksgebied
+        ]
+    }
+    
+    geojson_str = json.dumps(multi_layer_geojson)
+    
+    
     
     st.download_button(
-        label="Download GeoJSON",
-        file_name="combined_data.geojson",
+        label="Download GeoJSON (meerdere lagen)",
+        file_name=f"{selected_project}_lagen.geojson",
         mime="application/geo+json",
         data=geojson_str
     )
 
 
-
-
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # # Observations
-    # obs_res = supabase.table("observations").select("*").eq("project", selected_project ).order("date", desc=True).execute()
-    # obs_df = pd.DataFrame(obs_res.data or [])
-    # obs_df
-    # # st.download_button(
-    # #     label="Download Observations (CSV)",
-    # #     data=obs_df.to_csv(index=False).encode("utf-8"),
-    # #     file_name=f"{selected}_observations.csv",
-    # #     mime="text/csv",
-    # # )
-
-    
-    # # Path inside the bucket
-    # # Download file from storage
-    # boundary_path = f"{selected_project }.geojson"
-    # try:
-    #     boundary_file = supabase.storage.from_("observation_photos").download(boundary_path)
-    
-    #     st.download_button(
-    #         label="Download Boundary (GeoJSON)",
-    #         data=boundary_file,
-    #         file_name=f"{selected}_boundary.geojson",
-    #         mime="application/geo+json",
-    #     )
-    
-    # except Exception as e:
-    #     st.warning(f"No boundary file found for {selected_project}.")
-
-    
-
-
-
-
-    
