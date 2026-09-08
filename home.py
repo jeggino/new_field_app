@@ -4419,6 +4419,10 @@ elif page == "Gegenereerde output":
         "function": "functie",
         "aantal": "aantal"
     })
+
+    st.write(df_polygon_rows_DL["geometry"].iloc[0])
+    st.write(type(df_polygon_rows_DL["geometry"].iloc[0]))
+
     
     poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
 
