@@ -1223,7 +1223,7 @@ elif page == "Gegenereerde output":
     # Create mapping: pretty → original
     project_map = {
         name.replace("_", " "): name
-        for name in projects_raw
+        for name in projects
     }
     
     # Show pretty names in dropdown
