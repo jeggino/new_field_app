@@ -4466,47 +4466,65 @@ elif page == "Gegenereerde output":
     
     polygons_gdf_clean = gpd.GeoDataFrame(polygons, geometry="geometry", crs="EPSG:4326")
 
-    import json
+    # import json
     
-    # Layer 1: Verblijfplaatsen (observaties)
-    layer_verblijfplaatsen = {
-        "type": "FeatureCollection",
-        "name": "Verblijfplaatsen",
-        "features": json.loads(obs_gdf.to_json())["features"]
-    }
+    # # Layer 1: Verblijfplaatsen (observaties)
+    # layer_verblijfplaatsen = {
+    #     "type": "FeatureCollection",
+    #     "name": "Verblijfplaatsen",
+    #     "features": json.loads(obs_gdf.to_json())["features"]
+    # }
     
-    # Layer 2: Functionele gebieden (polygon rows)
-    layer_functionele_gebieden = {
-        "type": "FeatureCollection",
-        "name": "Functionele gebieden",
-        "features": json.loads(poly_rows_gdf.to_json())["features"]
-    }
+    # # Layer 2: Functionele gebieden (polygon rows)
+    # layer_functionele_gebieden = {
+    #     "type": "FeatureCollection",
+    #     "name": "Functionele gebieden",
+    #     "features": json.loads(poly_rows_gdf.to_json())["features"]
+    # }
     
-    # Layer 3: Onderzoeksgebied (project polygons)
-    layer_onderzoeksgebied = {
-        "type": "FeatureCollection",
-        "name": "Onderzoeksgebied",
-        "features": json.loads(polygons_gdf_clean.to_json())["features"]
-    }
+    # # Layer 3: Onderzoeksgebied (project polygons)
+    # layer_onderzoeksgebied = {
+    #     "type": "FeatureCollection",
+    #     "name": "Onderzoeksgebied",
+    #     "features": json.loads(polygons_gdf_clean.to_json())["features"]
+    # }
     
-    multi_layer_geojson = {
-        "type": "MultiLayerGeoJSON",
-        "layers": [
-            layer_verblijfplaatsen,
-            layer_functionele_gebieden,
-            layer_onderzoeksgebied
-        ]
-    }
+    # multi_layer_geojson = {
+    #     "type": "MultiLayerGeoJSON",
+    #     "layers": [
+    #         layer_verblijfplaatsen,
+    #         layer_functionele_gebieden,
+    #         layer_onderzoeksgebied
+    #     ]
+    # }
     
-    geojson_str = json.dumps(multi_layer_geojson)
+    # geojson_str = json.dumps(multi_layer_geojson)
     
     
     
-    st.download_button(
-        label="Download GeoJSON (meerdere lagen)",
-        file_name=f"{selected_project}_lagen.geojson",
-        mime="application/geo+json",
-        data=geojson_str
-    )
+    # st.download_button(
+    #     label="Download GeoJSON (meerdere lagen)",
+    #     file_name=f"{selected_project}_lagen.geojson",
+    #     mime="application/geo+json",
+    #     data=geojson_str
+    # )
 
-
+    import tempfile
+    import geopandas as gpd
+    
+    # Maak een tijdelijk bestand
+    tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
+    gpkg_path = tmpfile.name
+    
+    # Schrijf elke laag apart in dezelfde GeoPackage
+    obs_gdf.to_file(gpkg_path, layer="Verblijfplaatsen", driver="GPKG")
+    poly_rows_gdf.to_file(gpkg_path, layer="Functionele_gebieden", driver="GPKG")
+    polygons_gdf_clean.to_file(gpkg_path, layer="Onderzoeksgebied", driver="GPKG")
+    
+    with open(gpkg_path, "rb") as f:
+        st.download_button(
+            label="Download GeoPackage (.gpkg)",
+            file_name=f"{selected_project}.gpkg",
+            mime="application/geopackage+sqlite3",
+            data=f.read()
+        )
