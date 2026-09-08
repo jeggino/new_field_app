@@ -4462,19 +4462,30 @@ elif page == "Gegenereerde output":
         return None
 
     
-    df_polygon_rows_DL["geometry"] = df_polygon_rows_DL["geometry"].apply(fix_geometry)
+    # --- SAFE CHECK: polygon_rows_DL kan leeg zijn of geen geometry hebben ---
+    has_polygon_rows = (
+        not df_polygon_rows_DL.empty
+        and "geometry" in df_polygon_rows_DL.columns
+    )
     
-    poly_rows = df_polygon_rows_DL[["date", "group", "species", "function", "geometry", "aantal"]].copy()
+    if has_polygon_rows:
+        df_polygon_rows_DL["geometry"] = df_polygon_rows_DL["geometry"].apply(fix_geometry)
+        df_polygon_rows_DL = df_polygon_rows_DL.dropna(subset=["geometry"])
     
-    poly_rows = poly_rows.rename(columns={
-        "date": "datum",
-        "group": "groep",
-        "species": "soort",
-        "function": "functie",
-        "aantal": "aantal"
-    })
+        poly_rows = df_polygon_rows_DL[["date", "group", "species", "function", "geometry", "aantal"]].copy()
     
-    poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
+        poly_rows = poly_rows.rename(columns={
+            "date": "datum",
+            "group": "groep",
+            "species": "soort",
+            "function": "functie",
+            "aantal": "aantal"
+        })
+    
+        poly_rows_gdf = gpd.GeoDataFrame(poly_rows, geometry="geometry", crs="EPSG:4326")
+    else:
+        poly_rows_gdf = None
+
 
 
     polygons = polygons_gdf[polygons_gdf["project_polygon"] == selected_project].copy()
@@ -4492,11 +4503,19 @@ elif page == "Gegenereerde output":
     tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
     gpkg_path = tmpfile.name
     
-    # Schrijf elke laag apart in dezelfde GeoPackage
+    # Vleermuizen
     obs_bats_gdf.to_file(gpkg_path, layer="Vleermuizen_verblijfplaatsen", driver="GPKG")
+    
+    # Vogels
     obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
-    poly_rows_gdf.to_file(gpkg_path, layer="Functionele_gebieden", driver="GPKG")
+    
+    # Functionele gebieden (alleen als aanwezig)
+    if poly_rows_gdf is not None and not poly_rows_gdf.empty:
+        poly_rows_gdf.to_file(gpkg_path, layer="Functionele_gebieden", driver="GPKG")
+    
+    # Onderzoeksgebied
     polygons_gdf_clean.to_file(gpkg_path, layer="Onderzoeksgebied", driver="GPKG")
+
 
     
     with open(gpkg_path, "rb") as f:
@@ -4506,4 +4525,5 @@ elif page == "Gegenereerde output":
             mime="application/geopackage+sqlite3",
             data=f.read()
         )
+
 
