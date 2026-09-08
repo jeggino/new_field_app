@@ -4375,6 +4375,53 @@ elif page == "Gegenereerde output":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    # ---------------------------------------------------------
+    # DOWNLOAD REPORTS + OBSERVATIONS
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.subheader("Download Data")
+
+    # Reports
+    report_res = supabase.table("report").select("*").eq("project", selected_project ).order("date", desc=True).execute()
+    report_df = pd.DataFrame(report_res.data or [])
+    report_df
+    # st.download_button(
+    #     label="Download Reports (CSV)",
+    #     data=report_df.to_csv(index=False).encode("utf-8"),
+    #     file_name=f"{selected}_reports.csv",
+    #     mime="text/csv",
+    # )
+
+    # Observations
+    obs_res = supabase.table("observations").select("*").eq("project", selected_project ).order("date", desc=True).execute()
+    obs_df = pd.DataFrame(obs_res.data or [])
+    obs_df
+    # st.download_button(
+    #     label="Download Observations (CSV)",
+    #     data=obs_df.to_csv(index=False).encode("utf-8"),
+    #     file_name=f"{selected}_observations.csv",
+    #     mime="text/csv",
+    # )
+
+    
+    # Path inside the bucket
+    # Download file from storage
+    boundary_path = f"{selected_project }.geojson"
+    try:
+        boundary_file = supabase.storage.from_(BUCKET).download(boundary_path)
+    
+        st.download_button(
+            label="Download Boundary (GeoJSON)",
+            data=boundary_file,
+            file_name=f"{selected}_boundary.geojson",
+            mime="application/geo+json",
+        )
+    
+    except Exception as e:
+        st.warning(f"No boundary file found for {selected}.")
+
+    
+
 
 
 
