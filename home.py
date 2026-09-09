@@ -4605,6 +4605,19 @@ elif page == "Gegenereerde output":
         headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
         json=payload
     )
+
+    st.info("Updating GitHub Pages… this usually takes 5–10 seconds.")
+
+    
+    # Trigger GitHub Pages rebuild
+    requests.post(
+        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+        headers={
+            "Authorization": f"Bearer {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github+json"
+        }
+    )
+
     
     if upload_response.status_code in [200, 201]:
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
