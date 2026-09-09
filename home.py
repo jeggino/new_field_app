@@ -4742,3 +4742,40 @@ elif page == "Gegenereerde output":
     else:
         st.error(f"Upload failed: {upload_response.text}")
 
+
+
+    import os
+    
+    
+    # Bucket + folder
+    BUCKET = "maps"
+    FOLDER = "HTML"
+    
+    # File name
+    FILE_PATH = f"{FOLDER}/{safe_project_name}_HTML.html"
+    
+    # Force Folium to use CDN assets (important!)
+    folium.utilities.normalize = lambda x: x
+    
+    # Create and save map
+    m_html.save(safe_project_name + "_HTML.html")
+    
+    # Read file bytes
+    with open(safe_project_name + "_HTML.html", "rb") as f:
+        file_bytes = f.read()
+    
+    # Upload or overwrite
+    bucket = supabase.storage.from_(BUCKET)
+    
+    try:
+        bucket.upload(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
+    except Exception:
+        bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
+    
+    # Public URL (IMPORTANT: add ?download=0)
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download=0"
+    
+    st.success("Map uploaded successfully!")
+    st.write(public_url)
+
+
