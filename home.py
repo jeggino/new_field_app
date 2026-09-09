@@ -1977,7 +1977,7 @@ elif page == "Gegenereerde output":
     #  HTML
     #  --------------------------------
     st.text(" ") # Adds a blank line
-    st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
+    # st.subheader("Kaart", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
 
     import folium
     from folium.plugins import MarkerCluster, BeautifyIcon
@@ -3292,7 +3292,7 @@ elif page == "Gegenereerde output":
     if len(polygon_rows) == 0:
         pass  # skip
     else:
-        polygons = folium.FeatureGroup(name="Functionele gebieden").add_to(m)
+        polygons = folium.FeatureGroup(name="Functionele gebieden").add_to(m_html)
     
     # --------------------------------------------------
     # OBSERVATIONS
