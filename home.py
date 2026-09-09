@@ -4558,7 +4558,7 @@ elif page == "Gegenereerde output":
     GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
     USERNAME = "jeggino"
     REPO = "EE_HTML_particulieren"
-    BRANCH = "main"
+    BRANCH = "gh-pages"
     FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
     
@@ -4613,7 +4613,7 @@ elif page == "Gegenereerde output":
     
     if upload_response.status_code in [200, 201]:
        
-        github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+        github_url = f"https://{USERNAME}.github.io/main/{FILE_PATH}"
         st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
 
 
