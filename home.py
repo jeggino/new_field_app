@@ -4608,7 +4608,13 @@ elif page == "Gegenereerde output":
     
     if upload_response.status_code in [200, 201]:
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-        st.success(f"De kaart is met succes naar de GitHub‑repository geüpload. Klik op deze :red[link]({github_url}) om de kaart te bekijken en te delen als je dat wilt.")
+        # st.success(f"De kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [link]({github_url}) om de kaart te bekijken en te delen als je dat wilt.")
+        st.success(
+            f"""De kaart is met succes naar de GitHub‑repository geüpload. 
+            Klik op deze <a href="{github_url}" target="_blank" 
+            style="color:red; font-weight:bold;">link</a> om de kaart te bekijken en te delen als je dat wilt."""
+        )
+
 
     else:
         st.error(f"Upload failed: {upload_response.text}")
