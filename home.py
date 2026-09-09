@@ -4676,9 +4676,14 @@ elif page == "Gegenereerde output":
 
     
     if upload_response.status_code in [200, 201]:
-       
-        github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-        st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
+        import time
+        import streamlit as st
+        
+        with st.spinner("Processing..."):
+            time.sleep(10)
+ 
+            github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+            st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
 
 
 
