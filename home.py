@@ -4561,14 +4561,9 @@ elif page == "Gegenereerde output":
     BRANCH = "main"
     FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
-    data=html_map,
-    file_name=f"{safe_project_name}_HTML.html",
     
-    # # 1. Create Folium map
-    m = folium.Map(location=[52.5, 4.8], zoom_start=12)
     
     # # 2. Save map to HTML
-    # html_file = "map.html"
     m_html.save(FILE_PATH)
     
     # # 3. Read file content
@@ -4606,17 +4601,7 @@ elif page == "Gegenereerde output":
         json=payload
     )
 
-    st.info("Updating GitHub Pages… this usually takes 5–10 seconds.")
-
-    
-    # Trigger GitHub Pages rebuild
-    requests.post(
-        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
-        headers={
-            "Authorization": f"Bearer {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github+json"
-        }
-    )
+   
 
     
     if upload_response.status_code in [200, 201]:
