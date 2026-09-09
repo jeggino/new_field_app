@@ -4759,10 +4759,10 @@ elif page == "Gegenereerde output":
 
     # ,embed=True
 
-    html_map = m_html.get_root().render()
+    # html_map = m_html.get_root().render()
     
     # Create and save map
-    html_map.save(safe_project_name + "_HTML.html")
+    m_html.save(safe_project_name + "_HTML.html")
     
     # Read file bytes
     with open(safe_project_name + "_HTML.html", "rb") as f:
@@ -4777,7 +4777,7 @@ elif page == "Gegenereerde output":
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
     # Public URL (IMPORTANT: add ?download=0)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download=0"
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
     
     st.success("Map uploaded successfully!")
     st.write(public_url)
