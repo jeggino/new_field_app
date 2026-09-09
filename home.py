@@ -4620,6 +4620,7 @@ elif page == "Gegenereerde output":
 
     
     if upload_response.status_code in [200, 201]:
+        import time
         cache_buster = int(time.time())
         
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}?cb={cache_buster}"
