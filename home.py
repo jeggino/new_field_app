@@ -4608,7 +4608,7 @@ elif page == "Gegenereerde output":
     
     if upload_response.status_code in [200, 201]:
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-        st.subheader(f"De kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen als je dat wilt.")
+        st.markdown(f"De kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen als je dat wilt.",text_alignment = "justify")
 
 
 
