@@ -4565,18 +4565,18 @@ elif page == "Gegenereerde output":
     file_name=f"{safe_project_name}_HTML.html",
     
     # # 1. Create Folium map
-    # m = folium.Map(location=[52.5, 4.8], zoom_start=12)
+    m = folium.Map(location=[52.5, 4.8], zoom_start=12)
     
     # # 2. Save map to HTML
-    # html_file = "map.html"
-    # m.save(html_file)
+    html_file = "map.html"
+    m.save(html_file)
     
     # # 3. Read file content
-    # with open(html_file, "rb") as f:
-    #     content = f.read()
+    with open(html_file, "rb") as f:
+        content = f.read()
     
     # # Encode file to base64 for GitHub API
-    encoded_content = base64.b64encode(m_html).decode("utf-8")
+    encoded_content = base64.b64encode(content).decode("utf-8")
     
     # 4. Upload to GitHub
     url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}"
