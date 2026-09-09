@@ -4591,7 +4591,6 @@ elif page == "Gegenereerde output":
     response = supabase.storage.from_("maps").upload(
         FILE_PATH,
         file_bytes,
-        upsert=True
     )
     
     # Check for errors
