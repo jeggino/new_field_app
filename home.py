@@ -4756,9 +4756,13 @@ elif page == "Gegenereerde output":
     
     # Force Folium to use CDN assets (important!)
     folium.utilities.normalize = lambda x: x
+
+    # ,embed=True
+
+    html_map = m_html.get_root().render()
     
     # Create and save map
-    m_html.save(safe_project_name + "_HTML.html")
+    html_map.save(safe_project_name + "_HTML.html")
     
     # Read file bytes
     with open(safe_project_name + "_HTML.html", "rb") as f:
