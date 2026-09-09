@@ -4551,7 +4551,7 @@ elif page == "Gegenereerde output":
 
 
     
-    FILE_PATH = f"{safe_project_name}_HTML.html"
+    FILE_PATH = f"{safe_project_name}.html"
    
     # Save Folium map
     m_html.save(FILE_PATH)
