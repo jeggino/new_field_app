@@ -4566,13 +4566,13 @@ elif page == "Gegenereerde output":
     st.markdown("### 📄 HTML-bestand")
     
     # Download link
-    st.markdown(f"🔽 **Downloaden:**  
-    Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
+    st.markdown(f"🔽 **Downloaden:**  Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
     
     # Kopieer link
     st.markdown("📋 **Link kopiëren:**")
     st.code(public_url)
     st.copy_to_clipboard(public_url)
+
 
 
 
