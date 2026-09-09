@@ -4758,11 +4758,9 @@ elif page == "Gegenereerde output":
     FILE_NAME = f"{safe_project_name}_HTML.html"
     FILE_PATH = f"{FOLDER}/{FILE_NAME}"
     
-    # Create map
-    m = leafmap.Map(center=[52.5, 4.8], zoom=12)
-    
-    # Save fully embedded HTML
-    m.to_html(FILE_NAME, embed=True)
+
+    #  Save map
+    m_html.save(FILE_NAME)
     
     # Upload to Supabase
     with open(FILE_NAME, "rb") as f:
