@@ -4569,11 +4569,11 @@ elif page == "Gegenereerde output":
         file_bytes = f.read()
     
     try:
-        response = supabase.storage.from_("maps").upload(
+        response = supabase.storage.from_("maps").update(
             FILE_PATH,
-            file_bytes,
-            upsert=True
+            file_bytes
         )
+
         st.write("Supabase response:", response)
     
     except Exception as e:
