@@ -4607,17 +4607,11 @@ elif page == "Gegenereerde output":
     )
     
     if upload_response.status_code in [200, 201]:
-        st.success("Map uploaded to GitHub successfully!")
+        st.success("De kaart is met succes naar de GitHub‑repository geüpload.")
+        github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+        st.success(f"[Klik hier om de kaart te bekijken]({github_url})")
         
-        st.write(f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}")
-
-        import time
-        with st.spinner("Even geduld..."):
-            time.sleep(2)
-        
-        st.success("Klaar!")
-
-        st.iframe(f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}", height=600)
+        st.iframe(f"{github_url}", height=600)
     else:
         st.error(f"Upload failed: {upload_response.text}")
 
