@@ -4568,16 +4568,21 @@ elif page == "Gegenereerde output":
     with open(FILE_PATH, "rb") as f:
         file_bytes = f.read()
     
+    bucket = supabase.storage.from_("maps")
+    
     try:
-        response = supabase.storage.from_("maps").update(
+        response = bucket.upload(
             FILE_PATH,
-            file_bytes
+            file_bytes,
+            file_options={"contentType": "text/html"}
+        )
+    except Exception:
+        response = bucket.update(
+            FILE_PATH,
+            file_bytes,
+            file_options={"contentType": "text/html"}
         )
 
-        st.write("Supabase response:", response)
-    
-    except Exception as e:
-        st.error(f"Supabase error: {e}")
 
 
 
