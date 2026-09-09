@@ -4556,14 +4556,9 @@ elif page == "Gegenereerde output":
     except Exception:
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
-    st.markdown(f"Klik [**hier**]({public_url}) om het HTML-bestand te downloaden")
-
-
     
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
-    st.markdown("### 📄 HTML-bestand")
     
     # Download link
     st.markdown(f"🔽 **Downloaden:**  Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
@@ -4571,7 +4566,6 @@ elif page == "Gegenereerde output":
     # Kopieer link
     st.markdown("📋 **Link kopiëren:**")
     st.code(public_url)
-    st.copy_to_clipboard(public_url)
 
 
 
