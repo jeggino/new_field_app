@@ -4744,33 +4744,30 @@ elif page == "Gegenereerde output":
 
 
 
-    import os
+    import leafmap.foliumap as leafmap
+    from supabase import create_client
+    import streamlit as st
     
+    SUPABASE_URL = st.secrets["SUPABASE_URL"]
+    SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
     
-    # Bucket + folder
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    
     BUCKET = "maps"
     FOLDER = "HTML"
+    FILE_NAME = f"{safe_project_name}_HTML.html"
+    FILE_PATH = f"{FOLDER}/{FILE_NAME}"
     
-    # File name
-    FILE_PATH = f"{FOLDER}/{safe_project_name}_HTML.html"
+    # Create map
+    m = leafmap.Map(center=[52.5, 4.8], zoom=12)
     
-    # Force Folium to use CDN assets (important!)
-    folium.utilities.normalize = lambda x: x
-
-    # ,embed=True
-
-    # html_map = m_html.get_root().render()
+    # Save fully embedded HTML
+    m.to_html(FILE_NAME, embed=True)
     
-    # Create and save map
-    # m_html.save(safe_project_name + "_HTML.html")
-    m_html.to_html(safe_project_name + "_HTML.html", embed=True)
-
-    
-    # Read file bytes
-    with open(safe_project_name + "_HTML.html", "rb") as f:
+    # Upload to Supabase
+    with open(FILE_NAME, "rb") as f:
         file_bytes = f.read()
     
-    # Upload or overwrite
     bucket = supabase.storage.from_(BUCKET)
     
     try:
@@ -4778,10 +4775,8 @@ elif page == "Gegenereerde output":
     except Exception:
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
-    # Public URL (IMPORTANT: add ?download=0)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
+    # Public URL
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download=0"
     
-    st.success("Map uploaded successfully!")
+    st.success("Map uploaded!")
     st.write(public_url)
-
-
