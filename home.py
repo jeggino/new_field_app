@@ -4548,3 +4548,66 @@ elif page == "Gegenereerde output":
         )
 
 
+
+import streamlit as st
+import folium
+import base64
+import requests
+
+    # GitHub settings
+    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
+    USERNAME = "jeggino"
+    REPO = "HTML_particulieren"
+    BRANCH = "main"
+    FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
+
+            data=html_map,
+            file_name=f"{safe_project_name}_HTML.html",
+    
+    # # 1. Create Folium map
+    # m = folium.Map(location=[52.5, 4.8], zoom_start=12)
+    
+    # # 2. Save map to HTML
+    # html_file = "map.html"
+    # m.save(html_file)
+    
+    # # 3. Read file content
+    # with open(html_file, "rb") as f:
+    #     content = f.read()
+    
+    # Encode file to base64 for GitHub API
+    encoded_content = base64.b64encode(html_map).decode("utf-8")
+    
+    # 4. Upload to GitHub
+    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}"
+    
+    # Check if file exists (GitHub requires SHA for updates)
+    response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
+    
+    if response.status_code == 200:
+        sha = response.json()["sha"]
+    else:
+        sha = None
+    
+    # Prepare upload payload
+    payload = {
+        "message": "Upload Folium map from Streamlit",
+        "content": encoded_content,
+        "branch": BRANCH
+    }
+    
+    if sha:
+        payload["sha"] = sha  # required for overwriting
+    
+    # Upload file
+    upload_response = requests.put(
+        url,
+        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
+        json=payload
+    )
+    
+    if upload_response.status_code in [200, 201]:
+        st.success("Map uploaded to GitHub successfully!")
+    else:
+        st.error(f"Upload failed: {upload_response.text}")
+
