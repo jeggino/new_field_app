@@ -4610,6 +4610,20 @@ elif page == "Gegenereerde output":
         st.success("De kaart is met succes naar de GitHub‑repository geüpload.")
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
         st.success(f"[Klik hier om de kaart te bekijken]({github_url})")
+
+    st.success("Kaart succesvol geüpload naar GitHub!")
+
+    st.markdown(
+        f"""
+        <a href="{github_url}" target="_blank" onclick="navigator.clipboard.writeText('{github_url}')">
+            Klik hier om de kaart te bekijken
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    st.info("De link wordt automatisch gekopieerd wanneer je erop klikt.")
+
         
         st.iframe(f"{github_url}", height=600)
     else:
