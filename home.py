@@ -4773,8 +4773,8 @@ elif page == "Gegenereerde output":
     except Exception:
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
-    # Public URL
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
-    st.success("Map uploaded!")
-    st.write(public_url)
+    st.success("Kaart succesvol geüpload!")
+    st.markdown(f"[Klik hier om het HTML-bestand te downloaden]({public_url})")
+
