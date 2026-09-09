@@ -3038,7 +3038,7 @@ elif page == "Gegenereerde output":
     
     # with col2:
     # Display map
-    st_folium(m, use_container_width=True)
+    # st_folium(m, use_container_width=True)
     
 # --------------------------------------------------
 # DOWNLOAD MAP HTML
@@ -4568,11 +4568,11 @@ elif page == "Gegenereerde output":
     m = folium.Map(location=[52.5, 4.8], zoom_start=12)
     
     # # 2. Save map to HTML
-    html_file = "map.html"
-    m.save(html_file)
+    # html_file = "map.html"
+    m_html.save(FILE_PATH)
     
     # # 3. Read file content
-    with open(html_file, "rb") as f:
+    with open(FILE_PATH, "rb") as f:
         content = f.read()
     
     # # Encode file to base64 for GitHub API
