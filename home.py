@@ -4569,10 +4569,19 @@ elif page == "Gegenereerde output":
     🔽 **Downloaden:**  
     Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.
     
-    📋 **Link kopiëren:**  
-    Klik [**hier**](javascript:navigator.clipboard.writeText('{public_url}')) om de link te kopiëren.
-    """
-    )
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
+    
+    st.markdown("### 📄 HTML-bestand")
+    
+    # Download link
+    st.markdown(f"🔽 **Downloaden:**  
+    Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
+    
+    # Kopieer link
+    st.markdown("📋 **Link kopiëren:**")
+    st.code(public_url)
+    st.copy_to_clipboard(public_url)
+
 
 
     
