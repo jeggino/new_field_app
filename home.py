@@ -4574,7 +4574,8 @@ elif page == "Gegenereerde output":
     encoded_content = base64.b64encode(content).decode("utf-8")
     
     # 4. Upload to GitHub
-    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}"
+    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+
     
     # Check if file exists (GitHub requires SHA for updates)
     response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
