@@ -4557,7 +4557,7 @@ elif page == "Gegenereerde output":
     # GitHub settings
     GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
     USERNAME = "jeggino"
-    REPO = "HTML_particulieren"
+    REPO = "EE_HTML_particulieren"
     BRANCH = "main"
     FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
