@@ -4560,14 +4560,6 @@ elif page == "Gegenereerde output":
     st.markdown(f"Klik [**hier**]({public_url}) om het HTML-bestand te downloaden")
 
 
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
-    
-    st.markdown(
-        f"""
-    ### 📄 HTML-bestand
-    
-    🔽 **Downloaden:**  
-    Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.
     
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
@@ -4581,6 +4573,7 @@ elif page == "Gegenereerde output":
     st.markdown("📋 **Link kopiëren:**")
     st.code(public_url)
     st.copy_to_clipboard(public_url)
+
 
 
 
