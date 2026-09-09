@@ -4558,6 +4558,14 @@ elif page == "Gegenereerde output":
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
     FILE_PATH = f"{safe_project_name}.html"
+
+    # Save Folium map
+    m_html.save(FILE_PATH)
+    
+    # Read file
+    with open(FILE_PATH, "rb") as f:
+        file_bytes = f.read()
+        
     response = supabase.storage.from_("maps").upload(
         FILE_PATH,
         file_bytes,
