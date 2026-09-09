@@ -4572,6 +4572,6 @@ elif page == "Gegenereerde output":
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
     st.markdown(f"Klik [**hier**]({public_url}?download={FILE_PATH}) om het HTML-bestand te downloaden")
 
-    st.iframe(f"{public_url}?render=html")
+    st.html(f"{public_url}")
     
 
