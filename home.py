@@ -4561,8 +4561,8 @@ elif page == "Gegenereerde output":
     BRANCH = "main"
     FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
-            data=html_map,
-            file_name=f"{safe_project_name}_HTML.html",
+    data=html_map,
+    file_name=f"{safe_project_name}_HTML.html",
     
     # # 1. Create Folium map
     # m = folium.Map(location=[52.5, 4.8], zoom_start=12)
