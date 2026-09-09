@@ -4549,85 +4549,106 @@ elif page == "Gegenereerde output":
 
 
 
-    import streamlit as st
-    import folium
-    import base64
-    import requests
-
-    # GitHub settings
-    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
-    USERNAME = "jeggino"
-    REPO = "EE_HTML_particulieren"
-    BRANCH = "gh-pages"
-    FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
     
     
-    # # 2. Save map to HTML
+    # Save Folium map
     m_html.save(FILE_PATH)
     
-    # # 3. Read file content
+    # Read file
     with open(FILE_PATH, "rb") as f:
-        content = f.read()
+        file_bytes = f.read()
     
-    # # Encode file to base64 for GitHub API
-    encoded_content = base64.b64encode(content).decode("utf-8")
+    # Upload to Supabase Storage
+    supabase.storage.from_("maps").upload(FILE_PATH, file_bytes, upsert=True)
     
-    # 4. Upload to GitHub
-    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+    # Public URL
+    public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
+    
+    st.success(f"Your map is ready: {public_url}")
+
+
+
+
+    # import streamlit as st
+    # import folium
+    # import base64
+    # import requests
+
+    # # GitHub settings
+    # GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
+    # USERNAME = "jeggino"
+    # REPO = "EE_HTML_particulieren"
+    # BRANCH = "gh-pages"
+    # FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
 
     
-    # Check if file exists (GitHub requires SHA for updates)
-    response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
     
-    if response.status_code == 200:
-        sha = response.json()["sha"]
-    else:
-        sha = None
+    # # # 2. Save map to HTML
+    # m_html.save(FILE_PATH)
     
-    # Prepare upload payload
-    payload = {
-        "message": "Upload Folium map from Streamlit",
-        "content": encoded_content,
-        "branch": BRANCH
-    }
+    # # # 3. Read file content
+    # with open(FILE_PATH, "rb") as f:
+    #     content = f.read()
     
-    if sha:
-        payload["sha"] = sha  # required for overwriting
+    # # # Encode file to base64 for GitHub API
+    # encoded_content = base64.b64encode(content).decode("utf-8")
     
-    # Upload file
-    upload_response = requests.put(
-        url,
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
-        json=payload
-    )
+    # # 4. Upload to GitHub
+    # url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
 
-    requests.post(
-        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
-        headers={
-            "Authorization": f"Bearer {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github+json"
-        }
-    )
+    
+    # # Check if file exists (GitHub requires SHA for updates)
+    # response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
+    
+    # if response.status_code == 200:
+    #     sha = response.json()["sha"]
+    # else:
+    #     sha = None
+    
+    # # Prepare upload payload
+    # payload = {
+    #     "message": "Upload Folium map from Streamlit",
+    #     "content": encoded_content,
+    #     "branch": BRANCH
+    # }
+    
+    # if sha:
+    #     payload["sha"] = sha  # required for overwriting
+    
+    # # Upload file
+    # upload_response = requests.put(
+    #     url,
+    #     headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
+    #     json=payload
+    # )
 
-    requests.post(
-        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
-        headers={
-            "Authorization": f"Bearer {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github+json"
-        }
-    )
+    # requests.post(
+    #     f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+    #     headers={
+    #         "Authorization": f"Bearer {GITHUB_TOKEN}",
+    #         "Accept": "application/vnd.github+json"
+    #     }
+    # )
+
+    # requests.post(
+    #     f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+    #     headers={
+    #         "Authorization": f"Bearer {GITHUB_TOKEN}",
+    #         "Accept": "application/vnd.github+json"
+    #     }
+    # )
 
    
 
     
-    if upload_response.status_code in [200, 201]:
+    # if upload_response.status_code in [200, 201]:
        
-        github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-        st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
+    #     github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+    #     st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
 
 
 
-    else:
-        st.error(f"Upload failed: {upload_response.text}")
+    # else:
+    #     st.error(f"Upload failed: {upload_response.text}")
 
