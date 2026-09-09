@@ -4680,7 +4680,7 @@ elif page == "Gegenereerde output":
         import streamlit as st
         
         with st.spinner("Processing..."):
-            time.sleep(15)
+            time.sleep(20)
  
             github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
             st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
