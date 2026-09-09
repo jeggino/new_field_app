@@ -4703,7 +4703,7 @@ elif page == "Gegenereerde output":
     
     # 5. Upload (create or overwrite)
     payload = {
-        "message": "Update Folium map",
+        "message": "HTML File",
         "content": encoded,
         "branch": BRANCH
     }
@@ -4719,18 +4719,17 @@ elif page == "Gegenereerde output":
         headers=headers
     )
     
-    # 7. Show final URL
-    public_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-    st.success(f"Map updated: {public_url}")
+    # # 7. Show final URL
+    # public_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+    # st.success(f"Map updated: {public_url}")
 
 
 
    
 
     
-    if upload_response.status_code in [200, 201]:
+    if upload.status_code in [200, 201]:
         import time
-        import streamlit as st
         
         with st.spinner("Processing..."):
             time.sleep(20)
