@@ -4549,10 +4549,10 @@ elif page == "Gegenereerde output":
 
 
 
-import streamlit as st
-import folium
-import base64
-import requests
+    import streamlit as st
+    import folium
+    import base64
+    import requests
 
     # GitHub settings
     GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
