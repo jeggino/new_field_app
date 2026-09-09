@@ -4551,8 +4551,12 @@ elif page == "Gegenereerde output":
 
 
     
-    FILE_PATH = f"{safe_project_name}.html"
+    
    
+
+
+    FILE_PATH = f"{safe_project_name}.html"
+    
     # Save Folium map
     m_html.save(FILE_PATH)
     
@@ -4561,12 +4565,19 @@ elif page == "Gegenereerde output":
         file_bytes = f.read()
     
     # Upload to Supabase Storage
-    supabase.storage.from_("maps").upload(FILE_PATH, file_bytes, upsert=True)
+    response = supabase.storage.from_("maps").upload(
+        FILE_PATH,
+        file_bytes,
+        upsert=True
+    )
     
-    # Public URL
-    public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
-    
-    st.success(f"Your map is ready: {public_url}")
+    # Check for errors
+    if response.get("error"):
+        st.error(f"Supabase error: {response['error']['message']}")
+    else:
+        public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
+        st.success(f"Your map is ready: {public_url}")
+
 
 
 
