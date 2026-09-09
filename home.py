@@ -989,7 +989,7 @@ elif page == "Gegenereerde output":
 
     
 
-    with st.expander("Projectoverzicht", expanded=False, type="step",icon=":material/thumb_up:"):
+    with st.expander("Projectoverzicht", expanded=False, type="step",icon=":material/bar_chart:"):
         dagverslagen_overview()
 
     st.text(" ")
