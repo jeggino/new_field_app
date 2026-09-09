@@ -4574,6 +4574,10 @@ elif page == "Gegenereerde output":
     
     # Upload to Supabase
     bucket = supabase.storage.from_("maps")
+
+    # Read file
+    with open(FILE_PATH, "rb") as f:
+        file_bytes = f.read()
     
     try:
         bucket.upload(
@@ -4588,8 +4592,8 @@ elif page == "Gegenereerde output":
             file_options={"contentType": "text/html"}
         )
 
-public_url = f"{SUPABASE_URL}/storage/v1/object/public/maps/{FILE_PATH}"
-st.success(f"Your map is ready: {public_url}")
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/maps/{FILE_PATH}"
+    st.success(f"Your map is ready: {public_url}")
 
 
 
