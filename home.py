@@ -4594,6 +4594,7 @@ elif page == "Gegenereerde output":
 
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/maps/{FILE_PATH}"
     st.success(f"Your map is ready: {public_url}")
+    st.iframe(public_url)
 
 
 
