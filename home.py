@@ -4608,6 +4608,15 @@ elif page == "Gegenereerde output":
             "Accept": "application/vnd.github+json"
         }
     )
+
+    requests.post(
+        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+        headers={
+            "Authorization": f"Bearer {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github+json"
+        }
+    )
+
    
 
     
