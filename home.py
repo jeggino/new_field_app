@@ -4561,8 +4561,8 @@ elif page == "Gegenereerde output":
    
     FILE_PATH = f"{safe_project_name}.html"
     
-    # Save Folium map
-    m_html.save(FILE_PATH)
+    # Save Folium map with embedded assets
+    m_html.save(FILE_PATH, embed=True)
     
     # Read file
     with open(FILE_PATH, "rb") as f:
@@ -4582,6 +4582,10 @@ elif page == "Gegenereerde output":
             file_bytes,
             file_options={"contentType": "text/html"}
         )
+    
+    public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
+    st.success(f"Your map is ready: {public_url}")
+
 
 
 
