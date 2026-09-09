@@ -4556,6 +4556,15 @@ elif page == "Gegenereerde output":
     SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
     
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+    FILE_PATH = f"{safe_project_name}.html"
+    response = supabase.storage.from_("maps").upload(
+        FILE_PATH,
+        file_bytes,
+        upsert=True
+    )
+    
+    st.write("Supabase response:", response)
     
     
    
