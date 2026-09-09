@@ -4586,18 +4586,16 @@ elif page == "Gegenereerde output":
     with open(FILE_PATH, "rb") as f:
         file_bytes = f.read()
     
-    # Upload to Supabase Storage
-    response = supabase.storage.from_("maps").upload(
-        FILE_PATH,
-        file_bytes,
-    )
+    try:
+        response = supabase.storage.from_("maps").upload(
+            FILE_PATH,
+            file_bytes,
+            upsert=True
+        )
+        st.write("Supabase response:", response)
     
-    # Check for errors
-    if response.get("error"):
-        st.error(f"Supabase error: {response['error']['message']}")
-    else:
-        public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
-        st.success(f"Your map is ready: {public_url}")
+    except Exception as e:
+        st.error(f"Supabase error: {e}")
 
 
 
