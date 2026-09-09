@@ -4608,7 +4608,7 @@ elif page == "Gegenereerde output":
     
     if upload_response.status_code in [200, 201]:
         st.success("Map uploaded to GitHub successfully!")
-        st.wrire(f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}")
+        st.write(f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}")
     else:
         st.error(f"Upload failed: {upload_response.text}")
 
