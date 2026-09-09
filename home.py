@@ -4601,6 +4601,13 @@ elif page == "Gegenereerde output":
         json=payload
     )
 
+    requests.post(
+        f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+        headers={
+            "Authorization": f"Bearer {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github+json"
+        }
+    )
    
 
     
