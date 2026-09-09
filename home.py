@@ -4307,13 +4307,13 @@ elif page == "Gegenereerde output":
     col1, col2 = st.columns(2, gap="xxlarge")
 
     with col1:
-        # Download button
-        st.download_button(
-            label="🗺️ HTML-kaart downloaden",
-            data=html_map,
-            file_name=f"{safe_project_name}_HTML.html",
-            mime="text/html"
-        )
+        # # Download button
+        # st.download_button(
+        #     label="🗺️ HTML-kaart downloaden",
+        #     data=html_map,
+        #     file_name=f"{safe_project_name}_HTML.html",
+        #     mime="text/html"
+        # )
     # with col2:
         # # Filter reports for selected project
         df_filtered = df_reports[
@@ -4541,7 +4541,7 @@ elif page == "Gegenereerde output":
     
     with open(gpkg_path, "rb") as f:
         st.download_button(
-            label="Download GeoPackage (.gpkg)",
+            label="🗺️ Download GeoPackage (.gpkg)",
             file_name=f"{selected_project}.gpkg",
             mime="application/geopackage+sqlite3",
             data=f.read()
@@ -4607,7 +4607,7 @@ elif page == "Gegenereerde output":
     if upload_response.status_code in [200, 201]:
        
         github_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
-        st.markdown(f"De kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen als je dat wilt.",text_alignment = "justify")
+        st.markdown(f"De HTML-kaart is met succes naar de GitHub‑repository geüpload. Klik op deze [:red[**link**]]({github_url}) om de kaart te bekijken en te delen.",text_alignment = "justify")
 
 
 
