@@ -4561,30 +4561,36 @@ elif page == "Gegenereerde output":
    
     FILE_PATH = f"{safe_project_name}.html"
     
-    # Save Folium map with embedded assets
-    m_html.save(FILE_PATH, embed=True)
+    import folium
     
-    # Read file
-    with open(FILE_PATH, "rb") as f:
-        file_bytes = f.read()
+    # Force Folium to use CDN assets instead of local files
+    folium.utilities.normalize = lambda x: x
     
+    # Create map
+    m_html = folium.Map(location=[52.5, 4.8], zoom_start=12)
+    
+    # Save normally (no embed=True)
+    m_html.save(FILE_PATH)
+    
+    # Upload to Supabase
     bucket = supabase.storage.from_("maps")
     
     try:
-        response = bucket.upload(
+        bucket.upload(
             FILE_PATH,
             file_bytes,
             file_options={"contentType": "text/html"}
         )
     except Exception:
-        response = bucket.update(
+        bucket.update(
             FILE_PATH,
             file_bytes,
             file_options={"contentType": "text/html"}
         )
-    
-    public_url = f"{url}/storage/v1/object/public/maps/{FILE_PATH}"
-    st.success(f"Your map is ready: {public_url}")
+
+public_url = f"{SUPABASE_URL}/storage/v1/object/public/maps/{FILE_PATH}"
+st.success(f"Your map is ready: {public_url}")
+
 
 
 
