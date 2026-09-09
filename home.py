@@ -4611,7 +4611,7 @@ elif page == "Gegenereerde output":
         
         st.write(f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}")
 
-        
+        import time
         with st.spinner("Even geduld..."):
             time.sleep(2)
         
