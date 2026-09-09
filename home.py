@@ -4301,79 +4301,66 @@ elif page == "Gegenereerde output":
     st.header("Downloadsectie", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")
     st.text(" ")
 
-    # Save map as HTML string
-    html_map = m_html.get_root().render()
 
-    col1, col2 = st.columns(2, gap="xxlarge")
+    # # Filter reports for selected project
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
+    
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
 
-    with col1:
-        # # Download button
-        # st.download_button(
-        #     label="🗺️ HTML-kaart downloaden",
-        #     data=html_map,
-        #     file_name=f"{safe_project_name}_HTML.html",
-        #     mime="text/html"
-        # )
-    # with col2:
-        # # Filter reports for selected project
-        df_filtered = df_reports[
-            df_reports["project"] == selected_project
-        ].copy()
-        
-        # Filter observations for selected project
-        df_obs_project = df_obs[
-            df_obs["project"] == selected_project
-        ].copy()
-
-        df_filtered_clean = (
-            df_filtered[["kind", "comment"]]
-            .rename(columns={
-                "kind": "Veldbezoek",
-                "comment": "Opmerking"
-            })
-        )
-        
-        df_obs_clean = (
-            df_obs_project[["date", "species", "function", "behavior"]]
-            .rename(columns={
-                "date": "Datum",
-                "species": "Soort",
-                "function": "Functie",
-                "behavior": "Opmerking"
-            })
-        )
-
-        allowed_functions = [
-            "zomerverblijfplaats",
-            "nestlocatie",
-            "kraamverblijfplaats",
-            "paarverblijfplaats",
-            "winterverblijfplaats"
-        ]
-        
-        df_obs_clean = df_obs_clean[df_obs_clean["Functie"].isin(allowed_functions)]
-        
-
-            # Example
-        excel_file = create_excel_file({
-            "Dagverslagen": df_veldbezoeken,
-            "Vleermuizen (Verblijfplaatsen)": df_verblijfplaatsen,
-            "Vleermuizen (Functionele gebieden)": df_bats_polygons,
-            "Huismussen": df_hm_nestlocatie,
-            "Gierzwaluwen": df_zw_nestlocatie,
-            "Nesten broedvogels en cat. 5 vogels": df_vg_nestlocatie,
-            "Samenvatting": samenvatting,
-            "Dagverslagen (opmerking)": df_filtered_clean,
-            "Waarnemingen (opmerking)": df_obs_clean
+    df_filtered_clean = (
+        df_filtered[["kind", "comment"]]
+        .rename(columns={
+            "kind": "Veldbezoek",
+            "comment": "Opmerking"
         })
+    )
+    
+    df_obs_clean = (
+        df_obs_project[["date", "species", "function", "behavior"]]
+        .rename(columns={
+            "date": "Datum",
+            "species": "Soort",
+            "function": "Functie",
+            "behavior": "Opmerking"
+        })
+    )
+
+    allowed_functions = [
+        "zomerverblijfplaats",
+        "nestlocatie",
+        "kraamverblijfplaats",
+        "paarverblijfplaats",
+        "winterverblijfplaats"
+    ]
+    
+    df_obs_clean = df_obs_clean[df_obs_clean["Functie"].isin(allowed_functions)]
+    
+
+        # Example
+    excel_file = create_excel_file({
+        "Dagverslagen": df_veldbezoeken,
+        "Vleermuizen (Verblijfplaatsen)": df_verblijfplaatsen,
+        "Vleermuizen (Functionele gebieden)": df_bats_polygons,
+        "Huismussen": df_hm_nestlocatie,
+        "Gierzwaluwen": df_zw_nestlocatie,
+        "Nesten broedvogels en cat. 5 vogels": df_vg_nestlocatie,
+        "Samenvatting": samenvatting,
+        "Dagverslagen (opmerking)": df_filtered_clean,
+        "Waarnemingen (opmerking)": df_obs_clean
+    })
 
 
-        st.download_button(
-            label="🗂️ Tabel exporteren",
-            data=excel_file,
-            file_name=f"{selected_project}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    st.download_button(
+        label="🗂️ Tabel exporteren",
+        data=excel_file,
+        file_name=f"{selected_project}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
     # ---------------------------------------------------------
     # DOWNLOAD REPORTS + OBSERVATIONS
@@ -4569,9 +4556,24 @@ elif page == "Gegenereerde output":
     except Exception:
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
-    st.markdown(f"Klik [**hier**]({public_url}?download={FILE_PATH}) om het HTML-bestand te downloaden")
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
+    st.markdown(f"Klik [**hier**]({public_url}) om het HTML-bestand te downloaden")
 
-    st.html(f"{public_url}")
+
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
+    
+    st.markdown(
+        f"""
+    ### 📄 HTML-bestand
+    
+    🔽 **Downloaden:**  
+    Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.
+    
+    📋 **Link kopiëren:**  
+    Klik [**hier**](javascript:navigator.clipboard.writeText('{public_url}')) om de link te kopiëren.
+    """
+    )
+
+
     
 
