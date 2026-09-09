@@ -4576,8 +4576,8 @@ elif page == "Gegenereerde output":
     #     content = f.read()
     
     # # Encode file to base64 for GitHub API
-    # encoded_content = base64.b64encode(html_map).decode("utf-8")
-    encoded_content = html_map
+    encoded_content = base64.b64encode(m_html).decode("utf-8")
+    
     # 4. Upload to GitHub
     url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}"
     
