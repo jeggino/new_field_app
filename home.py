@@ -4762,7 +4762,9 @@ elif page == "Gegenereerde output":
     # html_map = m_html.get_root().render()
     
     # Create and save map
-    m_html.save(safe_project_name + "_HTML.html")
+    # m_html.save(safe_project_name + "_HTML.html")
+    m_html.to_html(safe_project_name + "_HTML.html", embed=True)
+
     
     # Read file bytes
     with open(safe_project_name + "_HTML.html", "rb") as f:
