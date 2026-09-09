@@ -4603,75 +4603,127 @@ elif page == "Gegenereerde output":
 
 
 
+    # import streamlit as st
+    # import folium
+    # import base64
+    # import requests
+
+    # # GitHub settings
+    # GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
+    # USERNAME = "jeggino"
+    # REPO = "EE_HTML_particulieren"
+    # BRANCH = "gh-pages"
+    # FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
+
+    
+    
+    # # # 2. Save map to HTML
+    # m_html.save(FILE_PATH)
+    
+    # # # 3. Read file content
+    # with open(FILE_PATH, "rb") as f:
+    #     content = f.read()
+    
+    # # # Encode file to base64 for GitHub API
+    # encoded_content = base64.b64encode(content).decode("utf-8")
+    
+    # # 4. Upload to GitHub
+    # url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+
+    
+    # # Check if file exists (GitHub requires SHA for updates)
+    # response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
+    
+    # if response.status_code == 200:
+    #     sha = response.json()["sha"]
+    # else:
+    #     sha = None
+    
+    # # Prepare upload payload
+    # payload = {
+    #     "message": "Upload Folium map from Streamlit",
+    #     "content": encoded_content,
+    #     "branch": BRANCH
+    # }
+    
+    # if sha:
+    #     payload["sha"] = sha  # required for overwriting
+    
+    # # Upload file
+    # upload_response = requests.put(
+    #     url,
+    #     headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
+    #     json=payload
+    # )
+
+    # requests.post(
+    #     f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
+    #     headers={
+    #         "Authorization": f"Bearer {GITHUB_TOKEN}",
+    #         "Accept": "application/vnd.github+json"
+    #     }
+    # )
+
+
     import streamlit as st
     import folium
     import base64
     import requests
-
+    
     # GitHub settings
-    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]   # store token in Streamlit secrets
+    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
     USERNAME = "jeggino"
     REPO = "EE_HTML_particulieren"
     BRANCH = "gh-pages"
-    FILE_PATH = f"{safe_project_name}_HTML.html"   # or "maps/map.html"
-
+    FILE_PATH = f"{safe_project_name}_HTML.html"
     
+    # Force Folium to use CDN assets (important for GitHub Pages)
+    folium.utilities.normalize = lambda x: x
     
-    # # 2. Save map to HTML
+    # 1. Save map
     m_html.save(FILE_PATH)
     
-    # # 3. Read file content
+    # 2. Read file
     with open(FILE_PATH, "rb") as f:
         content = f.read()
     
-    # # Encode file to base64 for GitHub API
-    encoded_content = base64.b64encode(content).decode("utf-8")
+    encoded = base64.b64encode(content).decode("utf-8")
     
-    # 4. Upload to GitHub
-    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
-
+    # 3. GitHub API URL
+    url = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FILE_PATH}"
     
-    # Check if file exists (GitHub requires SHA for updates)
-    response = requests.get(url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}"})
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
     
-    if response.status_code == 200:
-        sha = response.json()["sha"]
-    else:
-        sha = None
+    # 4. Check if file exists → get SHA
+    r = requests.get(url + f"?ref={BRANCH}", headers=headers)
+    sha = r.json().get("sha") if r.status_code == 200 else None
     
-    # Prepare upload payload
+    # 5. Upload (create or overwrite)
     payload = {
-        "message": "Upload Folium map from Streamlit",
-        "content": encoded_content,
+        "message": "Update Folium map",
+        "content": encoded,
         "branch": BRANCH
     }
     
     if sha:
-        payload["sha"] = sha  # required for overwriting
+        payload["sha"] = sha
     
-    # Upload file
-    upload_response = requests.put(
-        url,
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
-        json=payload
-    )
-
+    upload = requests.put(url, headers=headers, json=payload)
+    
+    # 6. Trigger GitHub Pages rebuild
     requests.post(
         f"https://api.github.com/repos/{USERNAME}/{REPO}/pages/builds",
-        headers={
-            "Authorization": f"Bearer {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github+json"
-        }
+        headers=headers
     )
+    
+    # 7. Show final URL
+    public_url = f"https://{USERNAME}.github.io/{REPO}/{FILE_PATH}"
+    st.success(f"Map updated: {public_url}")
 
 
-
-    # Upload file
-    upload_response = requests.put(
-        url,
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
-        json=payload
-    )
 
    
 
