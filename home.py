@@ -4776,7 +4776,7 @@ elif page == "Gegenereerde output":
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
     
     # Public URL
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download=0"
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
     st.success("Map uploaded!")
     st.write(public_url)
