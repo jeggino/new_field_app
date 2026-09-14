@@ -2043,7 +2043,8 @@ elif page == "Gegenereerde output":
         on="date",
         how="left"
     )
-    
+
+    df_polygon_app_project
     # Create Veldbezoek from date + matched kind
     df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
     )
