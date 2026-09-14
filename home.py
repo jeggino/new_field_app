@@ -2041,9 +2041,9 @@ elif page == "Gegenereerde output":
         how="left"
     )
     
-    # Create Veldbezoek from date + matched kind
-    df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
-    )
+    # # Create Veldbezoek from date + matched kind
+    # df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
+    # )
     
     # Apply existing formatter
     df_polygon_app_project["Veldbezoek"] = df_polygon_app_project["Veldbezoek"].apply(format_veldbezoek)
