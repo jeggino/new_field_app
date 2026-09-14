@@ -1198,6 +1198,7 @@ elif page == "Gegenereerde output":
             
         if (
             formatted.startswith("Huismus")
+            or formatted.startswith("Rugstreeppad")
             or formatted.startswith("Gierzwaluw")
             or formatted.startswith("Steenuil")
         ):
