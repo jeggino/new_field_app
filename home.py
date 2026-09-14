@@ -2082,7 +2082,7 @@ elif page == "Gegenereerde output":
             },
             use_container_width=True,
             hide_index=True,
-            height=(len(df_bats_polygons) + 1) * 35
+            height=(len(df_polygon_app_project) + 1) * 35
         )
 
     
@@ -2176,17 +2176,6 @@ elif page == "Gegenereerde output":
     
 
     st.table(display_df)
-
-    #  --------------------------------
-    #  Amphibians
-    #  --------------------------------
-
-
-
-
-
-
-
 
 
 
