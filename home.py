@@ -2020,7 +2020,6 @@ elif page == "Gegenereerde output":
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
     df_polygon_app_project = df_polygon_app_project[df_polygon_app_project['group'] == 'amphibian']
-    df_polygon_app_project
     
     # Remove bird survey kinds
     df_kind_lookup = df_filtered[
@@ -2044,7 +2043,6 @@ elif page == "Gegenereerde output":
         how="left"
     )
 
-    df_polygon_app_project
     # Create Veldbezoek from date + matched kind
     df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
     )
@@ -2070,7 +2068,7 @@ elif page == "Gegenereerde output":
     
     st.caption("Functionele gebieden")
     
-    if df_bats_polygons.empty:
+    if df_polygon_app_project.empty:
         st.info("Geen functionele gebieden gevonden.")
     else:
         st.dataframe(
