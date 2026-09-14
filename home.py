@@ -1464,6 +1464,7 @@ elif page == "Gegenereerde output":
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
+    df_polygon_app_project = df_polygon_app_project[df_polygon_app_project['group'] == 'bat']
     
     # Remove bird survey kinds
     df_kind_lookup = df_filtered[
@@ -2018,7 +2019,8 @@ elif page == "Gegenereerde output":
     # Make sure dates have the same format
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
-    df_polygon_app_project
+    df_polygon_app_project = df_polygon_app_project[df_polygon_app_project['group'] == 'amphibian']
+    
     # Remove bird survey kinds
     df_kind_lookup = df_filtered[
         ~df_filtered["kind"].str.startswith(
