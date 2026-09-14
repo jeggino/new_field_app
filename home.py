@@ -1868,7 +1868,222 @@ elif page == "Gegenereerde output":
             hide_index=True,
             height=(len(df_vg_nestlocatie) + 1) * 35
         )
+        
+    #  --------------------------------
+    #  Amphibians
+    #  --------------------------------
+    # # # Filter reports for selected project
+    # df_filtered = df_reports[
+    #     df_reports["project"] == selected_project
+    # ].copy()
+    
+    # # Filter observations for selected project
+    # df_obs_project = df_obs[
+    #     df_obs["project"] == selected_project
+    # ].copy()
 
+
+    # # Filter functional areas for selected project
+    # df_polygon_app_project = df_polygon_app[
+    #     df_polygon_app["project"] == selected_project
+    # ].copy()
+    
+    
+    # # Filter polygons for selected project
+    # polygons_project = polygons_gdf[
+    #     polygons_gdf["project_polygon"] == selected_project
+    # ].copy()
+    
+    # Only bats and exclude generic observations
+    df_amphibian = df_obs_project[
+        (df_obs_project["animal_type"] == "amphibian")
+    ].copy()
+    
+    # Convert observations to GeoDataFrame
+    gdf_amphibian = gpd.GeoDataFrame(
+        df_amphibian,
+        geometry=gpd.points_from_xy(
+            df_amphibian["lon"],
+            df_amphibian["lat"]
+        ),
+        crs=polygons_project.crs
+    )
+
+    # Spatial join
+    gdf_amphibian = gpd.sjoin(
+        gdf_amphibian,
+        polygons_project[["geometry"]],
+        how="left",
+        predicate="within"
+    )
+    
+    # Create Plangebied column
+    gdf_amphibian["Plangebied"] = (
+        gdf_amphibian["index_right"]
+        .notna()
+        .map({True: "Binnen", False: "Buiten"})
+    )
+    
+    
+    # Convert back to DataFrame if desired
+    df_amphibian = pd.DataFrame(gdf_amphibian.drop(columns=["geometry", "index_right"]))
+
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_amphibian["date"] = pd.to_datetime(df_amphibian["date"]).dt.date
+    
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ( "Gierzwaluw", "Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_amphibian = df_amphibian.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_amphibian["Veldbezoek"] = (df_amphibian["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_amphibian["Veldbezoek"] = df_amphibian["Veldbezoek"].apply(format_veldbezoek)
+    
+    # Final table
+    df_amphibian_points = pd.DataFrame({
+        "Veldbezoek": df_amphibian["Veldbezoek"],
+        "Soort": df_amphibian["species"],
+        "Plangebied": df_amphibian["Plangebied"],
+        "Aantal individuen": df_amphibian["aantal"],
+        "Verblijplaatsen": df_amphibian["function"],
+        "Adres": df_amphibian["address"],
+        "Fotolink": df_amphibian["photo_url"]        
+    })
+
+    
+    # Optional: sort chronologically before displaying
+    df_amphibian_points = df_amphibian_points.sort_values(
+        by="Veldbezoek"
+    )
+
+    df_amphibian_points_2 = df_amphibian_points.copy()
+    
+    df_amphibian_points_2["Plangebied"] = (
+        df_amphibian_points_2["Plangebied"]
+        .map({
+            "Binnen": "🔴 Binnen",
+            "Buiten": "🟢 Buiten"
+        })
+    )
+
+    st.text(" ")
+    st.text(" ") # Adds a blank line
+    st.subheader("Amfibieën", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
+    st.caption("Waarnemingen")
+    
+
+    
+    if df_amphibian_points_2.empty:
+        st.info("Geen waarnemingen gevonden.")
+    else:
+        st.dataframe(
+            df_amphibian_points_2,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_amphibian_points_2) + 1) * 35
+        )
+
+    "---"
+
+
+    # Make sure dates have the same format
+    df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
+    df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
+    
+    # Remove bird survey kinds
+    df_kind_lookup = df_filtered[
+        ~df_filtered["kind"].str.startswith(
+            ( "Gierzwaluw", "Steenuil"),
+            na=False
+        )
+    ].copy()
+    
+    # Keep only the first remaining kind per date
+    df_kind_lookup = (
+        df_kind_lookup
+        .groupby("date", as_index=False)
+        .first()[["date", "kind"]]
+    )
+    
+    # Merge into bat observations
+    df_polygon_app_project = df_polygon_app_project.merge(
+        df_kind_lookup,
+        on="date",
+        how="left"
+    )
+    
+    # Create Veldbezoek from date + matched kind
+    df_polygon_app_project["Veldbezoek"] = (df_polygon_app_project["kind"].fillna("Onbekend")
+    )
+    
+    # Apply existing formatter
+    df_polygon_app_project["Veldbezoek"] = df_polygon_app_project["Veldbezoek"].apply(format_veldbezoek)
+    
+    # Final table
+    df_amphibian_polygons = pd.DataFrame({
+        "Veldbezoek": df_polygon_app_project["Veldbezoek"],
+        "Soort": df_polygon_app_project["species"],
+        "Aantal individuen": df_polygon_app_project["aantal"],
+        "Functie": df_polygon_app_project["function"],
+        "Fotolink": df_polygon_app_project["photo_url"]        
+    })
+
+    
+    # Optional: sort chronologically before displaying
+    df_amphibian_polygons = df_amphibian_polygons.sort_values(
+        by="Veldbezoek"
+    )
+
+    
+    st.caption("Functionele gebieden")
+    
+    if df_bats_polygons.empty:
+        st.info("Geen functionele gebieden gevonden.")
+    else:
+        st.dataframe(
+            df_amphibian_polygons,
+            column_config={
+                "Fotolink": st.column_config.ImageColumn(
+                    "Foto",
+                    help="Waarnemingsfoto",
+                    width="medium",
+                )
+            },
+            use_container_width=True,
+            hide_index=True,
+            height=(len(df_bats_polygons) + 1) * 35
+        )
+
+    
 
     #  --------------------------------
     #  SUMMARY
@@ -1960,7 +2175,9 @@ elif page == "Gegenereerde output":
 
     st.table(display_df)
 
-
+    #  --------------------------------
+    #  Amphibians
+    #  --------------------------------
 
 
 
