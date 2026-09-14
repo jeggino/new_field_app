@@ -2020,6 +2020,7 @@ elif page == "Gegenereerde output":
     df_filtered["date"] = pd.to_datetime(df_filtered["date"]).dt.date
     df_polygon_app_project["date"] = pd.to_datetime(df_polygon_app_project["date"]).dt.date
     df_polygon_app_project = df_polygon_app_project[df_polygon_app_project['group'] == 'amphibian']
+    df_polygon_app_project
     
     # Remove bird survey kinds
     df_kind_lookup = df_filtered[
