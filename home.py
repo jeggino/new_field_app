@@ -4614,25 +4614,36 @@ elif page == "Gegenereerde output":
         # Make GeoDataFrame
         obs_gdf = gpd.GeoDataFrame(obs, geometry="geometry", crs="EPSG:4326")
     
+        # # Functies die we willen behouden
+        # valid_functions = [
+        #     "zomerverblijfplaats",
+        #     "nestlocatie",
+        #     "kraamverblijfplaats",
+        #     "paarverblijfplaats",
+        #     "winterverblijfplaats"
+        # ]
+
         # Functies die we willen behouden
         valid_functions = [
-            "zomerverblijfplaats",
-            "nestlocatie",
-            "kraamverblijfplaats",
-            "paarverblijfplaats",
-            "winterverblijfplaats"
+            "vogel waarneming",
+            "vleermuis waarneming",
+            "mogelijke nestlocatie",
         ]
         
         # Filter op functie
-        obs_filtered = obs_gdf[obs_gdf["functie"].isin(valid_functions)].copy()
+        obs_filtered = obs_gdf[~obs_gdf["functie"].isin(valid_functions)].copy()
         
         # Split op groep
         obs_bats = obs_filtered[obs_filtered["groep"] == "bat"].copy()
         obs_birds = obs_filtered[obs_filtered["groep"] == "bird"].copy()
+        obs_amphibian = obs_filtered[obs_filtered["groep"] == "amphibian"].copy()
+
     
         # GeoDataFrames
         obs_bats_gdf = gpd.GeoDataFrame(obs_bats, geometry="geometry", crs="EPSG:4326")
         obs_birds_gdf = gpd.GeoDataFrame(obs_birds, geometry="geometry", crs="EPSG:4326")
+        obs_amphibian_gdf = gpd.GeoDataFrame(obs_amphibian, geometry="geometry", crs="EPSG:4326")
+
     
     else:
         # Create empty GeoDataFrames with correct structure
@@ -4640,6 +4651,9 @@ elif page == "Gegenereerde output":
                                         geometry="geometry", crs="EPSG:4326")
     
         obs_birds_gdf = gpd.GeoDataFrame(columns=["latitude","longitude","soort","functie","groep","aantal","geometry"],
+                                         geometry="geometry", crs="EPSG:4326")
+
+        obs_amphibian_gdf = gpd.GeoDataFrame(columns=["latitude","longitude","soort","functie","groep","aantal","geometry"],
                                          geometry="geometry", crs="EPSG:4326")
 
 
@@ -4725,6 +4739,9 @@ elif page == "Gegenereerde output":
     
     if not obs_birds_gdf.empty:
         obs_birds_gdf.to_file(gpkg_path, layer="Vogels_nestlocaties", driver="GPKG")
+
+    if not obs_amphibian_gdf.empty:
+        obs_amphibian_gdf.to_file(gpkg_path, layer="amfibieën", driver="GPKG")
     
     # Functionele gebieden (alleen als aanwezig)
     if poly_rows_gdf is not None and not poly_rows_gdf.empty:
