@@ -1437,7 +1437,7 @@ elif page == "Gegenereerde output":
     st.text(" ") # Adds a blank line
     st.header("Waarnemingen", anchor=None, help=None, divider=None, width="stretch", text_alignment="center")    
     st.text(" ") # Adds a blank line
-    st.subheader("Vleermuizen", anchor=None, help=None, divider='green', width="stretch", text_alignment="left")
+    st.subheader("Vleermuizen", anchor=None, help=None, divider='blue', width="stretch", text_alignment="left")
     st.caption("Waarnemingen")
     
 
