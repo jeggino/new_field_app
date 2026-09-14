@@ -1873,27 +1873,27 @@ elif page == "Gegenereerde output":
     #  --------------------------------
     #  Amphibians
     #  --------------------------------
-    # # # Filter reports for selected project
-    # df_filtered = df_reports[
-    #     df_reports["project"] == selected_project
-    # ].copy()
+    # Filter reports for selected project
+    df_filtered = df_reports[
+        df_reports["project"] == selected_project
+    ].copy()
     
-    # # Filter observations for selected project
-    # df_obs_project = df_obs[
-    #     df_obs["project"] == selected_project
-    # ].copy()
+    # Filter observations for selected project
+    df_obs_project = df_obs[
+        df_obs["project"] == selected_project
+    ].copy()
 
 
-    # # Filter functional areas for selected project
-    # df_polygon_app_project = df_polygon_app[
-    #     df_polygon_app["project"] == selected_project
-    # ].copy()
+    # Filter functional areas for selected project
+    df_polygon_app_project = df_polygon_app[
+        df_polygon_app["project"] == selected_project
+    ].copy()
     
     
-    # # Filter polygons for selected project
-    # polygons_project = polygons_gdf[
-    #     polygons_gdf["project_polygon"] == selected_project
-    # ].copy()
+    # Filter polygons for selected project
+    polygons_project = polygons_gdf[
+        polygons_gdf["project_polygon"] == selected_project
+    ].copy()
     
     # Only bats and exclude generic observations
     df_amphibian = df_obs_project[
