@@ -1808,7 +1808,6 @@ def show_project_selection():
 
 # ----------------- MAIN APP -----------------
 def show_main_app():
-    st.write("prova")
     with st.bottom:
         # label = st.markdown("""<div style="background:#f3f4f6;border-left:4px solid #16a34a;padding:10px;border-radius:6px;font-weight:600;">New Observation</div>""", unsafe_allow_html=True)
         label = "Menu"
