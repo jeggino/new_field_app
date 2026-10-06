@@ -739,7 +739,7 @@ def _get_center_from_map_data(map_data, fallback_center):
 
 
 # ----------------- EDIT OBSERVATION -----------------
-@st.dialog("Daily Report")
+@st.dialog("Daily Report",position="right")
 def daily_report_dialog():
     st.write("Fill in the daily report.")
 
