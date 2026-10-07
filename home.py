@@ -3470,7 +3470,6 @@ elif page == "Gegenereerde output":
     ).strip("_")
 
 
-    st_folium(m_html)    
 
 
     
