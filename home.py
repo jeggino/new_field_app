@@ -3472,14 +3472,7 @@ elif page == "Gegenereerde output":
 
     st_folium(m_html)    
 
-    FILE_NAME = f"{safe_project_name}_HTML.html"
-    
-    # Save folium map locally
-    m_html.save(FILE_NAME)
-    
-    # Read file bytes
-    with open(FILE_NAME, "rb") as f:
-        file_bytes = f.read()
+
     
 # --------------------------------------------------
 # DOWNLOAD SECTION
@@ -3750,9 +3743,17 @@ elif page == "Gegenereerde output":
  
 
 
+
+    FILE_NAME = f"{safe_project_name}_HTML.html"
     FOLDER = "HTML"
     FILE_PATH = f"{FOLDER}/{FILE_NAME}"
     
+    # Save folium map locally
+    m_html.save(FILE_NAME)
+    
+    # Read file bytes
+    with open(FILE_NAME, "rb") as f:
+        file_bytes = f.read()    
    
     bucket = supabase.storage.from_(BUCKET)
     
@@ -3769,13 +3770,13 @@ elif page == "Gegenereerde output":
         file_options={"contentType": "text/html"}
     )
     
-    # # Clean public URL (no ?download=)
-    # public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
+    # Clean public URL (no ?download=)
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
     
-    # # Streamlit output
-    # st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
-    # st.markdown("📋 **Link kopiëren:**")
-    # st.code(public_url)
+    # Streamlit output
+    st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
+    st.markdown("📋 **Link kopiëren:**")
+    st.code(public_url)
 
 
 
