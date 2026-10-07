@@ -3471,6 +3471,15 @@ elif page == "Gegenereerde output":
 
 
     st_folium(m_html)    
+
+    FILE_NAME = f"{safe_project_name}_HTML.html"
+    
+    # Save folium map locally
+    m_html.save(FILE_NAME)
+    
+    # Read file bytes
+    with open(FILE_NAME, "rb") as f:
+        file_bytes = f.read()
     
 # --------------------------------------------------
 # DOWNLOAD SECTION
@@ -3770,18 +3779,10 @@ elif page == "Gegenereerde output":
     # st.code(public_url)    
 
 
-    BUCKET = "maps"
-    FOLDER = "HTML"
-    FILE_NAME = f"{safe_project_name}_HTML.html"
+
     FILE_PATH = f"{FOLDER}/{FILE_NAME}"
     
-    # Save folium map locally
-    m_html.save(FILE_NAME)
-    
-    # Read file bytes
-    with open(FILE_NAME, "rb") as f:
-        file_bytes = f.read()
-    
+   
     bucket = supabase.storage.from_(BUCKET)
     
     # 1. Delete old file (if it exists)
