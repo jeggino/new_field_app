@@ -4529,7 +4529,7 @@ elif page == "Gegenereerde output":
     ).strip("_")
 
 
-st.folium(m_html)
+    st.folium(m_html)
     
 # --------------------------------------------------
 # DOWNLOAD SECTION
