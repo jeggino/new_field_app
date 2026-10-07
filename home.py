@@ -3790,20 +3790,20 @@ elif page == "Gegenereerde output":
     except Exception:
         pass  # ignore if file does not exist
     
-    # 2. Upload new file (no upsert needed)
-    bucket.upload(
-        FILE_PATH,
-        file_bytes,
-        file_options={"contentType": "text/html"}
-    )
+    # # 2. Upload new file (no upsert needed)
+    # bucket.upload(
+    #     FILE_PATH,
+    #     file_bytes,
+    #     file_options={"contentType": "text/html"}
+    # )
     
-    # Clean public URL (no ?download=)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
+    # # Clean public URL (no ?download=)
+    # public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
     
-    # Streamlit output
-    st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
-    st.markdown("📋 **Link kopiëren:**")
-    st.code(public_url)
+    # # Streamlit output
+    # st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
+    # st.markdown("📋 **Link kopiëren:**")
+    # st.code(public_url)
 
 
 
