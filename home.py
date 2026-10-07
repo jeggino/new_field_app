@@ -3379,6 +3379,7 @@ elif page == "Gegenereerde output":
     # ].copy()
 
     survey_area = polygons_gdf
+    survey_area
     
     species_list = sorted(
         df["species"].fillna("Unknown").unique()
