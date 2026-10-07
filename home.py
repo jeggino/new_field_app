@@ -1166,7 +1166,7 @@ elif page == "Gegenereerde output":
     
         return polygons_gdf
 
-    polygons_gdf = load_project_polygons()
+    # polygons_gdf = load_project_polygons()
     
     # ==========================================================
     # FORMAT VELDBEZOEK
@@ -1257,8 +1257,8 @@ elif page == "Gegenereerde output":
         crs="EPSG:4326"
     )
 
-    polygons_gdf
-    st.write(selected_project)
+    # polygons_gdf
+    # st.write(selected_project)
 
     # ==========================================================
     # TIME BLOCK COLUMN
