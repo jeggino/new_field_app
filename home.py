@@ -3747,6 +3747,7 @@ elif page == "Gegenereerde output":
     FILE_NAME = f"{safe_project_name}_HTML.html"
     FOLDER = "HTML"
     FILE_PATH = f"{FOLDER}/{FILE_NAME}"
+    BUCKET_HTML = "maps"
     
     # Save folium map locally
     m_html.save(FILE_NAME)
@@ -3755,7 +3756,7 @@ elif page == "Gegenereerde output":
     with open(FILE_NAME, "rb") as f:
         file_bytes = f.read()    
    
-    bucket = supabase.storage.from_(BUCKET)
+    bucket = supabase.storage.from_(BUCKET_HTML)
     
     # 1. Delete old file (if it exists)
     try:
@@ -3771,7 +3772,7 @@ elif page == "Gegenereerde output":
     )
     
     # Clean public URL (no ?download=)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
     # Streamlit output
     st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
