@@ -4843,7 +4843,6 @@ elif page == "Gegenereerde output":
         FILE_PATH,
         file_bytes,
         file_options={"contentType": "text/html"},
-        upsert=True
     )
     
     # Public URL (no versioning)
