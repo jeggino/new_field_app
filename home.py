@@ -1257,7 +1257,7 @@ elif page == "Gegenereerde output":
         crs="EPSG:4326"
     )
 
-    # polygons_gdf
+    polygons_gdf
     # st.write(selected_project)
 
     # ==========================================================
