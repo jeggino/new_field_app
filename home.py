@@ -3374,9 +3374,11 @@ elif page == "Gegenereerde output":
         observations_df["project"] == project_name
     ].copy()
     
-    survey_area = polygons_gdf[
-        polygons_gdf["project_polygon"] == project_name
-    ].copy()
+    # survey_area = polygons_gdf[
+    #     polygons_gdf["project_polygon"] == project_name
+    # ].copy()
+
+    survey_area = polygons_gdf
     
     species_list = sorted(
         df["species"].fillna("Unknown").unique()
