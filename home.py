@@ -4842,7 +4842,8 @@ elif page == "Gegenereerde output":
     bucket.upload(
         FILE_PATH,
         file_bytes,
-        file_options={"contentType": "text/html", "upsert": True}
+        file_options={"contentType": "text/html"},
+        upsert=True
     )
     
     # Public URL (no versioning)
