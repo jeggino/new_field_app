@@ -3743,40 +3743,11 @@ elif page == "Gegenereerde output":
        
 
 
-    # BUCKET = "maps"
-    # FOLDER = "HTML"
-    # FILE_NAME = f"{safe_project_name}_HTML.html"
-    # FILE_PATH = f"{FOLDER}/{FILE_NAME}"
-    
-    #     # Save folium map locally
-    # m_html.save(FILE_NAME)
-    
-    # # Read file bytes
-    # with open(FILE_NAME, "rb") as f:
-    #     file_bytes = f.read()
-    
-    # bucket = supabase.storage.from_(BUCKET)
-    
-    # # 1. Delete old file (if it exists)
-    # try:
-    #     bucket.remove([FILE_PATH])
-    # except Exception:
-    #     pass  # ignore if file does not exist
-    
-    # # 2. Upload new file
-    # bucket.upload(
-    #     FILE_PATH,
-    #     file_bytes,
-    #     file_options={"contentType": "text/html"}
-    # )
-    
+
     # # Public URL
     # public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
-    # # Streamlit output
-    # st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
-    # st.markdown("📋 **Link kopiëren:**")
-    # st.code(public_url)    
+ 
 
 
     FOLDER = "HTML"
