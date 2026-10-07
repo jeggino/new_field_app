@@ -3772,7 +3772,7 @@ elif page == "Gegenereerde output":
     )
     
     # Clean public URL (no ?download=)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_HTML}/{FILE_PATH}?download={FILE_PATH}"
     
     # Streamlit output
     st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
