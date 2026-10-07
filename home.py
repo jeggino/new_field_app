@@ -1237,6 +1237,8 @@ elif page == "Gegenereerde output":
         df_reports["project"] == selected_project
     ].copy()
 
+    polygons_gdf
+
     # ==========================================================
     # TIME BLOCK COLUMN
     # ==========================================================
