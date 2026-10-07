@@ -3790,12 +3790,12 @@ elif page == "Gegenereerde output":
     except Exception:
         pass  # ignore if file does not exist
     
-    # # 2. Upload new file (no upsert needed)
-    # bucket.upload(
-    #     FILE_PATH,
-    #     file_bytes,
-    #     file_options={"contentType": "text/html"}
-    # )
+    # 2. Upload new file (no upsert needed)
+    bucket.upload(
+        FILE_PATH,
+        file_bytes,
+        file_options={"contentType": "html"}
+    )
     
     # # Clean public URL (no ?download=)
     # public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
