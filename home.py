@@ -3771,7 +3771,13 @@ elif page == "Gegenereerde output":
     )
     
     # Clean public URL (no ?download=)
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_HTML}/{FILE_PATH}?download={FILE_PATH}"
+    # public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET_HTML}/{FILE_PATH}?download={FILE_PATH}"
+    public_url = f"https://{SUPABASE_URL}/storage/v1/object/public/{BUCKET_HTML}/{FILE_PATH}?download={FILE_PATH}"
+    
+    # https://anydhrpvfenefacuoarv.supabase.co/storage/v1/object/public/maps/HTML/Texel__Bird_trip_HTML.html?download=HTML/Texel__Bird_trip_HTML.html
+    # https://anydhrpvfenefacuoarv.supabase.co/storage/v1/object/public/maps/HTML/Texel__Bird_trip_HTML.html
+
+    # https://anydhrpvfenefacuoarv.supabase.co/storage/v1/object/public/maps/HTML/Texel__Bird_trip_HTML.html
     
     # Streamlit output
     st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
