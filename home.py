@@ -836,6 +836,7 @@ elif page == "View Projects":
                 os.remove(tmp_path)
 
                 st.success("GeoJSON saved. Old file replaced. Reports & observations remain linked.")
+                st.rerun()
 
             except Exception as ex:
                 st.error(f"Error saving GeoJSON: {ex}")
