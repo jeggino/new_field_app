@@ -4845,7 +4845,7 @@ elif page == "Gegenereerde output":
         bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
         
     # Public URL
-    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}"
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
     # Streamlit output
     st.markdown(f"🔽 **Downloaden:** Klik [**hier**]({public_url}) om het HTML-bestand te downloaden.")
