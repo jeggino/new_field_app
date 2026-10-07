@@ -1237,6 +1237,25 @@ elif page == "Gegenereerde output":
         df_reports["project"] == selected_project
     ].copy()
 
+
+    # The GeoJSON filename in the bucket
+    geojson_filename = f"{selected_project}.geojson"
+    
+    # Download the file from the bucket "observation_photos"
+    response = supabase.storage.from_("observation_photos").download(geojson_filename)
+    
+    # Convert bytes → dict
+    geojson_data = json.loads(response.decode("utf-8"))
+    
+    # Create GeoDataFrame
+    polygons_gdf = gpd.GeoDataFrame.from_features(geojson_data["features"])
+    
+    # Add project name column
+    polygons_gdf["project_polygon"] = selected_project
+    
+    # Ensure geometry column is correct
+    polygons_gdf = polygons_gdf.set_geometry("geometry")
+
     polygons_gdf
     st.write(selected_project)
 
