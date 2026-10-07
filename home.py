@@ -3779,7 +3779,7 @@ elif page == "Gegenereerde output":
     # st.code(public_url)    
 
 
-
+    FOLDER = "HTML"
     FILE_PATH = f"{FOLDER}/{FILE_NAME}"
     
    
