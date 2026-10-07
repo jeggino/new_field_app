@@ -1238,6 +1238,7 @@ elif page == "Gegenereerde output":
     ].copy()
 
     polygons_gdf
+    st.write(selected_project)
 
     # ==========================================================
     # TIME BLOCK COLUMN
