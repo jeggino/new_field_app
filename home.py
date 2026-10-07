@@ -1045,126 +1045,126 @@ elif page == "Gegenereerde output":
     BUCKET = "observation_photos"
     
     
-    @st.cache_data(show_spinner="Loading project polygons...")
-    def load_project_polygons():
+    # @st.cache_data(show_spinner="Loading project polygons...")
+    # def load_project_polygons():
     
-        def list_folder_paginated(bucket, path=""):
-            items = []
+    #     def list_folder_paginated(bucket, path=""):
+    #         items = []
     
-            offset = 0
-            limit = 100
+    #         offset = 0
+    #         limit = 100
     
-            while True:
+    #         while True:
     
-                batch = supabase.storage.from_(bucket).list(
-                    path,
-                    {
-                        "limit": limit,
-                        "offset": offset
-                    }
-                )
+    #             batch = supabase.storage.from_(bucket).list(
+    #                 path,
+    #                 {
+    #                     "limit": limit,
+    #                     "offset": offset
+    #                 }
+    #             )
     
-                if not batch:
-                    break
+    #             if not batch:
+    #                 break
     
-                items.extend(batch)
+    #             items.extend(batch)
     
-                if len(batch) < limit:
-                    break
+    #             if len(batch) < limit:
+    #                 break
     
-                offset += limit
+    #             offset += limit
     
-            return items
+    #         return items
     
-        def list_all_geojson(bucket, path=""):
+    #     def list_all_geojson(bucket, path=""):
     
-            files = []
+    #         files = []
     
-            items = list_folder_paginated(bucket, path)
+    #         items = list_folder_paginated(bucket, path)
     
-            for item in items:
+    #         for item in items:
     
-                name = item["name"]
+    #             name = item["name"]
     
-                # Folder
-                if item.get("id") is None:
+    #             # Folder
+    #             if item.get("id") is None:
     
-                    subpath = f"{path}/{name}" if path else name
+    #                 subpath = f"{path}/{name}" if path else name
     
-                    files.extend(
-                        list_all_geojson(bucket, subpath)
-                    )
+    #                 files.extend(
+    #                     list_all_geojson(bucket, subpath)
+    #                 )
     
-                # File
-                else:
+    #             # File
+    #             else:
     
-                    filepath = f"{path}/{name}" if path else name
+    #                 filepath = f"{path}/{name}" if path else name
     
-                    if filepath.lower().endswith(".geojson"):
-                        files.append(filepath)
+    #                 if filepath.lower().endswith(".geojson"):
+    #                     files.append(filepath)
     
-            return files
+    #         return files
     
-        geojson_files = sorted(
-            list_all_geojson(BUCKET)
-        )
+    #     geojson_files = sorted(
+    #         list_all_geojson(BUCKET)
+    #     )
     
-        records = []
-        crs = None
+    #     records = []
+    #     crs = None
     
-        for filepath in geojson_files:
+    #     for filepath in geojson_files:
     
-            tmp_path = None
+    #         tmp_path = None
     
-            try:
+    #         try:
     
-                file_content = (
-                    supabase.storage
-                    .from_(BUCKET)
-                    .download(filepath)
-                )
+    #             file_content = (
+    #                 supabase.storage
+    #                 .from_(BUCKET)
+    #                 .download(filepath)
+    #             )
     
-                with tempfile.NamedTemporaryFile(
-                    suffix=".geojson",
-                    delete=False
-                ) as tmp:
+    #             with tempfile.NamedTemporaryFile(
+    #                 suffix=".geojson",
+    #                 delete=False
+    #             ) as tmp:
     
-                    tmp.write(file_content)
-                    tmp_path = tmp.name
+    #                 tmp.write(file_content)
+    #                 tmp_path = tmp.name
     
-                gdf = gpd.read_file(tmp_path)
+    #             gdf = gpd.read_file(tmp_path)
     
-                if gdf.empty:
-                    continue
+    #             if gdf.empty:
+    #                 continue
     
-                if crs is None:
-                    crs = gdf.crs
+    #             if crs is None:
+    #                 crs = gdf.crs
     
-                records.append(
-                    {
-                        "project_polygon": os.path.splitext(filepath)[0],
-                        "geometry": unary_union(gdf.geometry),
-                    }
-                )
+    #             records.append(
+    #                 {
+    #                     "project_polygon": os.path.splitext(filepath)[0],
+    #                     "geometry": unary_union(gdf.geometry),
+    #                 }
+    #             )
     
-            except Exception as e:
+    #         except Exception as e:
     
-                st.warning(
-                    f"Error loading {filepath}: {e}"
-                )
+    #             st.warning(
+    #                 f"Error loading {filepath}: {e}"
+    #             )
     
-            finally:
+    #         finally:
     
-                if tmp_path and os.path.exists(tmp_path):
-                    os.remove(tmp_path)
+    #             if tmp_path and os.path.exists(tmp_path):
+    #                 os.remove(tmp_path)
     
-        polygons_gdf = gpd.GeoDataFrame(
-            records,
-            geometry="geometry",
-            crs=crs
-        )
+    #     polygons_gdf = gpd.GeoDataFrame(
+    #         records,
+    #         geometry="geometry",
+    #         crs=crs
+    #     )
     
-        return polygons_gdf
+    #     return polygons_gdf
 
     # polygons_gdf = load_project_polygons()
     
