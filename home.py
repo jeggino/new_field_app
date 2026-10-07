@@ -4838,13 +4838,14 @@ elif page == "Gegenereerde output":
     
     bucket = supabase.storage.from_(BUCKET)
     
-    # Try upload → if exists, overwrite using update()
-    try:
-        bucket.upload(FILE_PATH, file_bytes, file_options={"contentType": "text/html", "upsert": True})
-    except Exception:
-        bucket.update(FILE_PATH, file_bytes, file_options={"contentType": "text/html"})
-        
-    # Public URL
+    # ALWAYS overwrite the file
+    bucket.upload(
+        FILE_PATH,
+        file_bytes,
+        file_options={"contentType": "text/html", "upsert": True}
+    )
+    
+    # Public URL (no versioning)
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{FILE_PATH}?download={FILE_PATH}"
     
     # Streamlit output
