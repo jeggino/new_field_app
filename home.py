@@ -1247,14 +1247,15 @@ elif page == "Gegenereerde output":
     # Convert bytes → dict
     geojson_data = json.loads(response.decode("utf-8"))
     
-    # Create GeoDataFrame
-    polygons_gdf = gpd.GeoDataFrame.from_features(geojson_data["features"])
+    from shapely.geometry import shape
     
-    # Add project name column
-    polygons_gdf["project_polygon"] = selected_project
+    geometry = shape(geojson_data)
     
-    # Ensure geometry column is correct
-    polygons_gdf = polygons_gdf.set_geometry("geometry")
+    polygons_gdf = gpd.GeoDataFrame(
+        {"project_polygon": [selected_project]},
+        geometry=[geometry],
+        crs="EPSG:4326"
+    )
 
     polygons_gdf
     st.write(selected_project)
