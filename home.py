@@ -4527,6 +4527,9 @@ elif page == "Gegenereerde output":
         "_",
         str(project_name)
     ).strip("_")
+
+
+st.folium(m_html)
     
 # --------------------------------------------------
 # DOWNLOAD SECTION
